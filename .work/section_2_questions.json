@@ -1,0 +1,914 @@
+[
+  {
+    "q": "You need to replicate a MySQL database to BigQuery for real-time analytics with less than 1-minute lag. The source database cannot have additional load. Which GCP service is most appropriate?",
+    "opts": [
+      "Cloud Data Fusion CDC connector polling MySQL every minute",
+      "Datastream for MySQL CDC → BigQuery direct integration",
+      "mysqldump to Cloud Storage every minute via Cloud Scheduler",
+      "Dataproc Sqoop incremental imports every 5 minutes"
+    ],
+    "ans": 1,
+    "explain": "Datastream is Google Cloud's serverless CDC service. It reads MySQL binary logs (minimal source load) and streams changes directly to BigQuery with sub-minute latency.",
+    "concept": "Datastream, CDC, MySQL replication, binary logs"
+  },
+  {
+    "q": "A Dataflow pipeline is processing a Pub/Sub stream. You observe that worker utilization is consistently at 95% but the pipeline is not autoscaling up. What is the most likely cause?",
+    "opts": [
+      "Autoscaling is not supported for streaming Dataflow pipelines",
+      "The maxNumWorkers parameter was not set, capping workers at the default",
+      "The Pub/Sub subscription has no more unacknowledged messages to consume",
+      "The pipeline uses a fixed window which prevents scaling"
+    ],
+    "ans": 1,
+    "explain": "Dataflow streaming pipelines autoscale based on backlog, but are bounded by maxNumWorkers (default often equals the initial worker count). If not explicitly set higher, the pipeline cannot scale.",
+    "concept": "Dataflow autoscaling, maxNumWorkers, streaming pipelines"
+  },
+  {
+    "q": "You are building an Apache Beam pipeline that reads from Cloud Storage. The pipeline must be easily testable locally and deployable to Dataflow in production. How should you structure runner selection?",
+    "opts": [
+      "Hardcode DataflowRunner; test by deploying a Dataflow job with --region=local",
+      "Use PipelineOptions with --runner flag; use DirectRunner for local tests, DataflowRunner for production",
+      "Create two separate pipelines — one for testing, one for production",
+      "Use Cloud Composer to switch runners via environment variables"
+    ],
+    "ans": 1,
+    "explain": "Apache Beam's portability model separates pipeline logic from the runner. PipelineOptions reads --runner from command-line arguments. DirectRunner runs locally for fast iteration; DataflowRunner deploys to managed Dataflow.",
+    "concept": "Apache Beam portability, DirectRunner vs DataflowRunner, pipeline testing"
+  },
+  {
+    "q": "A Dataflow job processes 1 million messages/sec but you observe hot keys causing some workers to be overloaded while others are idle. What technique resolves hot key skew?",
+    "opts": [
+      "Increase the number of workers to distribute load evenly",
+      "Use a salting technique — add a random prefix to the hot key before GroupByKey, then recombine",
+      "Switch to Dataproc; Spark handles skew automatically",
+      "Reduce the window size to limit the number of elements per worker"
+    ],
+    "ans": 1,
+    "explain": "Key salting distributes a hot key across multiple reducers by appending a random suffix. After GroupByKey and aggregation, a second pass removes the salt and combines partial results.",
+    "concept": "Data skew, hot key salting, GroupByKey, Dataflow optimization"
+  },
+  {
+    "q": "You need to ingest data from 500 different REST APIs into BigQuery on varying schedules. The APIs return JSON. What is the most operationally efficient approach?",
+    "opts": [
+      "Write 500 individual Cloud Functions, each scheduled by Cloud Scheduler",
+      "Use Cloud Data Fusion with REST API source connectors and schedule via Cloud Composer",
+      "Build a monolithic Dataproc Spark job that calls all 500 APIs sequentially",
+      "Hard-code all API calls in a single Dataflow pipeline"
+    ],
+    "ans": 1,
+    "explain": "Cloud Data Fusion provides a visual ETL platform with pre-built REST connectors, reducing per-pipeline code. Cloud Composer schedules and orchestrates Data Fusion pipelines providing a unified operational view.",
+    "concept": "Cloud Data Fusion, REST API ingestion, Cloud Composer orchestration"
+  },
+  {
+    "q": "When using Dataflow with the Apache Beam Python SDK, which of the following is a key reason why jobs may be slower than with the Java SDK?",
+    "opts": [
+      "Python SDK only supports batch mode, not streaming",
+      "Python SDK uses an external worker process (SDK harness) communicating over gRPC, adding serialization overhead vs. Java's native JVM execution",
+      "Python is not supported by Dataflow; it only accepts Java",
+      "Python SDK cannot utilize Dataflow's shuffle service"
+    ],
+    "ans": 1,
+    "explain": "The Beam Python SDK on Dataflow uses the Fn API / Portability framework where user code runs in a Python SDK harness process, communicating via gRPC. This IPC overhead can be significant compared to Java's native JVM execution.",
+    "concept": "Beam Portability Framework, Python SDK performance, SDK harness"
+  },
+  {
+    "q": "A team uses Cloud Storage as a data lake. They need to enforce schema validation on incoming JSON files before they enter the curated zone. Where should this validation happen?",
+    "opts": [
+      "Enable BigQuery automatic schema validation on external tables",
+      "Implement validation in a Dataflow pipeline triggered by Cloud Storage notifications; route invalid records to a dead-letter bucket",
+      "Use Cloud Storage Object Lifecycle Management to delete invalid files",
+      "Configure Cloud Armor WAF rules to reject invalid JSON at upload"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage event notifications trigger a Dataflow job when new files arrive. The pipeline validates schema, routes valid records to the curated zone, and sends invalid records to a dead-letter bucket.",
+    "concept": "Data quality gates, dead-letter patterns, Cloud Storage notifications"
+  },
+  {
+    "q": "You need to perform a streaming aggregation in Dataflow where you compute the average order value per store in 5-minute windows, but results must be emitted as soon as 80% of the expected data has arrived. Which Beam feature enables this?",
+    "opts": [
+      "Early firings with AfterWatermark.pastEndOfWindow().withEarlyFirings(AfterProcessingTime.pastFirstElementInPane())",
+      "Set window duration to 4 minutes to approximate 80% early firing",
+      "Use a global window with a count-based trigger firing every N elements",
+      "Split the 5-minute window into five 1-minute windows"
+    ],
+    "ans": 0,
+    "explain": "Beam triggers control when window results are emitted. AfterWatermark with withEarlyFirings based on AfterProcessingTime emits speculative results before the window closes.",
+    "concept": "Beam triggers, early/on-time/late firings, speculative results"
+  },
+  {
+    "q": "BigQuery supports three methods for loading data. In which scenario is the Storage Write API preferable over streaming inserts (legacy)?",
+    "opts": [
+      "When you need data available for queries within 90 seconds without deduplication",
+      "When you need exactly-once semantics, need to write large batches atomically, or want to reduce streaming insert costs",
+      "When the source is a Cloud SQL database requiring JDBC connectivity",
+      "When loading Avro files that are already in Cloud Storage"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Storage Write API provides: exactly-once semantics via committed mode streams; atomic batch commits; significantly lower cost vs. legacy streaming inserts.",
+    "concept": "BigQuery Storage Write API, exactly-once ingestion, atomic writes"
+  },
+  {
+    "q": "A Dataproc cluster runs Spark jobs that read from Cloud Storage. Jobs are slow due to many small files (10,000 files × 1MB each). What is the recommended fix?",
+    "opts": [
+      "Increase Dataproc master node size to handle more file metadata",
+      "Compact small files into larger files (128–256MB+) using a Spark coalesce/repartition job before processing",
+      "Use Cloud Storage Transfer Service to merge files",
+      "Enable HDFS on the Dataproc cluster instead of using Cloud Storage"
+    ],
+    "ans": 1,
+    "explain": "The small files problem: each small file requires a separate GCS RPC call and creates a separate Spark task. Compacting to 128–256MB files dramatically reduces overhead.",
+    "concept": "Small files problem, Spark coalesce/repartition, Cloud Storage optimization"
+  },
+  {
+    "q": "Which of the following is NOT a supported trigger type in Apache Beam?",
+    "opts": [
+      "AfterWatermark — fires when the watermark passes the window end",
+      "AfterProcessingTime — fires after a delay from first element",
+      "AfterCount — fires after a specified number of elements",
+      "AfterExternalSignal — fires when a Cloud Pub/Sub message is received"
+    ],
+    "ans": 3,
+    "explain": "Apache Beam's built-in triggers are: AfterWatermark, AfterProcessingTime, AfterCount, Repeatedly, AfterFirst, AfterAll. There is no AfterExternalSignal trigger that polls Pub/Sub.",
+    "concept": "Apache Beam triggers taxonomy, windowing and triggering"
+  },
+  {
+    "q": "You want to run a Dataproc job with autoscaling enabled. The job processes a fixed-size input file (no queue to drain). What autoscaling behavior should you expect?",
+    "opts": [
+      "Dataproc will scale up aggressively and scale down once YARN container utilization drops",
+      "Autoscaling for batch jobs is not supported in Dataproc",
+      "The cluster will stay at the minimum node count since there is no queue-based signal",
+      "Dataproc requires manual scaling for all batch workloads"
+    ],
+    "ans": 0,
+    "explain": "Dataproc autoscaling monitors YARN metrics. During a batch job it scales up; once the job completes and YARN shows no pending work, it scales back down. Autoscaling is supported for batch.",
+    "concept": "Dataproc autoscaling, YARN metrics, cluster lifecycle"
+  },
+  {
+    "q": "A data pipeline uses Cloud Composer (Airflow) to orchestrate daily BigQuery transformations. The dbt transformation step consistently fails on Wednesdays due to a spike in source data volume. What is the recommended way to handle this?",
+    "opts": [
+      "Manually re-run the DAG every Wednesday",
+      "Configure the Airflow task with retry logic (retries=3, retry_delay=timedelta(minutes=10)) and set execution_timeout appropriately",
+      "Delete the Wednesday data and skip the transformation",
+      "Create a separate Wednesday-only DAG with a larger Dataproc cluster"
+    ],
+    "ans": 1,
+    "explain": "Airflow task retry configuration handles transient failures automatically. retries=3 with appropriate delay allows recovery from temporary volume spikes.",
+    "concept": "Airflow retry configuration, DAG fault tolerance, Cloud Composer"
+  },
+  {
+    "q": "You need to process a 100 TB historical dataset in BigQuery using SQL transformations. Which pricing model and execution approach minimizes cost?",
+    "opts": [
+      "On-demand pricing with CREATE TABLE AS SELECT (CTAS); partition and cluster the destination table",
+      "On-demand pricing, running SELECT * repeatedly to explore data before transformation",
+      "Flat-rate pricing with unlimited slots for all development and production work",
+      "Use Dataproc instead of BigQuery for all 100TB transformations to avoid BigQuery costs"
+    ],
+    "ans": 0,
+    "explain": "On-demand BigQuery charges per bytes scanned. CTAS scans the 100TB once. Subsequent queries on the partitioned/clustered result scan far less data due to pruning.",
+    "concept": "BigQuery on-demand pricing, CTAS, partitioning and clustering cost optimization"
+  },
+  {
+    "q": "When designing a Dataflow streaming pipeline, what is the difference between 'event time' and 'processing time' and why does it matter?",
+    "opts": [
+      "They are the same; Dataflow synchronizes clocks across all sources",
+      "Event time is when the event occurred at the source; processing time is when Dataflow processes it. Skew between them causes incorrect windowed aggregations if not handled with watermarks",
+      "Event time is only used in batch pipelines; streaming uses processing time exclusively",
+      "Processing time is always later than event time; you should always use processing time for accuracy"
+    ],
+    "ans": 1,
+    "explain": "Event time = timestamp embedded in the event data. Processing time = wall clock when Dataflow receives it. Watermarks track event-time progress to handle skew.",
+    "concept": "Event time vs processing time, watermarks, Beam windowing correctness"
+  },
+  {
+    "q": "You need to ingest data from Cloud SQL (PostgreSQL) to BigQuery hourly with a 5-minute lag SLA. The source has 50 tables. Which approach meets the SLA with minimal operational overhead?",
+    "opts": [
+      "Write 50 Cloud Functions each polling their table using JDBC every hour",
+      "Use Datastream CDC to capture all changes from PostgreSQL's logical replication slot; stream to BigQuery automatically",
+      "Use Cloud Data Fusion batch pipeline scheduled hourly via Cloud Composer",
+      "Export all 50 tables as CSV hourly using Cloud Scheduler + pg_dump + gsutil"
+    ],
+    "ans": 1,
+    "explain": "Datastream uses PostgreSQL logical replication slots to capture all changes in real-time. With 50 tables configured in a single Datastream stream, all tables replicate continuously — no scheduling needed, and latency is typically < 1 minute.",
+    "concept": "Datastream, PostgreSQL CDC, logical replication, continuous replication"
+  },
+  {
+    "q": "A Dataflow pipeline running in streaming mode is experiencing high system latency (difference between event time and watermark). What does this indicate?",
+    "opts": [
+      "Workers are processing events too fast — reduce the number of workers",
+      "Data is arriving faster than workers can process it, causing a backlog. The pipeline needs more workers (increase maxNumWorkers) or pipeline logic optimization",
+      "The Pub/Sub topic has too many partitions",
+      "System latency only matters for batch pipelines, not streaming"
+    ],
+    "ans": 1,
+    "explain": "System latency in Dataflow streaming = current processing time minus the current watermark timestamp. High system latency means the pipeline is falling behind — events are piling up unprocessed. Increase maxNumWorkers and review bottleneck steps in the pipeline graph.",
+    "concept": "Dataflow system latency, watermark lag, streaming backlog"
+  },
+  {
+    "q": "When would you choose Apache Beam's CombinePerKey over GroupByKey + ParDo for aggregations?",
+    "opts": [
+      "CombinePerKey is only for counting; GroupByKey handles all other aggregations",
+      "CombinePerKey is preferred when the aggregation is associative and commutative (sums, averages, max/min) — it applies partial aggregation on each worker before shuffling, dramatically reducing network data transfer vs. GroupByKey which shuffles all raw elements",
+      "Both have identical performance characteristics; choose based on code readability",
+      "GroupByKey is always faster because it avoids the overhead of CombineFn"
+    ],
+    "ans": 1,
+    "explain": "CombinePerKey with an associative CombineFn applies partial (pre-aggregate) combination on each worker/bundle before shuffle. This reduces the amount of data sent across the network by orders of magnitude. GroupByKey sends all raw elements to the reducer.",
+    "concept": "Beam CombinePerKey, partial aggregation, network optimization, CombineFn"
+  },
+  {
+    "q": "A Dataproc cluster runs Spark Structured Streaming jobs reading from Pub/Sub. The cluster is over-provisioned on weekdays and under-provisioned on weekends. What is the correct approach?",
+    "opts": [
+      "Create two separate clusters — weekday cluster and weekend cluster; manually switch between them",
+      "Enable Dataproc autoscaling with appropriate YARN-based policies; or use Dataproc Serverless Spark for streaming which auto-scales without cluster management",
+      "Schedule cluster deletion and recreation via Cloud Composer",
+      "Migrate to Dataflow which handles autoscaling automatically"
+    ],
+    "ans": 1,
+    "explain": "Dataproc autoscaling adjusts the cluster size based on YARN pending memory and container utilization. For streaming workloads, Dataproc Serverless Spark eliminates cluster management entirely. Both approaches eliminate the weekday/weekend over/under-provisioning problem.",
+    "concept": "Dataproc autoscaling, Dataproc Serverless, streaming cluster management"
+  },
+  {
+    "q": "You need to load data from Cloud Storage into BigQuery from 10,000 individual parquet files. What is the most efficient loading strategy?",
+    "opts": [
+      "Run 10,000 individual bq load jobs, one per file",
+      "Use a single bq load job with wildcard URI (gs://bucket/path/*.parquet); BigQuery handles multiple files in one job with parallel loading",
+      "Load files one-by-one using the BigQuery streaming API",
+      "Use Dataflow to read all files and write to BigQuery for maximum flexibility"
+    ],
+    "ans": 1,
+    "explain": "BigQuery load jobs support wildcard URIs and multi-file lists. A single load job with gs://bucket/*.parquet loads all 10,000 files in parallel using BigQuery's distributed load infrastructure. This is far more efficient than individual jobs.",
+    "concept": "BigQuery load jobs, wildcard URIs, batch loading optimization"
+  },
+  {
+    "q": "A Pub/Sub subscription is configured with a 600-second acknowledgment deadline. Messages that are not acknowledged within 600 seconds are redelivered. A Dataflow pipeline processes messages in exactly 400 seconds on average. What should you check?",
+    "opts": [
+      "The acknowledgment deadline should be increased to at least 2x the processing time",
+      "Occasionally messages take longer than 600 seconds (P99 > 600s); this causes redelivery and duplicates. Extend the ack deadline to 10 minutes or implement lease extension using modifyAckDeadline",
+      "The 600-second deadline is always sufficient if average is 400 seconds",
+      "Dataflow automatically extends Pub/Sub acknowledgment deadlines; no configuration needed"
+    ],
+    "ans": 1,
+    "explain": "If P99 processing time exceeds 600 seconds, messages are redelivered causing duplicates. Solutions: (1) increase ack deadline to cover P99; (2) implement modifyAckDeadline to periodically extend the lease while processing. Dataflow's Pub/Sub IO does extend deadlines automatically — verify it's configured correctly.",
+    "concept": "Pub/Sub acknowledgment deadline, message redelivery, lease extension"
+  },
+  {
+    "q": "Which Dataflow feature allows you to process a bounded dataset using the same code that processes unbounded streams?",
+    "opts": [
+      "Batch mode in Dataflow requires a completely different code structure from streaming mode",
+      "Apache Beam's unified programming model — the same pipeline code runs on both bounded (batch) and unbounded (streaming) datasets; only the runner configuration and windowing/trigger strategy change",
+      "Dataflow Flex Templates automatically detect bounded vs unbounded input",
+      "Batch mode requires using BigQueryIO while streaming mode requires PubSubIO; pipelines cannot be shared"
+    ],
+    "ans": 1,
+    "explain": "Apache Beam's core design principle: PCollection is the abstraction for both bounded and unbounded data. The same transforms work on both. For batch, the default window is the global window with a single end-of-input firing. For streaming, you add explicit windows and triggers.",
+    "concept": "Beam unified model, bounded vs unbounded PCollections, batch-streaming code reuse"
+  },
+  {
+    "q": "A Cloud Composer environment is running Airflow 2. A DAG fails with 'Task exited with return code 1' with no other information. How do you diagnose the root cause?",
+    "opts": [
+      "Check the BigQuery console for related query errors",
+      "View Airflow task logs via the Composer UI (Task Instance Details → Logs); also check Cloud Logging for the Composer environment filter on airflow-worker container logs",
+      "Run the failed task manually from the command line using gcloud composer environments run",
+      "Restart the Airflow scheduler to clear the error state"
+    ],
+    "ans": 1,
+    "explain": "Airflow task failure diagnosis: (1) Composer UI → DAG → Task Instance → Logs shows the full stderr/stdout of the failed task; (2) Cloud Logging with filter resource.type='cloud_composer_environment' and container='airflow-worker' shows all worker logs. These are the primary diagnostic tools.",
+    "concept": "Cloud Composer debugging, Airflow task logs, Cloud Logging"
+  },
+  {
+    "q": "You need to perform a one-time migration of 200 TB from Amazon S3 to Google Cloud Storage. Which service handles this?",
+    "opts": [
+      "gsutil with multi-threading directly from an EC2 instance in AWS",
+      "Cloud Storage Transfer Service — configure a transfer job from S3 (with AWS access keys) to GCS; handles parallel transfer, retries, and checksum validation",
+      "Transfer Appliance — ship a physical device to AWS data center",
+      "Dataflow pipeline reading from S3 via KafkaIO and writing to GCS"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage Transfer Service is the managed solution for S3-to-GCS migration. It handles parallel multipart transfer, automatic retries, data verification (checksums), incremental sync, and scheduling — without any infrastructure management.",
+    "concept": "Cloud Storage Transfer Service, S3 to GCS migration, managed data transfer"
+  },
+  {
+    "q": "A streaming Dataflow pipeline must guarantee that each transaction is processed exactly once even if the pipeline job is restarted after a failure. Which mechanism ensures this?",
+    "opts": [
+      "Pub/Sub message deduplication handles exactly-once automatically",
+      "Dataflow checkpointing with the Streaming Engine — Dataflow persists state and offsets; on restart, it resumes from the last checkpoint without reprocessing already-committed records",
+      "Add a BigQuery deduplication step after every restart",
+      "Use Cloud Spanner as a state store with conditional writes"
+    ],
+    "ans": 1,
+    "explain": "Dataflow's Streaming Engine checkpoint mechanism persists processing state and source offsets (Pub/Sub cursor positions) durably. On job restart (failure recovery), Dataflow resumes from the last checkpoint — elements before the checkpoint are not reprocessed.",
+    "concept": "Dataflow checkpointing, Streaming Engine, failure recovery, exactly-once processing"
+  },
+  {
+    "q": "What is the recommended way to handle schema changes (column additions) when using Datastream to replicate from MySQL to BigQuery?",
+    "opts": [
+      "Stop and restart the Datastream stream every time a column is added",
+      "Datastream automatically detects MySQL schema changes (DDL events) and propagates them to BigQuery — BigQuery adds the new column as NULLABLE automatically",
+      "Recreate the Datastream stream from scratch after any schema change",
+      "Apply schema changes manually in BigQuery before they occur in MySQL"
+    ],
+    "ans": 1,
+    "explain": "Datastream monitors MySQL binary logs for DDL events (ALTER TABLE ADD COLUMN). When detected, Datastream automatically updates the BigQuery schema to add the new column. Existing rows have NULL for the new column. This enables zero-touch schema evolution.",
+    "concept": "Datastream schema evolution, DDL propagation, zero-touch schema changes"
+  },
+  {
+    "q": "You have a Spark job on Dataproc that reads a 10 TB dataset and produces a 100 MB output. The job takes 2 hours. The cluster has 50 workers. The last 30 minutes are spent with only 1 worker active. What is the problem?",
+    "opts": [
+      "The Dataproc cluster is too large; reduce to 10 workers",
+      "The final reduce stage has insufficient parallelism — only 1 partition remains. Fix: increase spark.sql.shuffle.partitions and/or add repartition() before the final reduce to ensure parallelism throughout",
+      "The output is too small for Spark to parallelize effectively",
+      "The job needs more memory, not more parallelism"
+    ],
+    "ans": 1,
+    "explain": "Insufficient shuffle partitions after a final aggregation/join leaves only 1 or a few reducers — 49 workers sit idle. Increase spark.sql.shuffle.partitions (default 200 may be too low for 10 TB) to match the cluster size. Also use repartition() before final reduces.",
+    "concept": "Spark shuffle partitions, parallelism, stragglers, Dataproc tuning"
+  },
+  {
+    "q": "Cloud Data Fusion runs on top of which underlying execution engine?",
+    "opts": [
+      "Apache Spark on Dataproc",
+      "Apache Beam on Dataflow (for batch and streaming pipelines deployed from Data Fusion)",
+      "Apache Flink on Dataproc",
+      "Custom Cloud Data Fusion proprietary engine"
+    ],
+    "ans": 1,
+    "explain": "Cloud Data Fusion visually defines pipelines and deploys them as Apache Beam pipelines on Dataflow. Batch pipelines run as Dataflow batch jobs. Real-time pipelines run as Dataflow streaming jobs. Data Fusion provides the visual design layer on top of the Beam/Dataflow execution engine.",
+    "concept": "Cloud Data Fusion, Dataflow backend, visual ETL"
+  },
+  {
+    "q": "A BigQuery load job from Cloud Storage fails with 'Error: Too many errors encountered'. The source CSV has 1 million rows. What should you investigate first?",
+    "opts": [
+      "Increase BigQuery load job timeout",
+      "Check the --max_bad_records flag; if set to 0 (default), any parsing error fails the entire job. Increase it for tolerance, or investigate source data quality to fix errors",
+      "The Cloud Storage bucket is in the wrong region",
+      "The CSV has more than 10 million rows which exceeds BigQuery load job limits"
+    ],
+    "ans": 1,
+    "explain": "BigQuery load jobs fail by default on any error (max_bad_records=0). Check the job's error details in BigQuery UI or bq show job_id — it shows which rows failed and why (type mismatch, extra delimiter, encoding issues). Fix source data or raise max_bad_records if tolerable.",
+    "concept": "BigQuery load job error handling, max_bad_records, data quality"
+  },
+  {
+    "q": "You are running a Dataproc cluster for interactive Spark SQL analysis. Users run queries throughout the day. The cluster must be available within 2 minutes of a query request. What cluster mode is best?",
+    "opts": [
+      "Ephemeral cluster created per query — minimum cost",
+      "Persistent cluster with autoscaling that scales to minimum workers during idle periods — provides fast availability",
+      "Dataproc Serverless Spark — zero startup time",
+      "Dataproc cluster with preemptible workers only for cost savings"
+    ],
+    "ans": 1,
+    "explain": "For interactive analysis requiring < 2 minute availability, a persistent cluster with autoscaling is the right choice. The cluster is always available (no 3-5 minute startup); autoscaling scales down during idle periods to minimize cost. Ephemeral clusters take 3-5 minutes to provision — too slow for interactive use.",
+    "concept": "Dataproc persistent vs ephemeral clusters, interactive workloads, autoscaling"
+  },
+  {
+    "q": "A Beam pipeline uses state and timers API. What is the key constraint when using stateful processing in Apache Beam?",
+    "opts": [
+      "State is shared across all elements in a pipeline, enabling global aggregations",
+      "State is per-key-and-window — each unique combination of key and window has its own state cell. Stateful operations require the data to first be key-value pairs, and operations are keyed",
+      "State can be any Python/Java object; Beam handles serialization automatically",
+      "Timers are not available in streaming mode; only batch pipelines can use timers"
+    ],
+    "ans": 1,
+    "explain": "Beam state and timers API is always per-key-and-window. You must have a KV<K,V> PCollection. Each key's state is independent. This is fundamental — stateful processing adds per-key memory cost proportional to the number of unique keys.",
+    "concept": "Beam state and timers API, per-key state, stateful processing constraints"
+  },
+  {
+    "q": "You need to ingest 100 GB of Salesforce CRM data into BigQuery daily. Which is the most appropriate GCP solution?",
+    "opts": [
+      "Write a Cloud Function that queries the Salesforce REST API page by page and inserts rows into BigQuery",
+      "Use BigQuery Data Transfer Service with the Salesforce connector — managed, scheduled, no-code ingestion",
+      "Build a Dataflow pipeline with a custom Salesforce source DoFn",
+      "Export Salesforce data as CSV, upload to GCS manually, then BigQuery load job"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Data Transfer Service has a managed Salesforce connector that handles OAuth authentication, incremental/full load scheduling, and direct BigQuery insertion. No code, no infrastructure management — configure once and data arrives daily automatically.",
+    "concept": "BigQuery Data Transfer Service, Salesforce connector, managed data ingestion"
+  },
+  {
+    "q": "A Dataflow pipeline must write to BigQuery partitioned by event_date. The pipeline processes events from Pub/Sub. What is the correct BigQueryIO configuration?",
+    "opts": [
+      "BigQuery auto-assigns rows to partitions based on ingestion time; no configuration needed",
+      "Use BigQueryIO.write().to(tableSpec).withTimePartitioning(TimePartitioning.of(TimePartitioningType.DAY).withField('event_date')) to specify the partitioning column",
+      "Partition by event_date is not possible when writing from Dataflow",
+      "Use a separate Dataflow pipeline per day and write to separate daily tables"
+    ],
+    "ans": 1,
+    "explain": "BigQueryIO write supports withTimePartitioning to configure date/timestamp-based partitioning on the destination table. Specifying the field name ('event_date') partitions data by that column value — Dataflow correctly routes each row to the appropriate partition.",
+    "concept": "BigQueryIO partitioned writes, Dataflow-to-BigQuery, time partitioning"
+  },
+  {
+    "q": "What happens to Pub/Sub messages that are not consumed within the message retention duration (default 7 days)?",
+    "opts": [
+      "They are permanently deleted and cannot be recovered",
+      "They are moved to an archive Pub/Sub subscription automatically",
+      "They are exported to Cloud Storage for long-term retention",
+      "They are moved to a dead-letter topic"
+    ],
+    "ans": 0,
+    "explain": "Pub/Sub messages are deleted after the retention duration (1 minute to 7 days, default 7 days) expires, regardless of whether they were consumed. This means if a subscription is inactive or processing is stopped for > 7 days, messages are permanently lost — plan for this in DR scenarios.",
+    "concept": "Pub/Sub message retention, message expiry, data loss scenarios"
+  },
+  {
+    "q": "You are designing a real-time pipeline where Dataflow reads IoT events and you need to detect when a device has not reported for more than 5 minutes (absence detection). Which Beam feature handles this?",
+    "opts": [
+      "Set allowedLateness to 5 minutes — absence detection is automatic",
+      "Use a stateful DoFn with a processing-time timer: on each event, reset a 5-minute timer. If the timer fires without a new event, the device is silent — emit an alert",
+      "Use AfterCount trigger with count=0 to detect empty windows",
+      "Use Pub/Sub message expiry — if a message expires, trigger an alert"
+    ],
+    "ans": 1,
+    "explain": "Absence detection pattern: stateful DoFn maintains a last-seen timer per device key. On each event, clear and reset the timer for 5 minutes. If no event arrives and the timer fires, emit a silence alert. This is the canonical Beam pattern for detecting missing events.",
+    "concept": "Beam stateful processing, processing-time timers, absence detection"
+  },
+  {
+    "q": "A team is migrating from on-premises Oracle to BigQuery. The source Oracle database has stored procedures and PL/SQL logic. What is the recommended migration approach for the transformation logic?",
+    "opts": [
+      "Reuse Oracle PL/SQL directly in BigQuery using the PL/SQL compatibility mode",
+      "Convert Oracle stored procedures to BigQuery SQL (standard SQL or scripting), dbt models, or Dataform SQLX; or use Dataflow Java pipelines for complex logic that doesn't translate to SQL",
+      "Use Cloud Data Fusion Oracle connector to run Oracle stored procedures in GCP",
+      "Keep Oracle for transformation logic; use BigQuery only for storage"
+    ],
+    "ans": 1,
+    "explain": "BigQuery uses standard SQL (not PL/SQL). Oracle migrations require translating: stored procedures → BigQuery scripting or dbt/Dataform models; complex business logic → Dataflow; data movement → Datastream or Batch Transfer. The Cloud Migration Center provides Oracle-to-BigQuery SQL translation tools.",
+    "concept": "Oracle to BigQuery migration, PL/SQL translation, Dataform, migration strategy"
+  },
+  {
+    "q": "A Dataflow pipeline uses SideInput loaded from a Cloud Storage file. The file is 2 GB. Workers are running out of memory. What is the correct fix?",
+    "opts": [
+      "Increase maxNumWorkers to distribute memory pressure",
+      "The 2 GB file is too large for an in-memory side input. Refactor: either reduce the side input data (filter to only needed keys), store in Bigtable and do per-element lookups, or use a hash join pattern with repartitioned main input",
+      "Reduce the window size to process fewer elements per worker",
+      "Switch from Java SDK to Python SDK — it handles large side inputs better"
+    ],
+    "ans": 1,
+    "explain": "Side inputs must fit in worker heap memory. 2 GB approaching worker memory limits. Solutions: (1) filter the side input to only the keys present in the main input; (2) use Bigtable/Spanner for remote lookups if memory is genuinely insufficient; (3) upgrade to a higher-memory machine type.",
+    "concept": "Dataflow side input size limits, memory management, large side input patterns"
+  },
+  {
+    "q": "You need to run Dataproc jobs that access a Cloud SQL database on private IP. Both Dataproc and Cloud SQL are in the same VPC. What additional component is required for Dataproc workers to connect to Cloud SQL?",
+    "opts": [
+      "A Cloud NAT gateway for outbound internet access",
+      "Cloud SQL Auth Proxy running on each Dataproc worker, configured as an initialization action",
+      "A static external IP on the Cloud SQL instance",
+      "A separate Dataproc cluster in the same region as Cloud SQL"
+    ],
+    "ans": 1,
+    "explain": "Even with Private IP, Dataproc workers need the Cloud SQL Auth Proxy to handle SSL certificate validation and IAM-based authentication to Cloud SQL. Deploy the proxy as a Dataproc initialization action that installs and starts the proxy on each worker, then connect via localhost.",
+    "concept": "Cloud SQL Auth Proxy, Dataproc private connectivity, initialization actions"
+  },
+  {
+    "q": "You want to monitor the cost of each Dataflow job and alert when a job exceeds $500. How do you implement this?",
+    "opts": [
+      "Dataflow does not expose cost metrics directly",
+      "Use Cloud Monitoring with the dataflow.googleapis.com/job/total_vcpu_time and dataflow.googleapis.com/job/total_memory_usage metrics; create a custom cost calculation alert; or use Cloud Billing budget alerts filtering by Dataflow service",
+      "Review the monthly Cloud Billing invoice and manually check each job",
+      "Enable Dataflow job cost tracking in the Dataflow UI settings"
+    ],
+    "ans": 1,
+    "explain": "Dataflow exports job-level metrics to Cloud Monitoring (vCPU-hours, memory-hours, PD-hours). Create a derived cost metric. Alternatively, use Cloud Billing budget alerts with a Dataflow service filter to alert when Dataflow costs exceed $500 within a billing period.",
+    "concept": "Dataflow cost monitoring, Cloud Billing budget alerts, Cloud Monitoring metrics"
+  },
+  {
+    "q": "Apache Beam's ParDo transform is analogous to which operation in traditional data processing?",
+    "opts": [
+      "SQL GROUP BY aggregation",
+      "Map operation in MapReduce — applies a function to each element independently; can produce 0, 1, or many output elements per input element",
+      "SQL JOIN operation between two tables",
+      "SQL ORDER BY with window functions"
+    ],
+    "ans": 1,
+    "explain": "ParDo (Parallel Do) is Beam's generalization of Map. Unlike a strict map (1-to-1), ParDo can emit 0, 1, or many elements per input (flatMap). It's the fundamental building block for filtering, transformation, parsing, and enrichment operations in Beam pipelines.",
+    "concept": "Apache Beam ParDo, DoFn, map operation, element-wise transforms"
+  },
+  {
+    "q": "A Dataproc cluster uses preemptible (Spot) VMs as secondary workers. What are the implications for running Spark jobs on this cluster?",
+    "opts": [
+      "Preemptible workers are identical to standard workers with no risk",
+      "Preemptible workers may be reclaimed by GCP at any time; Spark redistributes incomplete tasks to remaining workers, but if many workers are preempted simultaneously, the job may fail. Use preemptible workers for secondary (not primary) worker roles where task recovery is acceptable",
+      "Preemptible workers guarantee 24-hour minimum availability",
+      "Dataproc disables preemptible workers for production clusters automatically"
+    ],
+    "ans": 1,
+    "explain": "Preemptible (Spot) workers can be reclaimed by GCP with 30-second notice. Spark handles individual worker loss via task redistribution. However, mass preemption (common during GCP capacity events) can cause job failure. Best practice: use preemptible workers as secondary workers only, with adequate primary workers to complete jobs if all preemptible workers are lost.",
+    "concept": "Dataproc preemptible workers, Spot VMs, fault tolerance, primary vs secondary workers"
+  },
+  {
+    "q": "A streaming Dataflow pipeline processes transactions and must enrich each transaction with the current exchange rate. Exchange rates update every minute. What is the best approach?",
+    "opts": [
+      "Restart the Dataflow pipeline every minute with the new exchange rate hardcoded",
+      "Use a ValueProvider for the exchange rate — it allows runtime parameter updates without pipeline restart",
+      "Store exchange rates in Cloud Firestore; the DoFn queries Firestore per transaction (one read per event)",
+      "Use a Dataflow side input with watchForNewFiles() pointing to an exchange rate file that updates every minute; Dataflow reloads automatically"
+    ],
+    "ans": 3,
+    "explain": "For frequently-updating reference data in streaming Dataflow, updatable side inputs (watchForNewFiles or PCollectionView with periodic refresh) automatically reload when the source file changes. The pipeline reads the latest exchange rate without restarting or per-event external lookups.",
+    "concept": "Dataflow updatable side inputs, streaming reference data refresh"
+  },
+  {
+    "q": "A Dataflow job experiences 'out of memory' on workers when processing a very wide BigQuery table (5000 columns). What optimization reduces memory pressure?",
+    "opts": [
+      "Increase worker machine memory type (e.g., n2-highmem-8)",
+      "Project only the columns needed in BigQueryIO.read().withSelectedFields() — this reduces data scanned and memory used per element",
+      "Increase the number of workers to distribute memory",
+      "Split the pipeline into 50 separate pipelines each reading 100 columns"
+    ],
+    "ans": 1,
+    "explain": "withSelectedFields() in BigQueryIO uses column projection at the BigQuery Storage Read API level — only the specified columns are transferred to Dataflow workers. Reading 5000 columns when only 20 are needed wastes 250x the memory and network. Always project only needed columns.",
+    "concept": "BigQueryIO column projection, withSelectedFields, memory optimization"
+  },
+  {
+    "q": "You need to run a Dataproc Spark job that uses a JAR file stored in Cloud Storage. How should you specify this in the Dataproc job submission?",
+    "opts": [
+      "Upload the JAR to HDFS on the cluster before submitting the job",
+      "Specify the JAR as gs://bucket/path/job.jar in the mainJarFileUri or jarFileUris field of the Dataproc job configuration; Dataproc downloads it automatically",
+      "Convert the JAR to a Python wheel file for Dataproc compatibility",
+      "Store the JAR on the Dataproc master node's local filesystem"
+    ],
+    "ans": 1,
+    "explain": "Dataproc jobs accept gs:// URIs for JAR files. Specify mainJarFileUri: gs://bucket/path/job.jar in the HadoopJob or SparkJob configuration. Dataproc distributes the JAR to all workers automatically. This is the standard way to provide job artifacts without pre-staging.",
+    "concept": "Dataproc job submission, Cloud Storage JAR files, job artifacts"
+  },
+  {
+    "q": "What is the purpose of Pub/Sub's dead-letter topic (DLT)?",
+    "opts": [
+      "A DLT stores all processed messages for auditing purposes",
+      "A DLT receives messages that a subscription fails to process successfully after a configurable number of delivery attempts (maxDeliveryAttempts). This prevents poison-pill messages from blocking the subscription indefinitely",
+      "A DLT is a backup topic that mirrors all messages from the primary topic",
+      "A DLT stores messages that expire before being acknowledged"
+    ],
+    "ans": 1,
+    "explain": "Pub/Sub DLT: when a message fails processing (not acknowledged) after maxDeliveryAttempts, it's forwarded to the dead-letter topic. This prevents a single bad message from blocking the entire subscription. Dead-letter messages can be inspected, re-processed, or archived separately.",
+    "concept": "Pub/Sub dead-letter topic, poison-pill messages, maxDeliveryAttempts"
+  },
+  {
+    "q": "A Dataflow batch pipeline reads 10 TB from Cloud Storage and writes to BigQuery. The job uses 100 workers for 2 hours. How do you estimate the Dataflow cost?",
+    "opts": [
+      "Dataflow batch jobs are free; you only pay for BigQuery",
+      "Dataflow charges per vCPU-hour, per GB RAM-hour, and per PD GB-hour. Estimate: 100 workers × machine vCPUs × 2 hours × vCPU price + similar for RAM and PD",
+      "Dataflow charges per GB of data processed, similar to BigQuery",
+      "Dataflow cost is included in the BigQuery slot cost"
+    ],
+    "ans": 1,
+    "explain": "Dataflow pricing: vCPU-hour + GB RAM-hour + PD GB-hour. For example, n1-standard-4 workers: 100 workers × 4 vCPUs × $0.056/vCPU-hr × 2 hrs = $44.80 for CPU alone. Add RAM and disk. Use the Dataflow Pricing Calculator for accurate estimates.",
+    "concept": "Dataflow pricing model, vCPU-hour, cost estimation"
+  },
+  {
+    "q": "You need to build a pipeline that converts Avro files in Cloud Storage to Parquet format and writes them back to Cloud Storage. What is the most appropriate GCP service?",
+    "opts": [
+      "BigQuery load the Avro, then export as Parquet",
+      "Dataflow pipeline using AvroIO.read() and ParquetIO.write()",
+      "Dataproc Spark job using spark.read.format('avro').write.parquet()",
+      "Both B and C are valid; choose based on team expertise and cost requirements"
+    ],
+    "ans": 3,
+    "explain": "Both Dataflow (AvroIO → ParquetIO) and Dataproc Spark (read.avro().write.parquet()) accomplish this task. Dataflow is fully serverless; Dataproc requires cluster management but may be cheaper for large-scale conversions. The correct choice depends on team skills and scale.",
+    "concept": "File format conversion, Dataflow vs Dataproc, Avro to Parquet"
+  },
+  {
+    "q": "When using Dataflow for streaming, what does 'watermark' represent?",
+    "opts": [
+      "The maximum memory usage of Dataflow workers during pipeline execution",
+      "A timestamp estimate of how far behind the current processing is relative to event time — all events with timestamps before the watermark are assumed to have been received",
+      "The point at which Dataflow scales down workers due to reduced load",
+      "The threshold at which messages are moved from Pub/Sub to dead-letter topic"
+    ],
+    "ans": 1,
+    "explain": "In Dataflow, the watermark tracks the pipeline's notion of event-time progress. When the watermark reaches time T, Dataflow assumes all events with event_time < T have been received. Window triggers fire when the watermark passes the window end. Watermarks come from the source (Pub/Sub estimates based on unacknowledged messages).",
+    "concept": "Dataflow watermark, event time progress, window triggering"
+  },
+  {
+    "q": "A BigQuery dataset contains a table updated via streaming inserts. You run the same SELECT query twice 5 seconds apart and get different results. Is this expected?",
+    "opts": [
+      "No — BigQuery is strongly consistent; the same query must return the same result",
+      "Yes — BigQuery streaming inserts become available within a few seconds. The query results change as new rows are committed. For consistent snapshots, use FOR SYSTEM_TIME AS OF with a specific timestamp",
+      "BigQuery returns random results due to distributed execution; this is a known limitation",
+      "Streaming inserts have a 30-second latency before becoming visible to queries"
+    ],
+    "ans": 1,
+    "explain": "BigQuery streaming inserts are visible within seconds but subsequent queries do see new rows as they arrive. This is expected behavior — BigQuery is not a strongly-consistent read-your-own-writes OLTP system. For a consistent snapshot, use FOR SYSTEM_TIME AS OF to pin to a specific timestamp.",
+    "concept": "BigQuery streaming insert visibility, eventual consistency, SYSTEM_TIME AS OF"
+  },
+  {
+    "q": "Which Dataproc feature allows you to run Spark jobs without creating or managing a cluster?",
+    "opts": [
+      "Dataproc Autoscaling — scales cluster to minimum between jobs",
+      "Dataproc Serverless Spark — submit Spark batch or interactive workloads; GCP provisions resources on-demand and tears them down when complete",
+      "Dataproc on GKE — runs Spark on an existing GKE cluster",
+      "Dataproc Workflow Templates — automates cluster creation and deletion"
+    ],
+    "ans": 1,
+    "explain": "Dataproc Serverless Spark eliminates cluster lifecycle management. Submit a Spark batch job via gcloud or API; GCP provisions compute, runs the job, and releases resources. No cluster to manage, scale, or pay for when idle.",
+    "concept": "Dataproc Serverless Spark, serverless batch processing, no cluster management"
+  },
+  {
+    "q": "You need to ensure that a Dataflow pipeline processes all events within a 1-minute window correctly, even when events arrive up to 2 minutes late. Which combination of settings is correct?",
+    "opts": [
+      "1-minute tumbling windows; no lateness configuration needed",
+      "1-minute tumbling windows with allowedLateness(2 minutes); use ACCUMULATE firing mode to emit a corrected result when late data arrives",
+      "3-minute tumbling windows to absorb all lateness",
+      "Use session windows with a 2-minute gap"
+    ],
+    "ans": 1,
+    "explain": "allowedLateness(Duration.standardMinutes(2)) keeps window state open for 2 minutes past the watermark. ACCUMULATE mode re-fires the window with the accumulated result including late elements. This correctly handles up to 2-minute late arrivals.",
+    "concept": "Beam allowedLateness, ACCUMULATE firing mode, late data handling"
+  },
+  {
+    "q": "A Dataflow pipeline processes credit card transactions. You need to add a fraud score feature by calling an external ML API. The API has a rate limit of 1000 requests/sec. How should you design the integration?",
+    "opts": [
+      "Call the API synchronously for each transaction in a ParDo — Dataflow handles rate limiting automatically",
+      "Use GroupIntoBatches to batch transactions into groups of 100; call the API once per batch using a BatchRequest if the API supports it; add exponential backoff on throttling errors",
+      "Increase Dataflow workers to increase throughput beyond the rate limit",
+      "Store transactions in BigQuery first, then call the API via a BigQuery ML remote function"
+    ],
+    "ans": 1,
+    "explain": "GroupIntoBatches reduces API call rate by batching multiple transactions per request. With 100 transactions per batch, your effective API calls are 1/100th of the transaction rate. Add exponential backoff (e.g., using guava RateLimiter or apache-beam RetryStrategies) for throttling errors.",
+    "concept": "Dataflow API integration, GroupIntoBatches, rate limiting, exponential backoff"
+  },
+  {
+    "q": "Which file format is recommended for BigQuery exports that will be consumed by downstream Dataflow pipelines for maximum efficiency?",
+    "opts": [
+      "CSV — universal format readable by all tools",
+      "Avro — splittable, schema-embedded, binary format that Dataflow reads efficiently with high throughput",
+      "JSON Lines — human-readable and flexible",
+      "XML — supports rich hierarchical data structures"
+    ],
+    "ans": 1,
+    "explain": "Avro is the recommended format for BigQuery exports consumed by Dataflow: (1) schema is embedded in the file header; (2) binary format with fast serialization/deserialization; (3) splittable — multiple workers read different file segments in parallel; (4) native support in both BigQuery export and Beam AvroIO.",
+    "concept": "BigQuery export formats, Avro, Dataflow file reading, splittable formats"
+  },
+  {
+    "q": "A Pub/Sub subscription with ordering keys enabled receives messages. A message delivery fails and is retried. What happens to subsequent messages with the same ordering key?",
+    "opts": [
+      "They are delivered immediately regardless of the failed message",
+      "They are held back until the failed message is successfully acknowledged; Pub/Sub pauses delivery for that key to preserve ordering",
+      "They are delivered to a different subscription that doesn't have ordering",
+      "They are moved to the dead-letter topic automatically"
+    ],
+    "ans": 1,
+    "explain": "With ordering keys, Pub/Sub guarantees in-order delivery per key. If a message fails (not acked) and needs redelivery, Pub/Sub pauses delivery of subsequent messages with the same key until the failed message is successfully processed. This prevents out-of-order processing.",
+    "concept": "Pub/Sub ordering keys, ordered delivery semantics, retry behavior"
+  },
+  {
+    "q": "A Dataproc cluster uses Cloud Storage as HDFS equivalent (using gs:// URIs). What is a key performance difference compared to using HDFS?",
+    "opts": [
+      "Cloud Storage is always faster than HDFS for all workloads",
+      "HDFS provides data locality (computation runs on the node holding the data). Cloud Storage is network-attached; compute and storage are separate, so all data is transferred over the network. This adds latency but enables ephemeral clusters",
+      "Cloud Storage has the same latency as HDFS for random reads",
+      "Dataproc cannot use Cloud Storage; HDFS is required for all Spark workloads"
+    ],
+    "ans": 1,
+    "explain": "HDFS provides data locality — Spark tasks can be scheduled on nodes holding the data they process, minimizing network I/O. Cloud Storage has no data locality; all reads are network transfers. However, GCP's high-bandwidth internal network mitigates this significantly, and the ephemeral cluster model (no persistent HDFS cluster) more than compensates operationally.",
+    "concept": "Cloud Storage vs HDFS, data locality, Dataproc architecture"
+  },
+  {
+    "q": "A team needs to implement a streaming pipeline that joins two Pub/Sub streams: orders and payments, matching by order_id within a 5-minute window. Which Beam transform is used?",
+    "opts": [
+      "CoGroupByKey — combine two keyed PCollections (orders and payments keyed by order_id) and process matched pairs within a window",
+      "Standard SQL JOIN applied to both Pub/Sub topics",
+      "Dataflow side input — load payments as a side input from orders",
+      "Cloud Spanner as a join buffer: write both streams and query"
+    ],
+    "ans": 0,
+    "explain": "CoGroupByKey is Beam's multi-input join: key both PCollections on order_id; apply CoGroupByKey within a 5-minute window; process each order_id's grouped payments and orders together. This is the standard Beam pattern for streaming-to-streaming joins.",
+    "concept": "Beam CoGroupByKey, streaming-to-streaming join, windowed join"
+  },
+  {
+    "q": "You need to schedule a BigQuery export to Cloud Storage daily at 2 AM UTC. Which combination of GCP services is the most straightforward?",
+    "opts": [
+      "Cloud Composer DAG with BigQueryToCloudStorageOperator scheduled at 2 AM UTC",
+      "Cloud Scheduler triggering a Cloud Function that calls the BigQuery Jobs API to start an extract job; or use BigQuery Scheduled Queries with a Cloud Storage sink",
+      "Set BigQuery auto-export in dataset settings",
+      "Use Eventarc to trigger on a timer event"
+    ],
+    "ans": 1,
+    "explain": "Both Cloud Scheduler + Cloud Function and BigQuery Scheduled Queries can schedule daily BigQuery exports. Scheduled Queries (via Data Transfer Service) is simpler for pure BigQuery → GCS exports. Cloud Scheduler + Cloud Function is more flexible for custom logic. Cloud Composer adds orchestration overhead for a simple daily export.",
+    "concept": "Scheduled BigQuery exports, Cloud Scheduler, Data Transfer Service"
+  },
+  {
+    "q": "A new data engineer accidentally deletes a BigQuery table that is part of a critical pipeline. The table had no snapshots configured. What are the recovery options?",
+    "opts": [
+      "No recovery is possible if no backup exists",
+      "Use BigQuery table recovery: within 7 days, the table can be restored using bq cp 'project:dataset.table@-3600000' project:dataset.table_recovered (time travel); or use FOR SYSTEM_TIME AS OF to recover data before deletion",
+      "Contact Google Cloud Support — they can restore any deleted BigQuery table",
+      "Restore from the last nightly BigQuery export to Cloud Storage"
+    ],
+    "ans": 1,
+    "explain": "BigQuery time travel preserves data for 7 days after deletion. Use bq cp with a timestamp in milliseconds before deletion (@-3600000 = 1 hour ago) to copy the table to a new location. Even without configured snapshots, time travel provides automatic recovery within the retention window.",
+    "concept": "BigQuery time travel, table recovery, bq cp time travel, accidental deletion"
+  },
+  {
+    "q": "What is the maximum size of a single Pub/Sub message?",
+    "opts": [
+      "1 MB",
+      "10 MB",
+      "100 MB",
+      "1 GB"
+    ],
+    "ans": 1,
+    "explain": "Pub/Sub has a maximum message size of 10 MB. For data exceeding this, store the payload in Cloud Storage and publish only the GCS URI in the Pub/Sub message — the claim-check pattern. This is also more efficient for large payloads that don't benefit from Pub/Sub's routing features.",
+    "concept": "Pub/Sub limits, maximum message size, claim-check pattern"
+  },
+  {
+    "q": "A Dataflow pipeline writes to multiple BigQuery tables based on event type. Some tables receive millions of rows/sec, others receive only a few hundred. How does BigQueryIO handle this?",
+    "opts": [
+      "BigQueryIO cannot write to multiple tables in a single pipeline; create separate pipelines per table",
+      "Use BigQueryIO with a DynamicDestinations implementation that routes rows to different tables based on event type; BigQuery Storage Write API handles per-table throughput independently",
+      "All rows must go to a staging table first, then redistributed by a scheduled query",
+      "Set a separate maxStreamCount per destination table using BigQueryIO options"
+    ],
+    "ans": 1,
+    "explain": "BigQueryIO's DynamicDestinations interface allows a single pipeline to route rows to different tables based on row content. Implement getDestination(), getTable(), and getSchema() methods. Storage Write API manages separate write streams per destination, handling variable throughput automatically.",
+    "concept": "BigQueryIO DynamicDestinations, multi-table writes, dynamic routing"
+  },
+  {
+    "q": "You are running 100 Dataproc jobs daily, each creating and deleting its own cluster (ephemeral model). Job startup time (cluster creation) is 3-5 minutes. How can you reduce job startup time?",
+    "opts": [
+      "Use Dataproc initialization actions that cache common dependencies in Cloud Storage",
+      "Use Dataproc cluster creation with a pre-configured custom image baked with all dependencies; reduce initialization action complexity",
+      "Use persistent clusters instead of ephemeral clusters for all 100 jobs",
+      "Switch to Dataflow which doesn't require cluster creation"
+    ],
+    "ans": 1,
+    "explain": "Dataproc custom images pre-install all dependencies during image build time. When a cluster is created from the custom image, initialization actions are minimal or none — reducing startup from 5 minutes to 1-2 minutes. This is the most effective technique for accelerating ephemeral cluster startup.",
+    "concept": "Dataproc custom images, cluster startup optimization, ephemeral clusters"
+  },
+  {
+    "q": "Dataflow's Streaming Engine provides which key advantages over the standard (legacy) Dataflow streaming approach?",
+    "opts": [
+      "Streaming Engine is only for batch jobs; standard engine handles streaming",
+      "Streaming Engine moves state management and windowing operations to a scalable GCP-managed service, reducing worker memory requirements, enabling faster autoscaling, and providing better pipeline reliability versus the standard shuffle-on-worker approach",
+      "Streaming Engine is slower but provides better fault tolerance",
+      "Streaming Engine is required for all Dataflow pipelines since 2022"
+    ],
+    "ans": 1,
+    "explain": "Streaming Engine externalizes state and shuffle to a managed GCP service. Benefits: (1) workers need less memory (state is not on-worker); (2) autoscaling is faster (no state redistribution between workers); (3) more pipeline throughput per worker. It's strongly recommended for new streaming pipelines.",
+    "concept": "Dataflow Streaming Engine, externalized state, autoscaling, streaming performance"
+  },
+  {
+    "q": "You need to read 1 billion rows from BigQuery into a Dataflow pipeline as fast as possible. Which BigQueryIO read method is most appropriate?",
+    "opts": [
+      "BigQueryIO.read().from(tableRef) — default export-based read",
+      "BigQueryIO.read().from(tableRef).withMethod(Method.DIRECT_READ) — uses BigQuery Storage Read API for parallel, high-throughput streaming without intermediate GCS export",
+      "BigQueryIO.readTableRows() — optimized for large tables",
+      "BigQueryIO.read() with EXPORT then read the exported Avro files"
+    ],
+    "ans": 1,
+    "explain": "DIRECT_READ (BigQuery Storage Read API) streams data directly from BigQuery storage to Dataflow workers in parallel gRPC streams. This avoids the slow EXPORT method (write to GCS, then read GCS) and provides 10-100x better throughput. Essential for 1 billion row reads.",
+    "concept": "BigQuery Storage Read API, DIRECT_READ, high-throughput Dataflow reads"
+  },
+  {
+    "q": "You have a Cloud Data Fusion pipeline that transforms data from Cloud Storage to BigQuery. The pipeline runs daily and you want to process only new files (incremental). Which Data Fusion feature handles this?",
+    "opts": [
+      "Configure Cloud Data Fusion to delete processed files — only new files remain each run",
+      "Use the Delta plugin or configure the Cloud Storage Source with file tracking state to skip already-processed files in subsequent runs",
+      "Schedule the pipeline to run hourly and process all files each time",
+      "Use a Cloud Composer DAG to track processed files in a BigQuery table and pass new file lists to Data Fusion"
+    ],
+    "ans": 1,
+    "explain": "Cloud Data Fusion supports incremental processing via the file tracking plugin or Delta plugins that maintain state about previously processed files. This enables idempotent, incremental execution — only new/changed files are processed on each run without external state management.",
+    "concept": "Cloud Data Fusion incremental processing, file tracking, idempotent pipelines"
+  },
+  {
+    "q": "A Cloud Storage bucket receives CSV files from multiple vendors with slightly different schemas (some have an extra column). How should your Dataflow pipeline handle this?",
+    "opts": [
+      "Reject all files that don't match a strict schema",
+      "In the parsing DoFn, read each row as a generic map; apply per-vendor schema config to extract required fields; route unmappable rows to a dead-letter output. Use vendor ID from filename to select the correct schema config",
+      "Use BigQuery auto-detection — it handles schema differences automatically",
+      "Require all vendors to standardize their schemas before uploading"
+    ],
+    "ans": 1,
+    "explain": "Schema variation from multiple vendors is common. The robust pattern: (1) read each line as a string; (2) identify vendor from filename or header; (3) apply vendor-specific field mapping; (4) emit standard output records; (5) dead-letter unmappable rows. This handles schema evolution without pipeline restarts.",
+    "concept": "Multi-vendor schema handling, flexible parsing, DoFn pattern, dead-letter"
+  },
+  {
+    "q": "You need to ensure that all Dataflow jobs in your organization use private IPs (no public internet access). How do you enforce this at the organizational level?",
+    "opts": [
+      "Add --no_use_public_ips flag manually to every Dataflow job submission",
+      "Configure an Organization Policy constraint (compute.restrictCloudIPAddresses or Dataflow-specific policy) to require private IP; all Dataflow jobs in the org automatically use VPC private networking",
+      "Set a Terraform variable for all Dataflow job configurations",
+      "Train all engineers to use the --no_use_public_ips flag in their submissions"
+    ],
+    "ans": 1,
+    "explain": "Organization Policy constraints enforce infrastructure requirements at scale. The Dataflow-specific constraint or compute.requireShieldedVm + private networking constraints ensure all Dataflow jobs within the org/folder/project use private IPs. This is the only automated, policy-enforced approach.",
+    "concept": "Organization Policy constraints, Dataflow private networking, infrastructure policy"
+  },
+  {
+    "q": "A streaming Dataflow pipeline must process events in order per user_id. How do you guarantee ordered processing per key in Beam?",
+    "opts": [
+      "Beam processes all elements globally in timestamp order — no key-level configuration needed",
+      "Use stateful processing: apply a GroupByKey or a stateful DoFn with per-key-and-window state. Within a key-window, Beam delivers elements sorted by event timestamp when using sorted state buffers",
+      "Beam cannot guarantee ordered processing in streaming mode",
+      "Use Pub/Sub ordering keys — Beam inherits the order from Pub/Sub automatically"
+    ],
+    "ans": 1,
+    "explain": "Beam does not guarantee global ordering, but within a key-window in a stateful DoFn, you can maintain a sorted buffer of elements. Alternatively, use the Beam ordered list state (added in Beam 2.46+) which maintains sorted order per key. Pub/Sub ordering keys ensure ordered delivery to the source, but in-pipeline processing order still requires stateful handling.",
+    "concept": "Beam ordered processing, stateful DoFn, per-key ordering"
+  },
+  {
+    "q": "You need to replicate data from Cloud Spanner to BigQuery for analytics. Cloud Spanner is in a different project. What is the recommended approach?",
+    "opts": [
+      "Export Cloud Spanner to Cloud Storage as Avro, then load to BigQuery daily",
+      "Use Cloud Spanner Change Streams with a Dataflow template (SpannerChangeStreams to BigQuery) for near-real-time replication",
+      "Use Datastream for Cloud Spanner CDC (same as MySQL/PostgreSQL)",
+      "Use BigQuery federated queries to query Spanner directly — no replication needed"
+    ],
+    "ans": 1,
+    "explain": "Cloud Spanner Change Streams capture row-level changes as they occur. The managed Dataflow template 'Spanner Change Streams to BigQuery' reads from a Change Stream and writes incrementally to BigQuery with < 1 minute latency. This is Google's recommended pattern for Spanner → BigQuery analytics replication.",
+    "concept": "Spanner Change Streams, Spanner to BigQuery, near-real-time replication"
+  },
+  {
+    "q": "When running a Dataflow job, you want to monitor the fraction of keys that are 'hot' (processing significantly more elements than average). Which tool provides this?",
+    "opts": [
+      "Cloud Monitoring — Dataflow exports hot-key metrics automatically",
+      "Dataflow UI — the pipeline graph shows per-step element counts; a hot key is visible as a skewed distribution in the 'Elements added' metric per worker in the Dataflow job details",
+      "Dataflow logs in Cloud Logging — hot keys emit WARN-level log messages",
+      "BigQuery INFORMATION_SCHEMA — shows uneven data distribution"
+    ],
+    "ans": 1,
+    "explain": "The Dataflow monitoring UI shows per-step throughput metrics. Hot key skew is visible as some workers processing many more elements than others (visible in 'Wall time' and element count per worker). Dataflow also emits hot key warnings in Cloud Logging when the key skew exceeds a threshold.",
+    "concept": "Dataflow hot key detection, monitoring UI, skew visibility"
+  },
+  {
+    "q": "A Dataflow pipeline reads from Pub/Sub and writes to Cloud Storage in hourly batches. Which Beam windowing strategy correctly creates hourly output files?",
+    "opts": [
+      "Global window with a count-based trigger firing every 3600 seconds",
+      "FixedWindows of 1 hour; use FileIO.write().withNaming() to name output files by window start time",
+      "Session windows with a 1-hour gap duration",
+      "Use Dataflow's scheduled pipeline feature to trigger hourly batch writes"
+    ],
+    "ans": 1,
+    "explain": "FixedWindows (1 hour) creates a separate window for each hour. FileIO.write().withNumShards(N).withNaming(Contextful.fn(window -> window.start().toString())) names output files by window start time. This creates clean hourly partitioned output files.",
+    "concept": "Beam FixedWindows, FileIO windowed writes, hourly file batching"
+  },
+  {
+    "q": "Which Cloud Storage class would you use for data that is accessed multiple times per day and requires maximum availability and lowest latency?",
+    "opts": [
+      "Nearline",
+      "Standard",
+      "Coldline",
+      "Archive"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage Standard class: lowest latency, highest availability (99.99% for multi-region), no minimum storage duration, and no retrieval fee. Use Standard for frequently accessed data (hot data). Nearline/Coldline/Archive add retrieval fees and minimum storage durations, making them more expensive for frequent access.",
+    "concept": "Cloud Storage storage classes, Standard class, hot data storage"
+  },
+  {
+    "q": "What is the primary purpose of Dataproc Workflow Templates?",
+    "opts": [
+      "To replace Cloud Composer for all Dataproc orchestration needs",
+      "To define a complete multi-step Dataproc workflow (create cluster → run jobs → delete cluster) as a single reusable template that can be instantiated with parameters",
+      "To configure Dataproc cluster autoscaling policies",
+      "To store Dataproc job configurations in a version-controlled repository"
+    ],
+    "ans": 1,
+    "explain": "Dataproc Workflow Templates define a complete workflow: managed cluster lifecycle (create → jobs → delete) or use an existing cluster. Templates are parameterized and instantiated via API, gcloud, or Cloud Composer. They encapsulate the full cluster-create → multiple-job-run → cluster-delete pattern in a single atomic operation.",
+    "concept": "Dataproc Workflow Templates, cluster lifecycle automation, parameterized workflows"
+  },
+  {
+    "q": "A Dataflow batch pipeline processes 1 TB of data but only uses 5% of worker CPU. The job takes too long. What is the likely cause?",
+    "opts": [
+      "The pipeline is CPU-bound — increase machine type",
+      "The pipeline is I/O-bound: reading from Cloud Storage or writing to BigQuery is the bottleneck. Increase the number of workers to increase parallel I/O throughput",
+      "Dataflow batch pipelines cannot process more than 1 TB — migrate to Dataproc",
+      "Reduce the number of Dataflow transforms to decrease pipeline overhead"
+    ],
+    "ans": 1,
+    "explain": "Low CPU utilization with slow job execution indicates I/O bottleneck. The pipeline is waiting on data reads/writes, not computation. Increasing worker count adds more parallel I/O channels. Also: switch to DIRECT_READ for BigQuery sources; ensure Cloud Storage files are splittable (Avro/Parquet, not gzipped CSV).",
+    "concept": "Dataflow I/O bottleneck, worker scaling, CPU vs I/O bound pipelines"
+  },
+  {
+    "q": "What is Dataflow's 'Flexible Resource Scheduling' (FlexRS) MINIMUM delay?",
+    "opts": [
+      "30 seconds",
+      "6 hours",
+      "24 hours",
+      "No delay; FlexRS jobs start immediately"
+    ],
+    "ans": 1,
+    "explain": "Dataflow FlexRS jobs are guaranteed to start within 6 hours of submission (not immediately). Google GCP schedules them when Spot VM capacity is available. If you need jobs to start immediately, use standard batch mode. FlexRS reduces cost by ~40% in exchange for this scheduling flexibility.",
+    "concept": "Dataflow FlexRS, scheduling delay, Spot VM capacity"
+  },
+  {
+    "q": "You need to process JSON messages from Pub/Sub. Messages may contain nested arrays. Which Beam approach handles variable-depth JSON correctly?",
+    "opts": [
+      "Convert JSON to Protocol Buffers before publishing to Pub/Sub",
+      "In a DoFn, deserialize the JSON string using a JSON library (json.loads in Python, Gson in Java); access nested arrays via the resulting map/list structure; emit typed output records",
+      "Use BigQuery to parse JSON via JSON_VALUE() functions in a separate step",
+      "Flatten all JSON to a single level before publishing to Pub/Sub"
+    ],
+    "ans": 1,
+    "explain": "Variable-depth JSON is best handled in a DoFn with a JSON parsing library. This gives complete flexibility to navigate arbitrary nesting depth, handle optional fields, and emit structured output. Schema-on-read allows handling schema evolution without pipeline changes.",
+    "concept": "JSON parsing in Dataflow, nested JSON, schema-on-read, DoFn parsing"
+  },
+  {
+    "q": "A Pub/Sub topic has high publishing throughput (1 million messages/sec). Publishers are receiving RESOURCE_EXHAUSTED errors. What should you do?",
+    "opts": [
+      "Create multiple Pub/Sub topics and shard messages across them",
+      "Pub/Sub is fully managed and scales to millions of messages/sec automatically — RESOURCE_EXHAUSTED indicates a quota limit. Request a quota increase via Cloud Console, or ensure publisher clients are using batching and flow control",
+      "Add more Pub/Sub subscriptions to distribute load",
+      "Compress messages before publishing to reduce throughput"
+    ],
+    "ans": 1,
+    "explain": "Pub/Sub scales automatically but has per-project publish throughput quotas. RESOURCE_EXHAUSTED means a project-level quota is hit. Solutions: (1) request quota increase (for legitimate high-volume use cases); (2) ensure publishers use batching (reduce number of API calls); (3) enable publisher flow control to self-limit.",
+    "concept": "Pub/Sub quotas, RESOURCE_EXHAUSTED, publisher flow control, quota increase"
+  }
+]

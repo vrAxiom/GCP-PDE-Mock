@@ -1,0 +1,950 @@
+[
+  {
+    "q": "Your BigQuery table has 5 years of transaction data. Analysts query only the last 30 days. The table currently costs $8,000/month in query costs. What is the single most impactful optimization?",
+    "opts": [
+      "Enable BigQuery BI Engine for sub-second queries by reserving in-memory capacity over the full 5-year table, accelerating aggregations without changing the underlying scan cost",
+      "Partition the table on transaction_date and ensure queries include a date filter — BigQuery will prune irrelevant partitions",
+      "Cluster the table on customer_id to speed up individual customer queries via block-level pruning, while still scanning the full 5 years of column data on every analyst query",
+      "Move data older than 30 days to Cloud Storage Nearline and rebuild the table as a BigQuery external table pointing to GCS, expecting BigQuery to skip cold objects automatically"
+    ],
+    "ans": 1,
+    "explain": "Partitioning on transaction_date means queries with WHERE transaction_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) scan only 30 of 1,825 partitions — drastically reducing bytes scanned and cost.",
+    "concept": "BigQuery partitioning, partition pruning, cost optimization"
+  },
+  {
+    "q": "You need a database for a global e-commerce platform: strong consistency, ACID transactions, SQL queries, horizontal scaling, and 99.999% availability across 3 continents. Which database is the only GCP-native option meeting ALL requirements?",
+    "opts": [
+      "Cloud SQL with multi-region read replicas backed by HA failover and PostgreSQL logical replication for cross-continent reads, accepting eventual consistency on the replica side",
+      "Cloud Spanner with multi-region configuration",
+      "Firestore in Native mode with multi-region replication providing strong consistency for single-document reads but lacking full SQL JOIN support across collections at scale",
+      "BigQuery with ACID transactions via DML and multi-statement transactions, paired with the Storage Write API for transactional inserts at the analytical warehouse layer"
+    ],
+    "ans": 1,
+    "explain": "Cloud Spanner uniquely provides externally consistent ACID transactions, SQL support, horizontal scaling without re-sharding, and 99.999% SLA with multi-region configurations.",
+    "concept": "Cloud Spanner, global consistency, horizontal scaling, ACID transactions"
+  },
+  {
+    "q": "A financial application stores time-series account balances in Bigtable. Row keys are formatted as account_id#timestamp. Over time, performance degrades as recent data overwhelms older data with hotspot patterns. What is the root cause and fix?",
+    "opts": [
+      "Timestamps as the trailing part of row keys cause monotonically increasing keys, routing all new writes to the same tablet. Fix: reverse the timestamp or use a hashed prefix",
+      "Bigtable automatically handles time-series workloads via its internal tablet splitting algorithm — performance degradation is almost always caused by underlying SSD hardware aging on the cluster",
+      "The column family count is too high; consolidate down to a single column family with a unified GC policy so Bigtable can compact SSTables more aggressively across the cluster",
+      "Increase Bigtable node count to distribute tablet pressure linearly, since Bigtable automatically rebalances hotspots across additional nodes once they are provisioned in the cluster"
+    ],
+    "ans": 0,
+    "explain": "Sequential/monotonically increasing row keys create write hotspots — all new writes go to the last tablet. Reversing the timestamp scatters recent writes across all tablets.",
+    "concept": "Bigtable row key design, hotspot prevention, reversed timestamps"
+  },
+  {
+    "q": "You need to choose a Cloud Storage storage class for a disaster recovery archive that must be retained for 7 years but will only be accessed if a disaster occurs (< once per year). What class minimizes total cost?",
+    "opts": [
+      "Standard — highest availability for critical DR data with no minimum storage duration, but the highest per-GB storage rate making it cost-prohibitive at 7-year retention scale",
+      "Nearline — for data accessed less than once per month with a 30-day minimum storage duration and moderate retrieval fees, designed for warm backup workloads",
+      "Coldline — for data accessed less than once per quarter with a 90-day minimum storage duration, priced between Nearline and Archive for quarterly DR rehearsals",
+      "Archive — for data accessed less than once per year with 365-day minimum storage duration"
+    ],
+    "ans": 3,
+    "explain": "Cloud Storage Archive class is designed for data accessed fewer than once per year with the lowest storage cost ($0.0012/GB/month) — perfect for DR archives held for 7 years.",
+    "concept": "Cloud Storage storage classes, Archive, cost-access tradeoffs"
+  },
+  {
+    "q": "Which BigQuery feature allows you to query data in Cloud Storage (Parquet, ORC, CSV) without loading it into BigQuery native storage?",
+    "opts": [
+      "BigQuery Materialized Views over Cloud Storage objects, which precompute aggregations from GCS-resident Parquet files and refresh incrementally as new files land in the bucket prefix",
+      "BigQuery External Tables (using CREATE EXTERNAL TABLE or federated queries)",
+      "BigQuery Data Transfer Service with a Cloud Storage source connector, which loads GCS files into native BigQuery storage on a recurring schedule using managed extraction jobs",
+      "BigQuery Omni for multi-cloud queries, designed to run BigQuery SQL against data residing in AWS S3 or Azure Blob Storage via Anthos-managed compute in those clouds"
+    ],
+    "ans": 1,
+    "explain": "BigQuery External Tables allow SQL queries directly against data in Cloud Storage without ingestion. Supported formats include Parquet, ORC, CSV, Avro, JSON.",
+    "concept": "BigQuery External Tables, federated queries, Cloud Storage formats"
+  },
+  {
+    "q": "Your Firestore data model has a collection of 10 million 'orders' documents. A query filters on customer_id and then orders by created_at. What must you create to support this query efficiently?",
+    "opts": [
+      "A single-field index on customer_id only, which Firestore creates automatically and which is sufficient for any combined equality-and-ordering query across multiple fields",
+      "A composite index on (customer_id ASC, created_at ASC) — Firestore requires composite indexes for multi-field queries",
+      "No index needed; Firestore auto-indexes all fields and builds composite indexes on demand the first time a multi-field query pattern is observed by the query planner",
+      "A Collection Group index on all subcollections so the query planner can scan across nested order subcollections under each customer document for ordered range retrieval"
+    ],
+    "ans": 1,
+    "explain": "Firestore automatically creates single-field indexes. However, queries that filter on one field AND order/filter on another require a composite index — without it, Firestore returns an error.",
+    "concept": "Firestore composite indexes, query limitations, index management"
+  },
+  {
+    "q": "You are designing a BigQuery table for storing user events. The table receives 100K inserts/second via the Storage Write API. Which combination of settings ensures both ingest performance and query performance?",
+    "opts": [
+      "Partition by ingestion time (_PARTITIONTIME), cluster by user_id and event_type, use committed mode streams in Storage Write API",
+      "Use a single unpartitioned table with no clustering and rely on the Storage Write API's default pending mode to coalesce writes into a single optimized columnar block per second",
+      "Partition by user_id (string hash); the Storage Write API will auto-balance writes across hashed partitions and BigQuery will prune by user prefix at query time automatically",
+      "Enable materialized views over the raw stream — they replace the need for partitioning by precomputing user/event aggregations and serving them with sub-second query latency"
+    ],
+    "ans": 0,
+    "explain": "Ingestion-time partitioning auto-assigns rows to date partitions. Clustering on user_id and event_type enables efficient block elimination. Committed mode Storage Write API provides exactly-once guarantees.",
+    "concept": "BigQuery ingestion-time partitioning, clustering, Storage Write API"
+  },
+  {
+    "q": "A company needs to encrypt BigQuery data with their own encryption key stored in an on-premises HSM. Which solution supports this?",
+    "opts": [
+      "Default Google-managed encryption keys (GMEK), which encrypt all BigQuery data at rest transparently using Google-controlled KMS keys with no customer-side key custody",
+      "Customer-managed encryption keys (CMEK) using Cloud KMS with keys hosted in a Google-managed software keyring, optionally backed by Cloud HSM for FIPS 140-2 Level 3 compliance",
+      "Customer-supplied encryption keys (CSEK) via Cloud External Key Manager (Cloud EKM) pointing to on-premises HSM",
+      "AES-256 encryption applied at the application layer before insertion, with the application managing all key derivation locally and storing ciphertext as BYTES columns in BigQuery"
+    ],
+    "ans": 2,
+    "explain": "Cloud External Key Manager (Cloud EKM) allows GCP services to use encryption keys stored in third-party key management systems like on-premises HSMs. CSEK with Cloud EKM is the mechanism for using HSM-resident keys with BigQuery.",
+    "concept": "CMEK, CSEK, Cloud EKM, HSM integration, BigQuery encryption"
+  },
+  {
+    "q": "What is the maximum number of columns (fields) supported in a single BigQuery table?",
+    "opts": [
+      "1,000",
+      "10,000",
+      "15,000",
+      "Unlimited"
+    ],
+    "ans": 1,
+    "explain": "BigQuery supports up to 10,000 columns per table. Consider using nested STRUCT or ARRAY fields to group related columns in wide-table designs.",
+    "concept": "BigQuery limits, schema design, nested/repeated fields"
+  },
+  {
+    "q": "You want to ensure that a BigQuery dataset is only accessible from within your VPC and not from the public internet. Which control enforces this?",
+    "opts": [
+      "Set IAM bindings to domain-restricted sharing for your organization, which enforces an organization policy preventing principals outside the domain from being granted bigquery.dataViewer",
+      "Enable Private Google Access on the subnet and configure VPC Service Controls with an access level for the BigQuery API",
+      "Use a BigQuery authorized view to limit access by exposing only filtered rows and columns to consumers, while leaving the underlying dataset reachable from the public BigQuery API endpoint",
+      "Enable BigQuery Column-Level Security on all sensitive columns via Data Catalog policy tags, requiring datacatalog.fineGrainedReader on the taxonomy for any cross-network query access"
+    ],
+    "ans": 1,
+    "explain": "VPC Service Controls creates a security perimeter. Adding BigQuery to the perimeter and configuring access levels to allow only traffic from your VPC via Private Google Access ensures BigQuery is inaccessible from the public internet.",
+    "concept": "VPC Service Controls, Private Google Access, network-based access control"
+  },
+  {
+    "q": "What is the purpose of BigQuery's INFORMATION_SCHEMA and when would a data engineer use it?",
+    "opts": [
+      "It stores the actual data in BigQuery tables in an optimized columnar format and is the underlying physical storage layer queried whenever a SELECT runs against a logical table",
+      "It provides metadata views (TABLES, COLUMNS, JOBS, PARTITIONS, etc.) used for governance, auditing, and capacity planning",
+      "It is the UI layer for BigQuery Studio that powers the schema explorer panel, autocomplete suggestions, and the query history view shown in the Cloud Console",
+      "It contains GCP billing data for BigQuery usage, exposing per-project slot consumption and per-query bytes-billed values streamed from Cloud Billing export tables"
+    ],
+    "ans": 1,
+    "explain": "INFORMATION_SCHEMA is a set of read-only views exposing BigQuery metadata: table schemas, job history, partition info, slot usage. Data engineers use it to audit slow queries, monitor data freshness, and optimize reservations.",
+    "concept": "BigQuery INFORMATION_SCHEMA, metadata queries, operational monitoring"
+  },
+  {
+    "q": "Cloud Bigtable is being used to store IoT sensor readings (10M devices, 1 reading/second each). The SLA requires p99 read latency < 10ms. The cluster has 10 nodes and CPU is at 80%. What should you do?",
+    "opts": [
+      "Switch from Bigtable to Cloud Spanner for better read latency, since Spanner's TrueTime-backed reads can serve single-row lookups from a local zonal replica with sub-10ms tail latency at IoT scale",
+      "Add more Bigtable nodes — Bigtable performance scales linearly with node count",
+      "Enable Bigtable compression on column families to reduce on-disk I/O and improve read latency, since smaller SSTables mean fewer disk seeks per ReadRows call across the cluster",
+      "Increase the column family count and store more data per row to reduce round trips, since a single ReadRows can return all related cells in one RPC and drop p99 latency"
+    ],
+    "ans": 1,
+    "explain": "Bigtable's performance scales linearly with node count. At 80% CPU utilization with latency SLA risk, adding nodes is the correct action. Bigtable nodes can be added with no downtime.",
+    "concept": "Bigtable scaling, node count vs. performance, linear scalability"
+  },
+  {
+    "q": "You need to store machine learning model artifacts, training data, and prediction results, with different teams needing different access levels. Which Cloud Storage feature manages access at the folder/prefix level?",
+    "opts": [
+      "Cloud Storage Object Lifecycle Management rules with prefix-based filters, which transition objects between storage classes per team but do not enforce read/write permissions at the prefix level",
+      "Cloud Storage Uniform Bucket-Level Access with IAM Conditions on object names/prefixes",
+      "Cloud Storage Object ACLs for per-object access, manually applied to every artifact and training file so that each team has explicit reader or writer entries on its own objects",
+      "Cloud Storage HMAC keys for programmatic access control, where each team is issued an HMAC key scoped to a specific prefix of the bucket for signed request authentication"
+    ],
+    "ans": 1,
+    "explain": "Best practice is Uniform Bucket-Level Access with IAM Conditions. IAM Conditions on resource.name allow prefix-based policies (e.g., grant data-scientists access to gs://bucket/training-data/* only).",
+    "concept": "Cloud Storage IAM, Uniform Bucket-Level Access, IAM Conditions"
+  },
+  {
+    "q": "A data team wants to use BigQuery's time travel feature. A table was accidentally DROPped 4 days ago. Can they recover it?",
+    "opts": [
+      "No — dropped tables cannot be recovered through time travel; the FOR SYSTEM_TIME AS OF clause only operates on tables that currently exist in the dataset metadata catalog",
+      "Yes — BigQuery time travel retains table data for up to 7 days; use FOR SYSTEM_TIME AS OF to recover data. Dropped tables can be recovered with bq cp",
+      "No — time travel only applies to data-level changes from DML statements like INSERT, UPDATE, or DELETE, and is not retained for DDL operations such as DROP TABLE or TRUNCATE",
+      "Yes — but only if a BigQuery table snapshot was manually created with CREATE SNAPSHOT TABLE before the drop event, since snapshots are the only durable recovery primitive"
+    ],
+    "ans": 1,
+    "explain": "BigQuery's time travel window is 7 days by default. For a table dropped 4 days ago, query its data using FOR SYSTEM_TIME AS OF with a timestamp before the drop. The bq cp command can restore a dropped table within the retention window.",
+    "concept": "BigQuery time travel, table recovery, FOR SYSTEM_TIME AS OF"
+  },
+  {
+    "q": "You need to share a BigQuery dataset with an external partner without giving them direct table access. The partner needs to query a subset of columns and rows. What is the recommended approach?",
+    "opts": [
+      "Create an authorized view that filters columns and rows; grant the partner access to the view only in a separate dataset",
+      "Export the filtered data to a Cloud Storage bucket as Parquet files on a recurring schedule, then share the bucket with the partner's service account using IAM Conditions on the prefix",
+      "Enable BigQuery Data Transfer Service to push a filtered copy of the data to the partner's project on a daily schedule, replicating the subset of columns and rows they need",
+      "Grant the partner's service account roles/bigquery.dataViewer on the full table and rely on a row-level access policy plus column-level policy tags to restrict their visible subset"
+    ],
+    "ans": 0,
+    "explain": "Authorized views are the standard mechanism for row/column-level security. Create a view with SELECT on specific columns and WHERE filters, authorize it against the source dataset, then share only the view dataset with the external partner.",
+    "concept": "BigQuery authorized views, row/column security, cross-project sharing"
+  },
+  {
+    "q": "You have a Bigtable table with 500 billion rows. You need to perform a full table scan for a batch analytics job. Which Bigtable feature makes this efficient?",
+    "opts": [
+      "Bigtable does not support efficient full table scans for analytics; instead, export the table to BigQuery via the federated query connector and run all batch analytics from there",
+      "Use Bigtable's batch ReadRows API with row range scans; or export to Cloud Storage via Dataflow using the BigtableIO source for parallel scans",
+      "Enable Bigtable replication to a separate analytics-dedicated cluster and use single-cluster routing on an app profile so the analytics scan does not contend with serving traffic",
+      "Use Cloud Spanner federated queries against the Bigtable table by configuring an external data source pointing to the Bigtable instance and issuing a SQL SELECT over the rows"
+    ],
+    "ans": 1,
+    "explain": "Bigtable supports efficient range scans via ReadRows. For batch analytics, use Dataflow's BigtableIO source which parallelizes the scan across multiple workers, each reading a different key range. This provides linear-scale throughput.",
+    "concept": "Bigtable full table scan, BigtableIO, Dataflow parallel scan"
+  },
+  {
+    "q": "A Cloud Storage bucket has 100 TB of data across millions of objects. You need to automatically delete objects older than 90 days in a specific prefix. How do you configure this?",
+    "opts": [
+      "Write a Cloud Function that runs daily on a Cloud Scheduler trigger, lists all objects under the prefix, checks creation time against a 90-day threshold, and deletes matches via the GCS API",
+      "Configure a Cloud Storage Object Lifecycle Management rule: condition age=90 days + matches_prefix='old-data/'; action=Delete — GCP applies this automatically",
+      "Use gsutil rm with a date filter inside a Cloud Scheduler job that invokes a Cloud Run service to enumerate the prefix nightly and delete objects whose ctime is older than 90 days",
+      "Use Cloud Storage Retention Policies which enforce a minimum 90-day retention floor and automatically delete objects at the maximum retention boundary after the period expires"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage Lifecycle Management applies rules automatically. A rule with condition {age: 90, matchesPrefix: ['old-data/']} and action {type: Delete} runs continuously — GCP evaluates all objects against the rules without any manual scheduling.",
+    "concept": "Cloud Storage Lifecycle Management, automatic deletion, prefix-based rules"
+  },
+  {
+    "q": "What is the difference between Bigtable's 'column family' and 'column qualifier'?",
+    "opts": [
+      "Column family and column qualifier are functionally identical concepts in Bigtable's storage model and are used interchangeably in the API, with both defined at table creation time",
+      "Column family is a top-level grouping defined at table creation time (with its own GC policy); column qualifier is the actual column name within a family — a table has few families but potentially millions of unique qualifiers",
+      "Column family determines the row key format and sort order on disk, while column qualifier determines the encoded data type (string, int, double) of values inside each cell of the table",
+      "Column families are restricted to storing string and BYTES values while column qualifiers can only hold numeric types such as int64 and double, with type enforcement at write time"
+    ],
+    "ans": 1,
+    "explain": "Bigtable's schema: row key identifies the row; column families (defined at table creation, typically 1-5) group related columns with shared GC policies; column qualifiers are the actual column names within a family (can be dynamic, created on write). Data is stored as {row key, column family, column qualifier, timestamp} → value.",
+    "concept": "Bigtable schema design, column families, column qualifiers, GC policies"
+  },
+  {
+    "q": "You need to store semi-structured documents (user profiles with varying attributes) that require real-time single-document reads/writes and support for array-contains queries. Which GCP service is most appropriate?",
+    "opts": [
+      "BigQuery — supports a native JSON type for semi-structured data and JSON_VALUE extraction, but query latency starts in the hundreds of milliseconds and is unsuitable for per-request reads",
+      "Firestore — document model with ARRAY_CONTAINS queries, real-time updates, and sub-millisecond reads",
+      "Cloud Bigtable — wide-column store with flexible schemas where each user profile is one row and attributes are dynamic column qualifiers within a single column family per row",
+      "Cloud Spanner — relational with JSON column support, providing SQL JSON_VALUE access and array-contains semantics through UNNEST, but optimized for transactional rather than document workloads"
+    ],
+    "ans": 1,
+    "explain": "Firestore is purpose-built for semi-structured documents with real-time updates (onSnapshot listeners), sub-millisecond reads, and rich query support including ARRAY_CONTAINS. It scales to millions of concurrent connections automatically.",
+    "concept": "Firestore, document storage, ARRAY_CONTAINS, real-time updates"
+  },
+  {
+    "q": "A BigQuery table has 10 columns partitioned by date. A query uses WHERE transaction_date = '2024-01-15' AND UPPER(customer_name) = 'ALICE'. How much of the table does BigQuery scan?",
+    "opts": [
+      "Only the rows matching both predicates — BigQuery uses internal column-level zone maps to evaluate UPPER(customer_name) against block statistics and reads only matching rows from disk",
+      "One day's partition (transaction_date filter prunes partitions); within that partition, all rows are scanned since UPPER(customer_name) cannot use an index",
+      "Two days of partitions are read — BigQuery scans the target partition plus the adjacent calendar day as a safety buffer to account for late-arriving data in time-partitioned tables",
+      "Zero rows — the partition filter alone is sufficient for BigQuery's planner to determine that no matching data exists and short-circuit the query before scanning the partition contents"
+    ],
+    "ans": 1,
+    "explain": "BigQuery prunes partitions based on the transaction_date filter — only one day's data is read. Within that partition, BigQuery scans all rows (no secondary indexes) and then applies the UPPER(customer_name) = 'ALICE' filter. This is a key difference from traditional databases: BigQuery has no row-level indexes.",
+    "concept": "BigQuery partition pruning, no row-level indexes, scan behavior"
+  },
+  {
+    "q": "Which Cloud Spanner feature allows you to add new rows to an existing table without downtime and without locking existing rows?",
+    "opts": [
+      "Cloud Spanner DDL ALTER TABLE statements run as offline operations requiring a maintenance window, during which the affected table is locked against writes until the schema change is fully applied",
+      "Cloud Spanner supports online schema changes — DDL statements are applied asynchronously without locking reads/writes on existing data; rows get NULL for new columns until backfilled",
+      "Cloud Spanner requires creating a brand new table with the target schema, then migrating existing data via a Dataflow job and switching application traffic to the new table after backfill completes",
+      "Use Cloud Spanner database branching to apply schema changes on a branch and validate them against a staging traffic copy before atomically promoting the branch to the primary database"
+    ],
+    "ans": 1,
+    "explain": "Cloud Spanner's online schema changes apply DDL (ADD COLUMN, CREATE INDEX, etc.) asynchronously in the background while the database continues serving traffic. New columns default to NULL for existing rows. No downtime, no row locks.",
+    "concept": "Cloud Spanner online schema changes, DDL, zero-downtime migrations"
+  },
+  {
+    "q": "You need to design Bigtable row keys for a multi-tenant SaaS application. Each tenant has millions of records. Which row key design prevents hotspots while enabling efficient per-tenant queries?",
+    "opts": [
+      "tenant_id#record_id — groups all records for a tenant under a shared prefix and enables efficient per-tenant range scans without hashing or salting the leading bytes of the row key",
+      "Hashed tenant_id prefix (first 4 bytes of MD5(tenant_id))#record_id — distributes writes across tablets while allowing per-tenant range scans on a secondary index",
+      "Sequential auto-increment IDs as the row key — simple monotonically increasing keys that funnel all new writes onto the last tablet and create a sustained write hotspot in the cluster",
+      "Store each tenant in a separate Bigtable table — one table per tenant — and route queries to the correct table at the application layer based on the authenticated tenant's identifier"
+    ],
+    "ans": 0,
+    "explain": "tenant_id#record_id is actually correct for per-tenant queries (scans all rows with prefix tenant_id#). Hotspots occur when a SINGLE tenant generates all writes. If writes are spread across many tenants, tenant_id prefix is appropriate. Salting is needed only for single-tenant hotspots.",
+    "concept": "Bigtable multi-tenant row key design, prefix scans, hotspot analysis"
+  },
+  {
+    "q": "What is Cloud Storage's 'dual-region' configuration and when would you use it?",
+    "opts": [
+      "Dual-region stores two copies of each object in the same zone for higher durability against disk failures, with both replicas served from a single zonal frontend for low intra-region latency",
+      "Dual-region replicates data across two specific GCP regions with turbo replication option for < 15-minute RPO; use it for disaster recovery requiring geographic separation but predictable data location",
+      "Dual-region is identical in behavior to multi-region but limited to exactly two underlying regions, with the same eventual consistency semantics and no guaranteed turbo replication RPO",
+      "Dual-region is a cost-optimization tier that halves storage costs by splitting object data into two halves across two regions, requiring both regions online to reconstruct each object"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage dual-region provides georedundancy across two specific, paired regions (e.g., NAM4 = Iowa + South Carolina). Turbo replication guarantees < 15 minute RPO. Use dual-region when you need DR redundancy with predictable data location (vs. multi-region which uses multiple unpredictable regions).",
+    "concept": "Cloud Storage dual-region, turbo replication, RPO, geographic redundancy"
+  },
+  {
+    "q": "You need to implement a BigQuery table that automatically expires partitions older than 90 days to control storage costs. How do you configure this?",
+    "opts": [
+      "Write a Cloud Function that runs daily and issues DELETE statements against the partitioned column for any partition older than 90 days, triggered by Cloud Scheduler at midnight UTC",
+      "Set require_partition_filter=TRUE on the table and manually issue a DROP PARTITION DDL statement for each calendar day older than 90 days, scheduled through a BigQuery scheduled query",
+      "Configure partition expiration when creating the table: CREATE TABLE ... PARTITION BY DATE(event_time) OPTIONS(partition_expiration_days=90)",
+      "Use Cloud Storage Lifecycle Management to expire the underlying BigQuery partition files after 90 days by attaching a lifecycle rule to the dataset's managed storage bucket"
+    ],
+    "ans": 2,
+    "explain": "BigQuery supports partition-level expiration natively. When creating a table, set partition_expiration_days in the OPTIONS clause. BigQuery automatically deletes partitions older than 90 days — no external automation needed.",
+    "concept": "BigQuery partition expiration, automatic data lifecycle, storage cost control"
+  },
+  {
+    "q": "A Bigtable table stores click events with row key = user_id#reverse_timestamp. A Dataflow pipeline needs to read the last 10 clicks for each user for real-time processing. What is the efficient read pattern?",
+    "opts": [
+      "Issue a full table scan via ReadRows across all row ranges, then apply a per-user top-10 sort transform inside the Dataflow pipeline using a GroupByKey on user_id with a LIMIT 10",
+      "For each user, read the first 10 rows from the row range [user_id#, user_id$) — due to reverse timestamps, the first 10 rows are the most recent 10 clicks",
+      "Read all rows for user_id by issuing an unbounded prefix scan, then perform an in-memory sort by timestamp inside the Dataflow worker before emitting the top 10 most recent events",
+      "Use a Bigtable secondary index defined on the timestamp column to look up the last 10 events per user, leveraging the index's internal ordering to skip the bulk of the row range scan"
+    ],
+    "ans": 1,
+    "explain": "With reversed timestamps, the most recent events sort lexicographically first within the user's key prefix. A row range scan [user_id#, user_id$) with a row limit of 10 returns the 10 most recent events in a single RPC — O(1) regardless of total event count.",
+    "concept": "Bigtable prefix scan, reversed timestamp row key, efficient reads"
+  },
+  {
+    "q": "BigQuery supports two types of external tables: regular external tables and BigLake tables. What is the key difference?",
+    "opts": [
+      "BigLake tables support only the Parquet columnar format while regular external tables support every supported format (Parquet, ORC, Avro, CSV, JSON) including delimited text files",
+      "BigLake tables support fine-grained access control (row/column policies), Cloud DLP integration, and data sharing across projects. Regular external tables bypass access policies — BigLake adds a centralized security and governance layer",
+      "Regular external tables execute faster than BigLake tables for ad-hoc queries because BigLake adds a policy evaluation layer that imposes per-query overhead during predicate planning",
+      "BigLake tables require BigQuery Enterprise Edition reservations while regular external tables work with any edition including on-demand billing, with no policy enforcement at the storage layer"
+    ],
+    "ans": 1,
+    "explain": "BigLake extends external tables with centralized governance: row access policies, column masking (DLP integration), and project-independent access control. Regular external tables have no row/column security. BigLake tables can be shared via Analytics Hub with consistent policy enforcement.",
+    "concept": "BigLake vs external tables, governance, access control, DLP integration"
+  },
+  {
+    "q": "You need to migrate a 200 TB Cloud Spanner database to a different Spanner instance in a different region. What is the recommended approach?",
+    "opts": [
+      "Use Cloud Spanner database branching to create a branch in the target region, then promote the branch atomically once cutover validation is complete on the application side",
+      "Export the Spanner database to Cloud Storage using the Dataflow Spanner export template; import to the target instance using the Spanner import template",
+      "Use Cloud Spanner cross-region replication to continuously mirror the database to the target region and then change the primary instance pointer once replicas catch up",
+      "Use Datastream for Spanner-to-Spanner change data capture migration, streaming row-level changes from the source instance into the destination instance with at-least-once delivery"
+    ],
+    "ans": 1,
+    "explain": "Cloud Spanner export/import: use the managed Dataflow template 'Cloud Spanner to GCS Avro' to export to Cloud Storage, then 'GCS Avro to Cloud Spanner' to import. For large databases, schedule during off-peak; the export captures a consistent snapshot.",
+    "concept": "Cloud Spanner export/import, Dataflow Spanner templates, cross-region migration"
+  },
+  {
+    "q": "A team needs BigQuery tables to be accessible to Looker but inaccessible to direct SQL clients. What mechanism restricts direct BigQuery SQL access?",
+    "opts": [
+      "BigQuery cannot distinguish between Looker traffic and traffic from direct SQL clients such as the bq CLI at the API authentication layer; all requests appear identical to the IAM resolver",
+      "Use BigQuery OAuth scopes to restrict which client applications can obtain access tokens for the dataset, binding scope hashes to Looker's service account credential issuance pipeline",
+      "IAM conditions in BigQuery cannot reference the client application name or user agent string, so this kind of client-type restriction is not expressible directly through the conditions language",
+      "This cannot be accomplished with BigQuery IAM alone; you would need VPC Service Controls access levels that allowlist Looker's IP ranges while blocking other clients"
+    ],
+    "ans": 3,
+    "explain": "BigQuery IAM grants/denies access to resources but cannot distinguish client applications. VPC Service Controls access levels can restrict access based on IP ranges or device attributes — allowlist Looker's cloud infrastructure IPs while blocking direct client access. This is the closest mechanism available.",
+    "concept": "VPC Service Controls, access levels, BigQuery client restriction"
+  },
+  {
+    "q": "Which Cloud Spanner feature provides an automatically managed, low-latency read-only replica in the same region as your application?",
+    "opts": [
+      "Cloud Spanner read replicas must be explicitly configured per zone via the CREATE INSTANCE CONFIG DDL statement, with replication topology defined manually at instance setup time",
+      "Cloud Spanner read-only replicas are automatic — every Spanner database has read-only replicas in each zone of the configured region. Use read-only transactions or stale reads to route to local replicas",
+      "Configure Cloud Spanner with a multi-region instance configuration to enable read replicas, since single-region Spanner instances serve all reads from a single zonal voting replica",
+      "Deploy a Cloud SQL for PostgreSQL read replica alongside the Spanner instance to absorb read traffic, configured via logical replication from the Spanner change streams API"
+    ],
+    "ans": 1,
+    "explain": "Cloud Spanner automatically maintains replicas in each zone of the configured region. To use them efficiently, use read-only transactions (no locking) or bounded staleness reads (stale_read) which can be served from the nearest replica without requiring a global quorum.",
+    "concept": "Cloud Spanner read replicas, read-only transactions, stale reads, local serving"
+  },
+  {
+    "q": "What BigQuery feature allows you to create a virtual dataset in your project that points to an authorized dataset in another project, without copying data?",
+    "opts": [
+      "BigQuery Authorized Views created in your project that issue SELECT statements against the remote project's dataset, requiring per-view authorization on each underlying source table",
+      "BigQuery dataset links (linked datasets) created by Analytics Hub — subscribers get a virtual dataset in their project that mirrors the publisher's data in real-time without copying",
+      "BigQuery Cross-Project Queries using the fully qualified project.dataset.table syntax, which requires the querying principal to hold dataViewer directly on the source project's dataset",
+      "BigQuery Data Transfer Service configured with a BigQuery source connector that incrementally copies the source dataset into the destination project's dataset on a recurring schedule"
+    ],
+    "ans": 1,
+    "explain": "Analytics Hub linked datasets: the publisher creates a listing; the subscriber adds a linked dataset to their project. The linked dataset appears as a regular BigQuery dataset but reads directly from the publisher's data. No data copy, no storage cost for subscriber.",
+    "concept": "Analytics Hub, linked datasets, cross-project data sharing, no-copy"
+  },
+  {
+    "q": "A Bigtable table experiences high read latency after adding a new application that issues many small reads. The cluster CPU is low (20%). What is the likely cause and fix?",
+    "opts": [
+      "Low CPU utilization at 20% indicates the cluster is undersized for the read workload, so add more nodes to spread the read load across additional tablet servers and reduce per-RPC latency",
+      "The new application is reading many individual cells, causing high RPC overhead. Fix: redesign reads to use row range scans (read multiple rows per RPC) or batch point reads using ReadRows with multiple RowSet entries instead of one-RPC-per-row",
+      "Enable Bigtable column-family compression to reduce I/O per read and lower the latency of each individual RPC, since smaller block sizes translate directly into faster ReadRow responses",
+      "Bigtable replication between clusters is causing read-write conflicts that increase tail latency on point reads, so disable replication on the affected app profile to restore baseline performance"
+    ],
+    "ans": 1,
+    "explain": "Low CPU + high latency = network RPC overhead, not compute limitation. Many individual single-row reads generate excessive RPCs. Batching: use a single ReadRows call with a RowSet containing multiple row keys, or redesign to scan ranges rather than point lookups.",
+    "concept": "Bigtable read optimization, batch reads, RPC overhead, RowSet"
+  },
+  {
+    "q": "You need to store JSON configuration documents that are read thousands of times per second by microservices. Documents update infrequently (once per hour). Which storage option provides the best read latency and throughput?",
+    "opts": [
+      "Cloud SQL with a JSON column queried by the microservices on every incoming request, relying on the Cloud SQL Auth Proxy and a PgBouncer connection pool to absorb the read concurrency",
+      "Firestore — sub-millisecond document reads with automatic scaling to millions of reads per second, built-in caching, and global distribution suitable for per-request configuration lookups",
+      "Cloud Storage — read the JSON configuration file directly from a regional bucket on each microservice request, accepting 10-100ms object-read latency in exchange for low storage cost",
+      "BigQuery external tables defined over a Cloud Storage JSON file, accessed via federated SQL queries from each microservice each time a configuration value lookup is needed at runtime"
+    ],
+    "ans": 1,
+    "explain": "Firestore provides sub-millisecond document reads at unlimited scale. For configuration documents read thousands of times per second, Firestore is ideal: built-in caching, automatic global distribution, and no connection management. Cloud Storage reads have 10-100ms latency — too slow for per-request configuration reads.",
+    "concept": "Firestore, high-throughput reads, configuration storage, sub-millisecond latency"
+  },
+  {
+    "q": "A BigQuery dataset uses column-level security with policy tags. An analyst queries a table and gets 'Access Denied' on specific columns. How do you grant them access without removing security?",
+    "opts": [
+      "Remove the policy tag from those columns so they are no longer subject to the taxonomy-level access check, which makes the columns universally readable to anyone with dataset-level dataViewer",
+      "Grant the analyst the roles/datacatalog.categoryFineGrainedReader role on the specific policy tag (taxonomy node) — this grants access to tagged columns without changing the underlying policy",
+      "Add the analyst to the dataset's IAM with the roles/bigquery.dataViewer role, since dataset-level dataViewer overrides any column-level taxonomy restrictions defined via Data Catalog tags",
+      "Build a BigQuery authorized view that explicitly selects the restricted columns and share the view with the analyst, bypassing the policy tag check at the underlying source table level"
+    ],
+    "ans": 1,
+    "explain": "Column-level security with policy tags: access to tagged columns requires roles/datacatalog.categoryFineGrainedReader on the specific tag. Grant this role to the analyst on the taxonomy node for the specific policy tag. This is additive — other users without this role still have column access denied.",
+    "concept": "BigQuery column-level security, policy tags, Fine-Grained Reader, taxonomy"
+  },
+  {
+    "q": "You need to run a SQL query in BigQuery that must complete in under 10 seconds and return results from a 50 TB table. The table is partitioned by date and clustered by region. The query filters by date range and region. What do you verify?",
+    "opts": [
+      "Check that the BigQuery project has sufficient on-demand bytes-billed quota available to scan the entire 50 TB table within the daily project-level cap configured by the billing administrator",
+      "Verify the query includes both the date filter (enabling partition pruning) and the region filter (enabling cluster block elimination); these filters ensure BigQuery scans a small fraction of the 50 TB",
+      "Enable BigQuery BI Engine on the table for in-memory column acceleration by reserving 250 GB of BI Engine capacity in the dataset's region to absorb the working set at query time",
+      "Create a BigQuery materialized view that pre-aggregates the commonly queried date and region combinations so the query reads from the materialized view rather than the underlying 50 TB table"
+    ],
+    "ans": 1,
+    "explain": "For this 50 TB table, the query must include both the partition key (date) in the WHERE clause for partition pruning AND the clustering key (region) for block elimination. Both filters together reduce the scan to a tiny fraction of 50 TB, enabling sub-10-second execution.",
+    "concept": "BigQuery partition pruning + cluster block elimination, query optimization, large tables"
+  },
+  {
+    "q": "What is Cloud Storage's default consistency model?",
+    "opts": [
+      "Eventual consistency — reads may return stale data for a short window after a write while replicas converge across the bucket's region, with no read-after-write guarantee for new objects",
+      "Strong consistency — read-after-write is immediately consistent for all operations including list operations after object creation, deletion, or metadata updates",
+      "Monotonic read consistency only — guarantees you see your own writes once observed but does not guarantee that writers in different sessions see each other's writes in real time",
+      "Session consistency — consistency is guaranteed within a single HTTP session against the same Cloud Storage endpoint but not across sessions or across different client connections"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage provides strong consistency for all operations: after a successful write, the new object is immediately visible to all readers (including list operations). This changed from eventual consistency in November 2020. No read-your-own-writes lag exists.",
+    "concept": "Cloud Storage consistency model, strong consistency, read-after-write"
+  },
+  {
+    "q": "A Bigtable cluster is performing poorly on random reads. Key analysis shows reads are uniformly distributed across the key space. CPU is at 70%. What is the recommended optimization?",
+    "opts": [
+      "Redesign the row key for better access locality so random reads can be coalesced into prefix range scans, reducing the per-RPC overhead and improving p99 read latency across the cluster",
+      "Add more Bigtable nodes — random reads with 70% CPU indicates compute saturation; linear scaling with nodes applies",
+      "Enable Bigtable caching by deploying a Cloud Memorystore Redis cluster in front of Bigtable with a write-through pattern, absorbing point lookups before they reach the Bigtable tablet servers",
+      "Compress all column families using the snappy compression codec to reduce on-disk I/O per read, with the expectation that smaller SSTables will translate directly into lower random-read latency"
+    ],
+    "ans": 1,
+    "explain": "Uniformly distributed random reads with 70% CPU means the cluster is near saturation. Bigtable performance scales linearly with node count — adding nodes directly increases read throughput and reduces latency. This is the correct action when key design is already optimal.",
+    "concept": "Bigtable linear scaling, random read performance, node count"
+  },
+  {
+    "q": "You need to implement a BigQuery table where analysts can only see their own department's data (10 departments, 10 million rows each). Which implementation is most maintainable at scale?",
+    "opts": [
+      "Create 10 separate BigQuery tables, one per department, and grant each department's analyst group dataViewer on only their corresponding table within the shared dataset",
+      "Create 10 BigQuery authorized views, each with a department-specific WHERE clause filter, and grant each department's group access only to the view that filters to their department",
+      "Use BigQuery Row Access Policies (CREATE ROW ACCESS POLICY) with SESSION_USER() or IAM group binding per department; one table, automatic row filtering",
+      "Use column-level encryption per department by encrypting each row's payload with a department-specific KMS key, then distributing decryption permissions to each department's analyst group"
+    ],
+    "ans": 2,
+    "explain": "Row Access Policies scale elegantly: CREATE ROW ACCESS POLICY emea_policy ON table GRANT TO GROUP 'emea-analysts@company.com' FILTER USING (department = 'EMEA'). Create one policy per department. All 10 departments share one table; each analyst automatically sees only their rows.",
+    "concept": "BigQuery Row Access Policies, row-level security, multi-tenant data"
+  },
+  {
+    "q": "Cloud SQL for PostgreSQL is running at 100% disk I/O. The database handles 10,000 writes/second. What is the most effective scaling action?",
+    "opts": [
+      "Add more CPU cores to the Cloud SQL instance by upgrading the machine type, expecting that additional vCPU capacity will reduce the disk I/O bottleneck on write-heavy workloads",
+      "Increase the storage size — Cloud SQL on SSD automatically provisions more IOPS as storage size increases; or upgrade to a larger instance with more IOPS",
+      "Enable Cloud SQL read replicas in additional zones to offload disk I/O from the primary instance, expecting writes to be distributed across the primary plus the new read replicas",
+      "Enable Cloud SQL's automatic storage increase feature so that storage grows automatically with usage; this raises the storage ceiling but does not affect the underlying provisioned IOPS"
+    ],
+    "ans": 1,
+    "explain": "Cloud SQL IOPS scale with storage size on SSD: larger storage = more IOPS (3,000 IOPS per 1 TB minimum). If I/O is the bottleneck, increase storage provisioning to get more IOPS. Also consider upgrading instance tier for higher IOPS limits or enabling Cloud SQL Enterprise Plus.",
+    "concept": "Cloud SQL scaling, IOPS, storage-based IOPS scaling"
+  },
+  {
+    "q": "You need to archive 500 TB of BigQuery data to Cloud Storage for long-term retention (10 years) at minimum cost. Data may be queried occasionally. What is the optimal approach?",
+    "opts": [
+      "Keep all of the data in active BigQuery storage and rely on the automatic long-term storage pricing tier, which halves the per-GB rate after 90 days of no table modifications",
+      "Export BigQuery data to Cloud Storage Archive class as Parquet files; create BigQuery external tables for occasional queries; delete from BigQuery native storage",
+      "Export the 500 TB to Cloud Storage Coldline class as compressed Avro files and accept that the data will be unqueryable from BigQuery and only readable by direct GCS object download",
+      "Keep the data in BigQuery Standard Edition and rely on BigQuery's automatic archival tier that moves inactive table partitions to Cloud Storage Archive after 90 days of inactivity"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage Archive class at $0.0012/GB/month vs BigQuery native storage long-term at $0.01/GB/month — 8x cheaper. Export as Parquet to preserve queryability via BigQuery external tables when needed. This reduces storage cost by 8x while maintaining SQL access.",
+    "concept": "BigQuery archival, Cloud Storage Archive vs BigQuery long-term pricing, external tables"
+  },
+  {
+    "q": "A multi-region BigQuery dataset spans US and EU. A query is run by a user in Asia. Where does BigQuery execute the query?",
+    "opts": [
+      "BigQuery routes the query to the physically nearest region (Asia) by spinning up ephemeral query compute in the user's nearest available BigQuery edge region before returning results",
+      "BigQuery executes the query in the region where the dataset is stored — for US multi-region, computation happens in a US region; the query result is returned to the user regardless of their location",
+      "BigQuery replicates the dataset to Asia automatically on first query from an Asian user, caching a regional copy of the table for subsequent queries from the same user's geographic region",
+      "Query routing is user-configurable via the --location flag on the bq CLI, which causes BigQuery to materialize the dataset in the chosen location and execute the query there at runtime"
+    ],
+    "ans": 1,
+    "explain": "BigQuery compute is co-located with data storage. A query against a US multi-region dataset runs in a US region. Data never moves — results are returned to the user over the network. This is why data residency requirements must be set at dataset creation.",
+    "concept": "BigQuery compute-storage co-location, query execution location, data residency"
+  },
+  {
+    "q": "What is the maximum number of partitions a BigQuery table can have?",
+    "opts": [
+      "365 (one per day for one year)",
+      "4,000",
+      "10,000",
+      "Unlimited"
+    ],
+    "ans": 2,
+    "explain": "BigQuery supports up to 10,000 partitions per table (for date/timestamp partitioned tables). For integer range partitioning, the maximum is also 10,000 partitions. Design partition granularity accordingly — daily partitioning supports ~27 years of data within this limit.",
+    "concept": "BigQuery partition limits, table design, partition count"
+  },
+  {
+    "q": "You need to enable Bigtable's automated backups for a production table. What are the backup characteristics?",
+    "opts": [
+      "Bigtable backups must be manually triggered through the Cloud Bigtable Admin API each time, and there is no native scheduled backup mechanism — third-party tooling is required to automate the cadence",
+      "Bigtable supports scheduled automated backups. You configure a backup schedule on a cluster; backups are stored within the same Bigtable instance and can be restored to create a new table",
+      "Bigtable backups are full table copies that are automatically exported to a Cloud Storage bucket in the same region as the source cluster, with one backup object created per column family",
+      "Bigtable backups replicate the source data to a different Cloud project entirely, providing project-level isolation for disaster recovery scenarios where the source project is compromised"
+    ],
+    "ans": 1,
+    "explain": "Bigtable scheduled backups: configure a BackupSchedule on a cluster (e.g., daily at 2 AM). Backups are stored within the Bigtable service (not Cloud Storage). Backup retention is configurable (up to 90 days). Restore creates a new Bigtable table from the backup.",
+    "concept": "Bigtable automated backups, backup schedules, restore"
+  },
+  {
+    "q": "Which BigQuery feature provides sub-second query performance on dashboards by caching results in memory on dedicated, reserved VMs?",
+    "opts": [
+      "BigQuery Materialized Views, which store pre-computed aggregation results on disk and incrementally refresh as the base table changes, accelerating dashboard queries that match the view's SQL",
+      "BigQuery BI Engine — an in-memory analysis service that accelerates Looker and Looker Studio queries without changing SQL syntax",
+      "BigQuery Reservations configured with the highest priority slot pool and reserved capacity for the BI workload, which guarantees slot availability for dashboard queries during peak hours",
+      "BigQuery query cache, which retains identical query results for 24 hours and serves them from cache for any subsequent query with the exact same SQL hash and referenced table generations"
+    ],
+    "ans": 1,
+    "explain": "BigQuery BI Engine reserves in-memory capacity (1-250 GB) and accelerates SQL queries for BI tools. Eligible queries (simple aggregations, filters on cached columns) return in milliseconds. Unlike the query cache (exact query match), BI Engine caches column data and accelerates diverse queries on the same table.",
+    "concept": "BigQuery BI Engine, in-memory acceleration, sub-second BI queries"
+  },
+  {
+    "q": "You need to store 1 petabyte of data in BigQuery. What is the most cost-effective storage approach assuming most data is never queried?",
+    "opts": [
+      "Keep all of the data in active BigQuery storage at the standard per-GB rate since BigQuery natively supports petabyte-scale tables and applies no surcharge for table size beyond active rates",
+      "Use BigQuery's active vs long-term pricing: data not modified for 90+ consecutive days automatically moves to long-term pricing ($0.01/GB vs $0.02/GB/month), saving 50%",
+      "Export the entire petabyte to Cloud Storage Archive class and rebuild all BigQuery objects as external tables, eliminating BigQuery managed storage entirely in favor of cheaper GCS rates",
+      "Use BigQuery Reservations with a committed annual plan, which includes free included storage up to a quota that scales with the size of the purchased baseline slot reservation"
+    ],
+    "ans": 1,
+    "explain": "BigQuery's long-term storage pricing is automatic: tables/partitions not modified for 90 days are charged at half price ($0.01/GB/month vs $0.02/GB/month). For 1 PB of mostly-inactive data, this saves ~$10,000/month. No manual archival required.",
+    "concept": "BigQuery long-term storage pricing, 90-day threshold, automatic cost reduction"
+  },
+  {
+    "q": "A data engineering team needs Cloud Spanner to handle a sudden 10x traffic spike. What scaling action is fastest?",
+    "opts": [
+      "Add more Cloud Spanner nodes manually via the console or gcloud — provisioning takes 10-15 minutes to take effect, and the application must wait for capacity before the spike can be absorbed",
+      "Spanner autoscaling automatically adjusts node count (processing units) within configured bounds in minutes with no manual intervention",
+      "Create a second Cloud Spanner instance in the same region and distribute traffic across both instances at the application layer using a client-side sharding scheme keyed on tenant_id",
+      "Scale up the underlying database machine type via an ALTER DATABASE statement to a higher tier, since Spanner exposes a machine_type knob analogous to Cloud SQL instance tier upgrades"
+    ],
+    "ans": 1,
+    "explain": "Cloud Spanner supports autoscaling: configure min/max processing units; Spanner automatically scales within bounds. This is faster than manual node addition. For immediate burst handling, ensure the max is set high enough before the spike. Spanner also handles traffic spikes gracefully within its provisioned capacity.",
+    "concept": "Cloud Spanner autoscaling, processing units, traffic spike handling"
+  },
+  {
+    "q": "You need to store genomic data (billions of VCF records) with complex queries (gene_id, chromosome, position range). Which storage option supports this best?",
+    "opts": [
+      "Cloud SQL for PostgreSQL with native range partitioning on the chromosome column and a B-tree index on (gene_id, position), suitable for moderate row counts but not for billions of VCF records",
+      "BigQuery with partitioning on chromosome and clustering on gene_id — enables efficient range scans on position with sub-minute query times",
+      "Cloud Bigtable with a row key of chromosome#position designed for range scans and a column family per analysis pipeline, providing low-latency point reads at the cost of analytic SQL support",
+      "Firestore with genomic-specific compound indexes on (chromosome, gene_id, position) and document-per-VCF storage, leveraging Firestore's automatic indexing for compound equality and range filters"
+    ],
+    "ans": 1,
+    "explain": "BigQuery is ideal for genomic analytics: partition by chromosome (ranges 1-22 + X, Y, MT), cluster by gene_id and position. Complex analytical SQL queries (window functions, joins with gene annotations) run at petabyte scale. BigQuery also integrates with Vertex AI for ML on genomic features.",
+    "concept": "BigQuery genomics, partitioning and clustering for range queries, scientific analytics"
+  },
+  {
+    "q": "What is a Cloud Spanner 'split' and why does it matter for performance?",
+    "opts": [
+      "A split is a manual operation invoked via DDL to divide a large Cloud Spanner table into smaller physical tables, requiring the DBA to define split boundaries and migrate rows accordingly",
+      "A split is how Spanner automatically divides data across servers (SpanNodes) for horizontal scaling. Poor row key design (sequential IDs) can cause hotspots where new rows always land on the same split. Use UUIDs or hashed keys to distribute splits evenly",
+      "A split creates a read-only replica of a Spanner database for geographic distribution, enabling reads from a secondary region without acquiring a global quorum for read-only transactions",
+      "A split is a Cloud Spanner backup copy stored in a different region for disaster recovery, automatically created by Spanner whenever a database exceeds a configured size threshold"
+    ],
+    "ans": 1,
+    "explain": "Spanner automatically splits data across servers to distribute load. Sequential row keys (auto-increment IDs) concentrate writes on the 'last' split — creating hotspots. Use random/UUIDs or bit-reversed sequence keys to ensure new rows land on different splits evenly.",
+    "concept": "Cloud Spanner splits, hotspot prevention, key design, horizontal distribution"
+  },
+  {
+    "q": "You need to configure a BigQuery reservation for a batch ETL workload and a separate reservation for interactive analytics, ensuring ETL jobs don't starve analytics users of slots. How do you configure this?",
+    "opts": [
+      "Create a single BigQuery Reservation with HIGHEST priority assigned to analytics queries and rely on BigQuery's internal slot scheduler to deprioritize ETL jobs when interactive load spikes",
+      "Create two separate BigQuery Reservations (ETL_RESERVATION and ANALYTICS_RESERVATION); create Assignments for each project/folder; configure slot counts appropriately — each workload gets isolated slots",
+      "Use BigQuery on-demand pricing for the interactive analytics workload and a dedicated reservation for the ETL workload, expecting on-demand queries to bypass the reservation and run independently",
+      "Set the job priority to INTERACTIVE for the analytics queries and BATCH for the ETL queries — BigQuery's scheduler will automatically prioritize INTERACTIVE jobs over BATCH jobs in any contention window"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Reservations provide slot isolation. Create ETL_RESERVATION with dedicated slots assigned to ETL projects/folders; create ANALYTICS_RESERVATION with slots assigned to analytics projects. Each workload uses only its reserved slots — neither can starve the other. Idle slots can optionally be shared via reservation idle slot sharing.",
+    "concept": "BigQuery Reservations, workload isolation, slot assignments, multi-workload management"
+  },
+  {
+    "q": "A Bigtable instance has 3 clusters for replication (us-central1, europe-west1, asia-east1). A write arrives at the us-central1 cluster. When is it available in europe-west1?",
+    "opts": [
+      "Immediately — Bigtable uses synchronous replication that requires a write to be committed at all clusters before the originating client receives an acknowledgement back from the API",
+      "Within a few seconds — Bigtable replication is asynchronous; writes replicate in the background with typical latency of seconds. Reads from europe-west1 may serve stale data briefly",
+      "Within 1 hour — Bigtable replication batches changes hourly and pushes the accumulated change log to peer clusters via a background replication job that runs on a fixed cadence",
+      "Within 24 hours — Bigtable replication runs as a daily batch process that mirrors changes between clusters once per day to minimize cross-region network egress costs at scale"
+    ],
+    "ans": 1,
+    "explain": "Bigtable replication is asynchronous. Writes committed at one cluster replicate to others with typically seconds of lag (similar to Google's global network replication speed). Applications that require zero replication lag must use single-cluster routing and accept the geographic latency tradeoff.",
+    "concept": "Bigtable replication, asynchronous replication, replication lag, multi-cluster"
+  },
+  {
+    "q": "You need to efficiently store and query a 100 TB financial dataset where queries frequently join a 100 TB transactions table with a 10 GB accounts table. What BigQuery design minimizes query time?",
+    "opts": [
+      "Store both tables separately as normalized BigQuery tables and let BigQuery's distributed broadcast-join planner handle performance, since the 10 GB accounts table is small enough to be broadcast",
+      "Denormalize: JOIN accounts into transactions at ingestion time, creating a single wide table. Alternatively, use a materialized view that pre-joins frequently used combinations",
+      "Use Cloud Bigtable to store the transactions table for low-latency point reads and BigQuery to store the accounts table, joining them at query time through a Dataflow streaming pipeline",
+      "Create a separate BigQuery table per account, each containing only that account's transactions, and query the union of relevant per-account tables on demand via a UNION ALL pattern"
+    ],
+    "ans": 1,
+    "explain": "For a 100 TB × 10 GB join executed frequently: pre-join at ingestion (denormalize the 10 GB accounts into transactions) creates a single wide table eliminating the join overhead entirely. Alternatively, materialize the joined result. 100 TB joins are expensive — pre-computation amortizes the cost.",
+    "concept": "BigQuery denormalization, pre-joining, large table join optimization, materialized views"
+  },
+  {
+    "q": "What is Cloud SQL's connection limit and how do you handle connection exhaustion in a high-concurrency application?",
+    "opts": [
+      "Cloud SQL has unlimited concurrent connections by default and any connection errors observed by the client are caused by application-side socket leaks rather than instance-level limits",
+      "Cloud SQL has per-instance connection limits (varies by instance tier: ~4,000 for large instances). Connection pooling via Cloud SQL Proxy or PgBouncer prevents connection exhaustion by sharing a smaller pool of database connections across many application threads",
+      "Switch to Cloud Spanner instead of Cloud SQL because Spanner imposes no concurrent connection limit and scales transparently with the application's outbound connection count",
+      "Raise the Cloud SQL connection ceiling by issuing an ALTER SYSTEM SET max_connections statement directly against the PostgreSQL instance, then restarting the instance for the change to take effect"
+    ],
+    "ans": 1,
+    "explain": "Cloud SQL connection limits: a connections-per-second limit and a maximum concurrent connections limit (varies by tier). High-concurrency apps exhaust connections without pooling. Cloud SQL Auth Proxy with PgBouncer (for PostgreSQL) or ProxySQL (for MySQL) implement connection pooling — many app threads share fewer DB connections.",
+    "concept": "Cloud SQL connection limits, connection pooling, PgBouncer, Cloud SQL Auth Proxy"
+  },
+  {
+    "q": "You need to implement a data lineage system that automatically captures how BigQuery tables are created from upstream sources. Which GCP service provides this natively?",
+    "opts": [
+      "Cloud Audit Logs combined with a manual lineage reconstruction pipeline that parses BigQuery jobCompleted log entries and extracts source/destination relationships from query SQL text",
+      "Dataplex Lineage API — automatically captures lineage events from BigQuery DML/DDL operations, Dataflow jobs, and Data Fusion pipelines without instrumentation",
+      "BigQuery INFORMATION_SCHEMA.JOBS_BY_PROJECT queried on a recurring basis with a custom SQL parser that extracts referenced tables from each job's submitted query text and stores edges in a graph",
+      "Apache Atlas deployed on a Dataproc cluster with custom Hive and BigQuery hooks that emit lineage events to the Atlas metadata catalog whenever a downstream consumer processes a dataset"
+    ],
+    "ans": 1,
+    "explain": "Dataplex Lineage API auto-captures lineage: when a BigQuery CREATE TABLE AS SELECT runs, Dataplex records the source tables and destination. Dataflow and Data Fusion jobs also emit lineage events automatically. The resulting lineage graph shows upstream and downstream dependencies for any data asset.",
+    "concept": "Dataplex Lineage API, automatic lineage capture, BigQuery lineage"
+  },
+  {
+    "q": "Which Cloud Storage feature prevents objects from being deleted or overwritten for a specified retention period, useful for regulatory compliance?",
+    "opts": [
+      "Cloud Storage Object Versioning, which keeps all previous versions of an object whenever it is overwritten or deleted, allowing administrators to restore any previous state on demand",
+      "Cloud Storage Retention Policies on buckets — objects cannot be deleted until the policy duration expires. Retention Lock makes the policy itself irremovable",
+      "Cloud Storage Lifecycle Management rules configured to block delete operations based on object age and prefix conditions, enforcing a hold against any user-initiated delete request",
+      "IAM deny policies attached to the bucket that prevent deletion by all users including project owners and administrators for the configured retention duration of the regulatory window"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage Retention Policies: set a minimum retention duration on a bucket. Objects cannot be deleted or overwritten until the policy duration expires from the creation/modification time. Locking the policy makes it permanent and cannot be shortened — required for SEC Rule 17a-4 and similar regulations.",
+    "concept": "Cloud Storage retention policies, compliance, retention lock, WORM storage"
+  },
+  {
+    "q": "A BigQuery table has JSON data stored as STRING columns. Queries need to extract values using JSON_VALUE() functions. What are the performance implications?",
+    "opts": [
+      "JSON_VALUE() applied to STRING columns performs identically to direct access on natively typed columns because BigQuery's planner detects JSON-shaped strings and applies the same column scan optimizations",
+      "JSON_VALUE() on STRING columns requires parsing the JSON string at query time for every row scanned — significantly slower and more CPU-intensive than native typed columns or the BigQuery JSON type",
+      "BigQuery caches JSON parsing results internally after the first query, so the first run against a STRING-backed JSON column is slow but every subsequent query of any kind is served from cache",
+      "STRING columns containing JSON outperform STRUCT columns because they avoid the per-row schema metadata overhead that STRUCT introduces during columnar block decoding at scan time"
+    ],
+    "ans": 1,
+    "explain": "JSON stored as STRING requires runtime parsing via JSON_VALUE(). For large tables, this CPU overhead is significant. Better alternatives: (1) use BigQuery's native JSON type (optimized internal storage with lazy parsing); (2) use STRUCT columns for known schemas; (3) parse at ingestion time into typed columns.",
+    "concept": "BigQuery JSON performance, JSON_VALUE overhead, schema design"
+  },
+  {
+    "q": "You need to create a BigQuery table that stores user events. The table will be queried 90% of the time by user_id and event_type. You also need to occasionally run full table scans. Which design is optimal?",
+    "opts": [
+      "No partitioning and no clustering, since full table scans must read every block regardless of layout and adding clustering would only add overhead without benefit to either workload pattern",
+      "Partition by _PARTITIONTIME (ingestion time) and cluster by user_id, event_type. Queries filtering by user_id and event_type eliminate blocks; full scans are unaffected by clustering overhead",
+      "Cluster by user_id and event_type without partitioning, relying on cluster-block elimination alone to optimize the 90% of user-filtered queries since the table will be scanned in full periodically",
+      "Partition by user_id directly to enable per-user partition pruning, accepting that this design will create up to one BigQuery partition per distinct user_id value at ingestion time"
+    ],
+    "ans": 1,
+    "explain": "Ingestion-time partitioning limits the total data scanned by date for most queries. Clustering by user_id, event_type enables block elimination for the 90% of user_id/event_type queries within each partition. Full table scans are not penalized by clustering — they read all blocks regardless. This is the optimal combination.",
+    "concept": "BigQuery partitioning and clustering combination, block elimination, full scan behavior"
+  },
+  {
+    "q": "You need to implement cross-region disaster recovery for a Bigtable production cluster. A failure in us-central1 should automatically failover reads to europe-west1. How do you configure this?",
+    "opts": [
+      "Manually update the application's DNS records to point at the europe-west1 Bigtable cluster endpoint after detecting a failure in us-central1, then redeploy the application to pick up the new target",
+      "Configure a multi-cluster Bigtable instance with clusters in us-central1 and europe-west1; use an app profile with multi-cluster routing (any-cluster). On failure, Bigtable automatically routes requests to the available cluster",
+      "Enable Bigtable cross-region replication and configure a Cloud Load Balancing backend service in front of the two cluster endpoints, using HTTP(S) health checks to drive automatic regional failover",
+      "Switch from Bigtable to Cloud Spanner for the workload because Bigtable does not support automatic failover between clusters and Spanner is the only GCP database with native multi-region failover"
+    ],
+    "ans": 1,
+    "explain": "Bigtable multi-cluster routing: create two clusters (us-central1 + europe-west1) in a single Bigtable instance; configure an app profile with routing_policy=multi-cluster-use-any. If us-central1 becomes unavailable, Bigtable automatically routes to europe-west1 — no application changes needed.",
+    "concept": "Bigtable multi-cluster routing, automatic failover, disaster recovery, app profiles"
+  },
+  {
+    "q": "What is the difference between BigQuery's ARRAY and STRUCT types and when would you use each?",
+    "opts": [
+      "ARRAY and STRUCT are functionally identical complex types in BigQuery — both store multiple values inside a single column, and the choice between them is purely a question of stylistic preference",
+      "ARRAY stores an ordered list of same-type values (e.g., ARRAY<STRING>). STRUCT stores named fields of different types (like a row within a row). Use ARRAY for repeated values of one type; use STRUCT for grouping related fields; use ARRAY<STRUCT<...>> for repeated nested records",
+      "ARRAY is restricted to storing numeric primitive types such as INT64 and FLOAT64 while STRUCT is the only complex type that supports string, date, and timestamp values inside the same field grouping",
+      "STRUCT is the BigQuery replacement for traditional row-level normalization while ARRAY is the recommended replacement for table-to-table joins, eliminating the need for relational schema design"
+    ],
+    "ans": 1,
+    "explain": "BigQuery's nested data model: ARRAY<T> is a repeated field of a single type (e.g., list of tags). STRUCT<field1 TYPE1, field2 TYPE2> nests multiple named fields. ARRAY<STRUCT<...>> represents repeated nested records (e.g., an array of order line items). These enable storing denormalized hierarchical data efficiently.",
+    "concept": "BigQuery ARRAY and STRUCT, nested data model, denormalization"
+  },
+  {
+    "q": "Cloud SQL for PostgreSQL needs to handle geospatial queries (ST_Within, ST_Distance). Which extension provides this capability?",
+    "opts": [
+      "Cloud SQL for PostgreSQL includes geospatial query support natively through a built-in GEOMETRY column type that exposes ST_Within and ST_Distance functions without any extension being enabled",
+      "PostGIS extension — enable it with CREATE EXTENSION postgis; provides geometry/geography types and spatial functions. Cloud SQL for PostgreSQL fully supports PostGIS",
+      "Cloud SQL Geospatial API, a managed GCP service exposed as a separate endpoint for executing spatial queries against tables stored in any Cloud SQL for PostgreSQL instance in the project",
+      "BigQuery GIS functions invoked via a federated query from Cloud SQL into BigQuery, since Cloud SQL itself cannot evaluate ST_Within or ST_Distance and must delegate spatial work to BigQuery"
+    ],
+    "ans": 1,
+    "explain": "PostGIS is the standard PostgreSQL geospatial extension. Cloud SQL for PostgreSQL supports PostGIS — enable it via CREATE EXTENSION postgis. This provides: geometry/geography data types, spatial indexes (GiST), and spatial functions (ST_Within, ST_Distance, ST_Intersection) required for geospatial queries.",
+    "concept": "Cloud SQL PostGIS, geospatial queries, PostgreSQL extensions"
+  },
+  {
+    "q": "A BigQuery project is shared by 50 teams. One team runs a rogue query that scans the entire 100 TB dataset daily, causing slot contention. How do you prevent this?",
+    "opts": [
+      "Grant the offending team only the roles/bigquery.dataViewer role at the dataset level, since read-only access prevents the team from consuming any slot capacity during query execution",
+      "Set a maximum bytes billed per query on that team's project (service account); add BigQuery project-level quotas for max bytes per day. Use BigQuery Reservations to isolate slot pools per team",
+      "Revoke the team's BigQuery access entirely until they formally agree in writing to follow query optimization best practices, then reinstate dataset-level permissions after a training session",
+      "Use BigQuery authorized views to limit the data the team can see by exposing only a filtered subset of rows and columns, with the expectation that this also limits their slot consumption"
+    ],
+    "ans": 1,
+    "explain": "Two controls: (1) maximum bytes billed per query prevents individual runaway queries; (2) per-project daily byte quotas cap total consumption. BigQuery Reservations provide slot isolation — the rogue team's Reservation limits their slots without affecting other teams.",
+    "concept": "BigQuery cost controls, bytes billed limits, per-project quotas, Reservations isolation"
+  },
+  {
+    "q": "You need to implement a BigQuery table clone for development testing without incurring the full storage cost of a copy. Which BigQuery feature provides this?",
+    "opts": [
+      "BigQuery table copy via the bq cp command, which creates a full physical copy of the source table in the destination dataset with storage billed at the standard active storage rate per byte",
+      "BigQuery table clone (CREATE TABLE ... CLONE) — creates a zero-storage-cost clone using copy-on-write semantics; only changed rows incur additional storage",
+      "BigQuery table snapshot via CREATE SNAPSHOT TABLE, which creates a read-only point-in-time copy of the source table where unchanged data is shared but writes are not permitted on the snapshot",
+      "BigQuery materialized view that precomputes and stores a query result against the source table, refreshing incrementally as the base table changes and behaving like a derived dev copy"
+    ],
+    "ans": 1,
+    "explain": "BigQuery table clones use copy-on-write: CREATE TABLE dev.events CLONE prod.events creates a logical copy that references the original data. Storage cost is zero until rows are modified in the clone. Only changed/added rows in the clone incur storage cost — perfect for dev/test without the 100% storage overhead of a full copy.",
+    "concept": "BigQuery table clone, copy-on-write, zero-storage-cost development tables"
+  },
+  {
+    "q": "Firestore's maximum document size is 1 MB. A design stores large text blobs (up to 10 MB) in documents. How should you redesign this?",
+    "opts": [
+      "Apply GZIP compression to the large text blobs at the application layer so each compressed payload fits inside the 1 MB Firestore document limit, then decompress on the read side at runtime",
+      "Store the large blobs in Cloud Storage; store the GCS URI in the Firestore document as a reference. Firestore documents contain only metadata and the pointer to the blob",
+      "Split each oversized document into multiple sub-documents under a subcollection so that each child sub-document stays under the 1 MB limit, then reassemble them on read at the client",
+      "Switch from Firestore to Cloud Spanner for the workload because Spanner has no per-row payload size limit and can store the entire 10 MB blob inline within a single relational row"
+    ],
+    "ans": 1,
+    "explain": "The Firestore pattern for large blobs: store metadata (title, author, timestamps, tags) in Firestore for fast querying; store the actual blob (PDF, large text, media) in Cloud Storage. The Firestore document includes the GCS URI. Applications fetch metadata from Firestore and the blob from GCS separately.",
+    "concept": "Firestore document limits, blob storage pattern, Firestore + Cloud Storage"
+  },
+  {
+    "q": "You need to implement a BigQuery access pattern where different users see different versions of the same data (some see real values, some see masked values, some see NULL). Which feature set implements this with a single underlying table?",
+    "opts": [
+      "Create three separate BigQuery tables with different data variants for each user group and grant each group dataViewer access only on the table that corresponds to their masking requirement",
+      "BigQuery Dynamic Data Masking: create masking rules (NULL_MASK, DEFAULT_MASK, SHA256_MASK, etc.) on policy-tagged columns; bind different masking rules to different IAM principals — same table, different views depending on user",
+      "Use three BigQuery authorized views, each with a CASE WHEN SESSION_USER() expression that branches the column projection based on the current authenticated user identity at query time",
+      "Use BigQuery Row Access Policies with different FILTER USING conditions per user group, expecting the row filter to also mask out column values based on the requesting principal's group membership"
+    ],
+    "ans": 1,
+    "explain": "Dynamic Data Masking allows multiple masking rules on the same column: Admin group → unmasked values; Analyst group → SHA256 hash; External group → NULL. All groups query the same table — BigQuery applies the appropriate mask at query time based on the user's group membership.",
+    "concept": "BigQuery Dynamic Data Masking, multiple masking rules, role-based data views"
+  },
+  {
+    "q": "What is the recommended row key design for a Bigtable table storing user clickstream events where you need to: (1) retrieve all events for a user, (2) retrieve the last N events for a user, and (3) avoid hotspots?",
+    "opts": [
+      "user_id#event_id with sequential numeric event_ids, providing simple per-user prefix scans but causing the trailing sequential portion to concentrate new writes on the last tablet under high load",
+      "Hashed_user_id (8 chars)#reverse_timestamp#event_id — hash prefix distributes writes across tablets; reverse timestamp sorts recent events first within each user",
+      "timestamp#user_id as the primary key ordering, enabling time-based range scans across all users globally but funneling all current writes onto the most recent timestamp tablet at any moment",
+      "event_id alone as a fully random UUID, providing excellent write distribution and no hotspots but eliminating any ability to do efficient per-user prefix range scans on the row key"
+    ],
+    "ans": 1,
+    "explain": "This design achieves all three requirements: (1) hashed_user_id prefix scatters writes across tablets preventing hotspots for any single user; (2) all events for a user share the same hashed prefix enabling prefix scans; (3) reverse_timestamp within the prefix sorts recent events first — limit N returns the N most recent events.",
+    "concept": "Bigtable row key design, multi-criteria optimization, hash prefix, reversed timestamp"
+  },
+  {
+    "q": "BigQuery supports which of the following transaction isolation levels for DML operations?",
+    "opts": [
+      "Read Uncommitted — the fastest option available but can read dirty data from in-flight transactions that have not yet committed their changes to the underlying table storage",
+      "Serializable isolation for all DML operations, which acquires range locks on the affected rows and guarantees full serial ordering of concurrent DML statements against any table",
+      "Snapshot isolation — DML reads a consistent snapshot at statement start; concurrent DML is detected at commit and retried automatically",
+      "No isolation level is provided for DML — concurrent UPDATE and DELETE statements against the same table may produce undefined or non-deterministic results in the persisted storage"
+    ],
+    "ans": 2,
+    "explain": "BigQuery DML uses snapshot isolation: each statement reads data from a consistent snapshot taken at statement start. Concurrent DML statements can run simultaneously; conflicts are detected at commit time and BigQuery retries the conflicting statement automatically (up to 5 times).",
+    "concept": "BigQuery DML isolation, snapshot isolation, concurrent DML, ACID"
+  },
+  {
+    "q": "You need to store time-series metrics for 10,000 servers, each emitting 100 metrics per second. Queries need: (1) last 5 minutes of any metric for one server, (2) aggregate across all servers for a specific metric. Which Bigtable row key design serves both patterns?",
+    "opts": [
+      "server_id#metric_name#timestamp serves the per-server query well, but cross-server metric aggregation must scan the entire table because the metric_name component is not at the leading position",
+      "metric_name#server_id#reverse_timestamp — serves both: metric aggregation via metric_name prefix scan; per-server metric via metric_name#server_id prefix; reverse timestamp gives recency",
+      "timestamp#server_id#metric_name supports time-windowed scans across all servers but creates a sustained write hotspot at the leading edge of time, since all new writes share the latest timestamp",
+      "server_id#reverse_timestamp#metric_name serves per-server queries efficiently but forces metric aggregation queries to perform a full table scan because metric_name is not a leading prefix"
+    ],
+    "ans": 1,
+    "explain": "metric_name#server_id#reverse_timestamp serves both access patterns: (1) scan prefix metric_name#server_id# with row limit 300 for last 5 minutes (300 = 5 min × 60 sec × 1 reading/sec per metric); (2) scan prefix metric_name# for cross-server aggregation. Reverse timestamp avoids hotspots on current time.",
+    "concept": "Bigtable multi-pattern row key design, time-series metrics, cross-server aggregation"
+  },
+  {
+    "q": "A Cloud Storage bucket is accessed from both GCP and on-premises. On-premises access is slow. What can improve performance?",
+    "opts": [
+      "Enable Cloud CDN in front of the Cloud Storage bucket, which caches frequently accessed objects in Google edge POPs near the on-premises location and serves them with low TTL latency",
+      "Convert the bucket to a Cloud Storage multi-region configuration so that object replicas are automatically placed in the region geographically closest to the on-premises data center",
+      "Deploy a storage proxy on-premises using Cloud Storage FUSE or a Cloud Storage client library with transfer optimization; also use Cloud Interconnect for dedicated bandwidth instead of public internet",
+      "Migrate the data out of Cloud Storage and into Cloud SQL because Cloud SQL has lower latency for on-premises access patterns and exposes a TCP endpoint that can be reached over VPN"
+    ],
+    "ans": 2,
+    "explain": "Cloud Storage over public internet has variable latency. Cloud Interconnect provides dedicated, low-latency, high-bandwidth connectivity to GCP from on-premises. Additionally, use the Cloud Storage client library's parallel composite uploads/downloads and JSON API resumable uploads to maximize throughput.",
+    "concept": "Cloud Storage on-premises access, Cloud Interconnect, transfer optimization"
+  },
+  {
+    "q": "You need to implement a system where BigQuery table access is automatically revoked after 30 days of inactivity. What is the mechanism?",
+    "opts": [
+      "BigQuery automatically revokes IAM bindings after 30 days of dataset inactivity by default through a built-in cleanup process that runs as part of the BigQuery managed identity lifecycle",
+      "Use IAM Conditions with a date expression (request.time < timestamp('2024-03-01')) to create time-bound IAM bindings; or implement a Cloud Function that checks last query date from INFORMATION_SCHEMA.JOBS and revokes access if > 30 days",
+      "Use BigQuery audit logs to generate a monthly 30-day access report listing principals who have not queried the dataset, and manually revoke IAM bindings for the listed inactive principals",
+      "Use Dataplex IAM policies on the underlying lake asset with time-based access conditions on the resource hierarchy that automatically expire dataset-level bindings on the configured cadence"
+    ],
+    "ans": 1,
+    "explain": "GCP IAM supports time-based conditions: bind roles with condition request.time < timestamp('date'). For dynamic 30-day windows, implement a Cloud Scheduler + Cloud Function that checks INFORMATION_SCHEMA.JOBS per user for query activity in the last 30 days and removes IAM bindings for inactive users.",
+    "concept": "IAM Conditions, time-based access, automated access revocation, INFORMATION_SCHEMA"
+  },
+  {
+    "q": "What is the purpose of BigQuery's 'require_partition_filter' table option?",
+    "opts": [
+      "It requires BigQuery to use a partition filter for all queries on the table — queries without a partition filter in the WHERE clause are rejected with an error",
+      "It enables automatic partition pruning on all queries against the table by injecting an implicit partition filter at query plan time based on observed query patterns over recent history",
+      "It requires all rows inserted into the table to specify an explicit partition value through the _PARTITIONTIME pseudo-column rather than relying on ingestion-time partition assignment",
+      "It prevents any single query against the table from referencing more than one partition at a time, forcing per-partition iteration when multi-partition results are needed by the application"
+    ],
+    "ans": 0,
+    "explain": "Setting require_partition_filter=TRUE on a BigQuery partitioned table forces all queries to include a filter on the partitioned column. Queries without the filter are rejected: 'Error: Cannot query over table without a filter that can be used for partition elimination.' This prevents accidental full table scans on large partitioned tables.",
+    "concept": "BigQuery require_partition_filter, query guardrails, partition safety"
+  },
+  {
+    "q": "A BigQuery dataset needs to be shared with users who are not in your GCP organization. What is the correct sharing mechanism?",
+    "opts": [
+      "Cross-organization sharing in BigQuery is blocked by default org policy and there is no IAM mechanism available to grant access to identities outside the source GCP organization boundary",
+      "Grant IAM roles directly to external users' Google accounts (gmail.com or Workspace accounts) on the BigQuery dataset — BigQuery IAM supports non-org identities; or use Analytics Hub for structured data exchange",
+      "Create a service account dedicated to external collaboration and securely share the JSON key file with the external user, who then authenticates as that service account to query the dataset",
+      "External users must first create a new GCP project within your organization and accept an invitation, after which they can be granted BigQuery roles on the shared dataset as internal identities"
+    ],
+    "ans": 1,
+    "explain": "BigQuery IAM supports granting access to any Google account (including @gmail.com accounts outside your organization). Grant roles/bigquery.dataViewer on the specific dataset to the external user's email address. Analytics Hub provides a more structured data exchange mechanism with subscription management.",
+    "concept": "BigQuery cross-organization sharing, external IAM, Analytics Hub"
+  },
+  {
+    "q": "Explain the difference between Bigtable's 'Read Rows' and 'Sample Row Keys' API calls and when each is used.",
+    "opts": [
+      "Read Rows and Sample Row Keys are aliases for the same underlying API call within the Bigtable client library and can be used interchangeably to retrieve actual row data from the cluster",
+      "Read Rows retrieves actual row data (all cells or specified cell sets). Sample Row Keys returns approximate boundary keys that divide the table into roughly equal segments — used by parallel job frameworks (Dataflow BigtableIO) to split scans across multiple workers without reading data",
+      "Sample Row Keys is a streaming low-latency API for continuous reads while Read Rows is a batch-mode API designed only for one-shot retrieval of historical data with higher tail latency",
+      "Read Rows is optimized for small tables under 1 TB while Sample Row Keys is the only supported API for tables that exceed 1 TB of total stored data across all column families and rows"
+    ],
+    "ans": 1,
+    "explain": "SampleRowKeys is the split planning API: it returns ~1000 boundary keys per cluster node, enabling Dataflow/MapReduce to create parallel scan ranges. Each worker then calls ReadRows on its assigned key range. Without SampleRowKeys, parallel frameworks would have to scan sequentially.",
+    "concept": "Bigtable SampleRowKeys, parallel scan planning, Dataflow BigtableIO"
+  },
+  {
+    "q": "A BigQuery table is updated every hour via a scheduled query. Analysts notice that their materialized views over this table sometimes show stale data. Why?",
+    "opts": [
+      "BigQuery materialized views do not refresh automatically and require an explicit CALL BQ.REFRESH_MATERIALIZED_VIEW statement to be executed before each downstream analytical query",
+      "BigQuery materialized views have a maximum staleness of 30 minutes by default. If the base table changes within the last refresh cycle, the materialized view serves slightly stale data. Queries can use the max_staleness option or trigger manual refresh",
+      "BigQuery materialized views always display data from the previous calendar day's table state because the refresh job runs once per 24 hours on the BigQuery managed maintenance window",
+      "BigQuery materialized views are never stale because they are refreshed synchronously with every commit on the base table through an internal change data capture mechanism in the storage engine"
+    ],
+    "ans": 1,
+    "explain": "BigQuery materialized views refresh incrementally when queried (if the base table changed). The default max staleness is 30 minutes — if you query within 30 minutes of a base table change, BigQuery serves the last cached result. Use OPTIONS(max_staleness=INTERVAL '1' MINUTE) for lower staleness tolerance.",
+    "concept": "BigQuery materialized view staleness, refresh cycle, max_staleness option"
+  },
+  {
+    "q": "You are designing a multi-region BigQuery architecture where the same analytical queries need to run in both the US and EU on locally stored copies of the data. What is the most operational approach?",
+    "opts": [
+      "Write the data to two separate BigQuery datasets (one US, one EU) from the application pipeline; maintain identical schemas and rely on application-level coordination for ordering",
+      "Use BigQuery Cross-Region Replication (when available) or set up two separate pipeline sinks (US dataset + EU dataset) from a shared Pub/Sub topic; use Cloud Composer to ensure both are synchronized",
+      "Use a single BigQuery multi-region dataset (e.g., US multi-region) and rely on BigQuery to automatically route queries to the underlying nearest region without any application-level configuration",
+      "Use Datastream to continuously replicate BigQuery tables between the US and EU regions on a per-row change data capture stream that mirrors every DML statement applied on the source dataset"
+    ],
+    "ans": 1,
+    "explain": "For multi-region BigQuery with local data: write from a single ingest pipeline (Pub/Sub/Dataflow) to two separate regional datasets simultaneously. Cloud Composer orchestrates the dual writes and monitors freshness. Each region has its own dataset complying with data residency requirements.",
+    "concept": "BigQuery multi-region architecture, dual-write pattern, data residency"
+  },
+  {
+    "q": "What is the purpose of Cloud Storage's 'object versioning' feature and what are its cost implications?",
+    "opts": [
+      "Object versioning automatically compresses prior object versions using gzip to reduce the storage footprint of non-current versions, with cost savings increasing as the version count grows",
+      "Object versioning retains previous versions of objects when they are overwritten or deleted. Each previous version is stored as a non-current version and billed at full storage rates. Use lifecycle rules (condition: isLive=false, action: Delete after N days) to control versioning costs",
+      "Object versioning is included at no additional cost — previous versions of objects are stored without any per-byte storage charges as long as the bucket has versioning enabled at any point",
+      "Object versioning stores only the binary delta between successive versions of an object rather than the full version content, minimizing the additional storage cost incurred per overwrite"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage versioning stores complete copies of each previous version — not diffs. Each non-current version is billed at full storage rates. Without lifecycle rules to delete old versions, costs can grow unboundedly. Best practice: enable versioning + lifecycle rule to delete non-current versions after N days.",
+    "concept": "Cloud Storage object versioning, non-current versions, versioning cost management"
+  },
+  {
+    "q": "A Cloud Spanner table has a hotspot on a frequently-read row (the 'global settings' row accessed by all users). How do you resolve this read hotspot?",
+    "opts": [
+      "Increase the Cloud Spanner node count so that more nodes are available to handle reads against the hot row, expecting Spanner's internal load balancer to spread reads of the row across nodes",
+      "Application-level caching (Cloud Memorystore Redis, in-process cache): cache the global settings row in the application layer with a TTL; only read from Spanner on cache miss. The hot row reads become cache hits — Spanner load drops dramatically",
+      "Create a dedicated Cloud Spanner read-only replica for the global settings table and route all read traffic for that row to the replica using bounded staleness reads on the replica endpoint",
+      "Partition the global settings table along the primary key so that the hotspot row is split across multiple Spanner splits, distributing the read load across multiple underlying SpanNodes"
+    ],
+    "ans": 1,
+    "explain": "A single frequently-read Spanner row creates a read hotspot on one split. Spanner cannot distribute reads of a single row across nodes. Solution: application-level caching (Memorystore Redis) with appropriate TTL. The read-heavy row is served from cache; Spanner only serves cache misses (infrequent).",
+    "concept": "Cloud Spanner read hotspot, application caching, Memorystore Redis, cache-aside pattern"
+  },
+  {
+    "q": "You need to store and query 50 billion GPS coordinates (latitude, longitude, timestamp, device_id) with queries: (1) find all coordinates for device_id in a time range; (2) find all coordinates in a geographic bounding box. Which storage design handles both queries?",
+    "opts": [
+      "Cloud SQL for PostgreSQL with PostGIS geospatial indexing handles bounding box queries effectively but does not scale to 50 billion rows of GPS coordinate data within a single managed instance",
+      "BigQuery with a device_id + timestamp partition/cluster for query (1); use BigQuery GIS functions (ST_Within, ST_DWithin) for geographic queries on the same table",
+      "Bigtable with a device_id#timestamp row key handles per-device range scans for query (1); geographic queries require building a secondary Bigtable table keyed on a geohash for bounding box lookups",
+      "Both B and C; BigQuery for analytics, Bigtable for real-time with appropriate row key design"
+    ],
+    "ans": 3,
+    "explain": "Optimal design depends on use case: BigQuery (partitioned by date, clustered by device_id) handles both analytical queries via SQL — time range and ST_Within for geographic queries — but isn't real-time. Bigtable handles real-time per-device queries. For a full system, BigQuery handles analytics; Bigtable handles real-time serving.",
+    "concept": "GPS data storage, BigQuery GIS, Bigtable time-series, multi-system architecture"
+  },
+  {
+    "q": "A BigQuery dataset is in the EU multi-region. A Dataflow job in us-central1 writes to this dataset. Is this a problem?",
+    "opts": [
+      "No — the Dataflow job's worker region and the destination BigQuery dataset region do not need to match because BigQuery accepts inserts from any GCP region via its global API endpoint",
+      "Yes — data transfer from us-central1 Dataflow to EU BigQuery incurs cross-region network egress charges and may violate EU data residency requirements since data traverses the US",
+      "No — Google encrypts all data in transit between regions using TLS and Google-managed keys so the configuration is automatically compliant with EU data residency and GDPR requirements",
+      "Yes — Dataflow cannot write to a BigQuery dataset that is located in a different region from the worker pool and the job will fail with a region-mismatch error at the BigQueryIO sink"
+    ],
+    "ans": 1,
+    "explain": "Cross-region data transfer: Dataflow workers in us-central1 process data in the US and write to EU BigQuery. This means data temporarily resides in the US (Dataflow workers) before moving to EU — potentially violating EU data residency requirements. Also incurs cross-region egress charges. Solution: deploy Dataflow in europe-west1 or europe-west4.",
+    "concept": "Cross-region data processing, data residency compliance, Dataflow region selection"
+  },
+  {
+    "q": "What is the Bigtable garbage collection (GC) policy and how does it help manage storage?",
+    "opts": [
+      "The GC policy automatically rebalances row data across Bigtable nodes by detecting tablet-level imbalance and migrating rows toward less-utilized nodes during background maintenance windows",
+      "GC policies define retention rules for cell versions per column family: maxVersions (keep only N most recent versions) and maxAge (delete versions older than N days). Bigtable applies GC asynchronously in the background — reducing storage by removing obsolete cell versions",
+      "The GC policy is a billing-tier feature that automatically transitions cold Bigtable data to Cloud Storage Archive after a configurable inactivity threshold, lowering the per-GB storage cost",
+      "The GC policy applies retention enforcement only at the level of entire rows rather than individual cell versions, so each policy decision either keeps or deletes the row in its entirety"
+    ],
+    "ans": 1,
+    "explain": "Bigtable GC policies are defined per column family: maxVersions keeps the N most recent timestamps for each cell; maxAge deletes cell versions older than a specified duration. These can be combined with union/intersection logic. Without GC policies, every write creates a new version and storage grows unboundedly.",
+    "concept": "Bigtable GC policy, cell versions, storage management, maxVersions, maxAge"
+  },
+  {
+    "q": "You need to implement BigQuery table-level access where Project A can query tables in Project B's dataset. How do you configure this?",
+    "opts": [
+      "Cross-project BigQuery access is only supported when both source and destination projects are attached to the same shared VPC network, with the BigQuery API enabled in both projects",
+      "Grant a role (e.g., roles/bigquery.dataViewer) to a Project A service account on the specific Project B dataset; queries from Project A use the TABLE syntax: project_b.dataset.table — no VPC configuration needed",
+      "Use BigQuery Data Transfer Service to schedule a recurring copy of Project B's dataset into Project A, since direct cross-project queries are not permitted across organization boundaries",
+      "Create a VPC peering connection between Project A's and Project B's networks so the BigQuery API can route cross-project read traffic privately through the peered network attachment"
+    ],
+    "ans": 1,
+    "explain": "BigQuery IAM is resource-based and project-agnostic. Grant the Project A service account roles/bigquery.dataViewer on the Project B dataset. Project A queries use fully qualified table names (project_b.dataset.table) in SQL. No VPC or network configuration required.",
+    "concept": "BigQuery cross-project access, resource-based IAM, fully qualified table names"
+  },
+  {
+    "q": "A Cloud Storage Standard bucket receives 10,000 writes/second and 100,000 reads/second. You observe increasing read latency as operations grow. What is likely causing this and how do you fix it?",
+    "opts": [
+      "Cloud Storage caps total bucket operations at 1,000 per second across all clients regardless of bucket configuration, so the only remedy is to contact GCP support and request a manual quota increase",
+      "Cloud Storage has per-prefix QPS limits (~1,000 writes/sec, ~5,000 reads/sec per prefix). At your scale, you're hitting prefix hotspots. Fix: randomize object name prefixes (hash-prefix or date-based sharding) to distribute operations across multiple prefixes",
+      "Upgrade the bucket to a Cloud Storage multi-region configuration so that read traffic is spread across multiple underlying regional replicas, raising the effective per-bucket QPS ceiling",
+      "Enable Cloud Storage's parallel composite upload feature so that each large object is uploaded as multiple parallel chunks, reducing the per-write API call overhead on the bucket frontend"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage has per-prefix throughput limits. Objects with the same prefix (e.g., all starting with 'data/') hit limits on that prefix. Fix: add a random hash prefix (e.g., first 4 chars of MD5 of object name as prefix) to distribute objects across multiple prefixes, each with independent throughput limits.",
+    "concept": "Cloud Storage QPS limits, prefix hotspots, object name distribution"
+  }
+]
