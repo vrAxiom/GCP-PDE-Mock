@@ -1,0 +1,1058 @@
+[
+  {
+    "q": "Your organization needs to process 10 TB of clickstream data daily. The analytics team wants sub-second query performance on aggregated data, while the ML team needs raw event data for feature engineering. Which architecture best meets both requirements?",
+    "opts": [
+      "Stream data to BigQuery only, using the Storage Write API for both raw and aggregated data with scheduled materialized view refresh",
+      "Use Pub/Sub → Dataflow → write to both BigQuery (processed) and Cloud Storage (raw parquet)",
+      "Load raw data to Cloud SQL with read replicas, then export hourly aggregates to BigQuery via Datastream CDC for analytics",
+      "Use Dataproc Spark Structured Streaming to process events and write them to a single Bigtable instance serving both ML and analytics"
+    ],
+    "ans": 1,
+    "explain": "A Lambda-style architecture using Pub/Sub → Dataflow serves both needs: BigQuery receives transformed/aggregated data for sub-second analytics, while Cloud Storage stores raw parquet for ML feature engineering.",
+    "concept": "Lambda Architecture, Pub/Sub, Dataflow fan-out patterns"
+  },
+  {
+    "q": "A retail company stores 500 million product catalog records that need millisecond point-lookup by product_id and range scans by category+price. Which storage solution is most appropriate?",
+    "opts": [
+      "BigQuery with clustering on product_id and category for columnar storage with slot-based parallel query execution",
+      "Cloud Bigtable — wide-column NoSQL with row-key design for point lookups",
+      "Cloud Spanner with interleaved tables on product_id and secondary indexes on category, using TrueTime for strong consistency",
+      "Firestore in Datastore mode with composite indexes on product_id and (category, price) for document-style queries"
+    ],
+    "ans": 1,
+    "explain": "Bigtable is optimized for high-throughput, low-latency reads and writes at petabyte scale. By designing a composite row key (category#price_padded#product_id), you enable both point lookups and range scans.",
+    "concept": "Bigtable row key design, NoSQL storage selection criteria"
+  },
+  {
+    "q": "Which component of a data processing architecture is responsible for ensuring exactly-once semantics when processing streaming data from Pub/Sub into BigQuery?",
+    "opts": [
+      "Pub/Sub message acknowledgment using 7-day retention combined with exactly-once subscription delivery settings",
+      "Dataflow's built-in idempotent writes with checkpointing",
+      "BigQuery streaming inserts with insertId-based deduplication over a best-effort one-minute window per row",
+      "Cloud Composer DAG with task-level retry logic and idempotent BigQuery MERGE statements at the sink"
+    ],
+    "ans": 1,
+    "explain": "Apache Beam on Dataflow provides exactly-once processing guarantees through checkpointing, state management, and idempotent sink writes. Pub/Sub guarantees at-least-once delivery; combining it with Dataflow's checkpointing achieves end-to-end exactly-once semantics.",
+    "concept": "Exactly-once semantics, Dataflow checkpointing, Beam windowing"
+  },
+  {
+    "q": "Your company's data lake stores data in Cloud Storage. You need to design a system that automatically classifies PII data, applies column-level security, and prevents unauthorized exports. Which combination of services addresses all three requirements?",
+    "opts": [
+      "Cloud DLP for classification, BigQuery column-level security, VPC Service Controls for export prevention",
+      "IAM conditions for tag-based classification, Cloud Armor WAF rules for column security, and Cloud Audit Logs for export monitoring",
+      "Data Catalog tags for automatic classification, Cloud KMS CMEK for column-level encryption, and Cloud NAT to block egress traffic",
+      "Dataproc Spark jobs for classification scanning, Dataplex zone policies for security tiers, and VPC firewall rules to block exports"
+    ],
+    "ans": 0,
+    "explain": "Cloud DLP scans and classifies PII automatically. BigQuery's column-level security restricts access to sensitive columns. VPC Service Controls creates a security perimeter preventing data exfiltration.",
+    "concept": "Cloud DLP, BigQuery column security, VPC Service Controls"
+  },
+  {
+    "q": "A financial firm needs to join real-time transaction streams (from Pub/Sub) with historical reference data (200 GB customer dimension table in BigQuery) for fraud detection. Joins must complete within 500ms. What is the recommended approach?",
+    "opts": [
+      "Dataflow pipeline with side inputs — load the dimension table as a side input at pipeline startup",
+      "Join in BigQuery using Storage Write API streaming inserts plus scheduled queries every minute to refresh the joined fraud table",
+      "Use Dataproc Structured Streaming with the BigQuery connector and broadcast hash joins to dynamically refresh dimension data",
+      "Cloud Functions triggered per Pub/Sub message that issue a parameterized BigQuery query against the customer dimension table"
+    ],
+    "ans": 0,
+    "explain": "Dataflow side inputs allow a bounded dataset to be broadcast to all workers and held in memory, enabling sub-millisecond in-pipeline lookups against the streaming data.",
+    "concept": "Dataflow side inputs, stream-to-batch joins, pipeline patterns"
+  },
+  {
+    "q": "You are designing a data pipeline where upstream teams may change source schema by adding columns. Your pipeline must not break when new columns are added and must make new fields available downstream within 1 hour. Which schema management strategy is correct?",
+    "opts": [
+      "Use a strict Avro schema registry on Pub/Sub, rejecting messages that don't match the registered schema and routing failures to a dead-letter topic",
+      "Use BigQuery schema auto-detection with NULLABLE new columns; configure Dataflow to pass-through unknown fields",
+      "Maintain a fixed schema in Cloud SQL as the source of truth and transform all upstream data to conform to it before BigQuery loading",
+      "Use JSON-only storage in Cloud Storage without enforcing schemas and let downstream consumers handle field discovery on read"
+    ],
+    "ans": 1,
+    "explain": "BigQuery supports schema evolution: new NULLABLE columns can be added without breaking existing queries. Configuring Dataflow to pass through unknown fields means new columns flow through automatically.",
+    "concept": "BigQuery schema evolution, Beam dynamic schemas, backward compatibility"
+  },
+  {
+    "q": "Which statement accurately describes when to use Dataflow vs. Dataproc for a new data processing workload?",
+    "opts": [
+      "Dataproc is preferred when the team uses Apache Spark/Hadoop libraries or has existing Spark code; Dataflow is preferred for new serverless streaming/batch pipelines using Apache Beam",
+      "Dataflow only supports batch processing pipelines while Dataproc handles all streaming use cases through Spark Structured Streaming and Flink integration",
+      "Dataproc is always cheaper than Dataflow for large batch jobs because it uses preemptible VMs by default and avoids serverless overhead pricing",
+      "Dataflow requires manually managing cluster autoscaling policies while Dataproc is fully serverless with automatic node provisioning and shutdown"
+    ],
+    "ans": 0,
+    "explain": "Dataproc is the right choice when leveraging the Spark/Hadoop ecosystem. Dataflow (Apache Beam) excels for unified stream+batch pipelines with managed autoscaling and exactly-once semantics.",
+    "concept": "Dataflow vs Dataproc decision criteria, Apache Beam"
+  },
+  {
+    "q": "A pipeline must process 1 billion small IoT messages per day where each message is only 200 bytes. The team worries about Pub/Sub per-message costs. What is the most cost-effective ingestion design?",
+    "opts": [
+      "Use Pub/Sub Lite with zonal delivery for lower cost per GB",
+      "Batch messages client-side into 1 MB payloads and publish each batch as a single larger Pub/Sub message to reduce per-message overhead",
+      "Switch to Cloud Tasks for FIFO delivery at lower per-operation cost with built-in rate limiting for IoT device ingestion",
+      "Use Dataflow DirectRunner with Cloud Storage as the buffer to avoid Pub/Sub publish costs entirely for the IoT workload"
+    ],
+    "ans": 0,
+    "explain": "Pub/Sub Lite offers significantly lower per-GB costs compared to standard Pub/Sub by using pre-provisioned throughput capacity with zonal delivery.",
+    "concept": "Pub/Sub Lite, Pub/Sub cost optimization, IoT ingestion patterns"
+  },
+  {
+    "q": "Your organization is building a data mesh. Each domain team owns its data products. Which Google Cloud service provides a central catalog for discovering, governing, and tagging data across all domain-owned datasets?",
+    "opts": [
+      "Cloud Data Catalog (now Dataplex Catalog)",
+      "BigQuery INFORMATION_SCHEMA queries combined with custom views for metadata discovery",
+      "Cloud Asset Inventory with custom search queries across BigQuery and Cloud Storage assets",
+      "Cloud Monitoring custom metrics combined with labels for dataset-level tagging and discovery"
+    ],
+    "ans": 0,
+    "explain": "Dataplex Catalog is Google Cloud's unified metadata management service. It enables data discovery across BigQuery, Cloud Storage, Pub/Sub; supports business glossaries, custom tags, and data lineage.",
+    "concept": "Dataplex, Data Catalog, Data Mesh, metadata management"
+  },
+  {
+    "q": "A streaming pipeline using Dataflow processes late-arriving events. Events can arrive up to 30 minutes late. You are using 1-hour tumbling windows. Which Beam configuration correctly handles late data without losing it?",
+    "opts": [
+      "Set allowedLateness(Duration.standardMinutes(30)) with ACCUMULATE_AND_RETRACT firing mode",
+      "Use session windows with a 30-minute gap duration instead of tumbling windows to auto-handle late data arrivals",
+      "Set window size to 90 minutes to absorb all late arrivals within a single larger tumbling window boundary",
+      "Late data is automatically handled by Pub/Sub subscription retention; no Beam windowing configuration is needed"
+    ],
+    "ans": 0,
+    "explain": "Beam's allowedLateness tells the pipeline to keep window state alive for 30 minutes past the watermark to accept late elements. ACCUMULATE_AND_RETRACT mode retracts previous results and emits new ones when late data arrives.",
+    "concept": "Dataflow windowing, allowedLateness, late data handling, watermarks"
+  },
+  {
+    "q": "Which service should you use to orchestrate a multi-step data pipeline that includes a Dataproc job, a BigQuery transformation, and a Dataflow job, with retry logic and dependency management?",
+    "opts": [
+      "Cloud Workflows with parallel branches and built-in error handlers for retry",
+      "Cloud Composer (Apache Airflow)",
+      "Cloud Scheduler triggering Cloud Functions that chain Dataproc, BigQuery, and Dataflow calls",
+      "Dataflow composite transforms that wrap Dataproc and BigQuery operations into a single graph"
+    ],
+    "ans": 1,
+    "explain": "Cloud Composer (managed Apache Airflow) is purpose-built for orchestrating complex multi-step workflows with DAG-based dependency management, retries, SLA alerting, and rich operators for GCP services.",
+    "concept": "Cloud Composer, Airflow DAGs, pipeline orchestration"
+  },
+  {
+    "q": "Your company must store data in the EU region only for GDPR compliance. A BigQuery dataset was accidentally created in the US. What is the correct remediation?",
+    "opts": [
+      "Use BigQuery Data Transfer Service to copy data to a new EU dataset, then delete the US dataset",
+      "Change the dataset region using an ALTER DATASET SET OPTIONS statement in BigQuery to update the location property to EU",
+      "Enable CMEK on the US dataset with an EU-located key in Cloud KMS — this satisfies GDPR data residency requirements automatically",
+      "Replicate the dataset to EU using Datastream change data capture and keep both the US and EU datasets continuously in sync"
+    ],
+    "ans": 0,
+    "explain": "BigQuery dataset locations cannot be changed after creation. The correct approach is to copy data to a new EU multi-region dataset then delete the incorrectly located dataset.",
+    "concept": "BigQuery data residency, GDPR compliance, dataset migration"
+  },
+  {
+    "q": "A data engineer is designing a medallion architecture in BigQuery. Which layer descriptions are correct?",
+    "opts": [
+      "Bronze = raw ingested data; Silver = cleaned/validated data; Gold = aggregated business-ready data",
+      "Bronze stores aggregated KPIs, Silver holds raw ingested data, and Gold contains ML training feature sets for downstream models",
+      "Bronze stores real-time streaming data, Silver holds batch-processed data, and Gold contains historical archives in Coldline storage",
+      "Bronze layer uses external tables, Silver uses materialized views over them, and Gold uses native BigQuery tables for performance"
+    ],
+    "ans": 0,
+    "explain": "The medallion architecture: Bronze holds raw data as received. Silver applies deduplication and validation. Gold contains curated, aggregated, business-logic-applied tables for BI.",
+    "concept": "Medallion architecture, data lakehouse, BigQuery best practices"
+  },
+  {
+    "q": "You need to design a system that processes both real-time events and corrects historical data when source records are updated. Which pattern best addresses this requirement?",
+    "opts": [
+      "Lambda architecture with separate speed layer (Dataflow streaming) and batch layer (Dataflow batch/BigQuery)",
+      "Only use streaming pipelines with Pub/Sub replay; historical corrections are not supported through GCP managed services as a pattern",
+      "Use Cloud Spanner for all data to leverage its MVCC and time-travel reads to correct historical records via stale read timestamps",
+      "Store all data in Bigtable and overwrite records as corrections arrive using timestamp-based cell versions for historical lookback"
+    ],
+    "ans": 0,
+    "explain": "Lambda architecture separates concerns: a speed layer handles real-time events; a batch layer periodically reprocesses historical data from the source of truth, correcting errors.",
+    "concept": "Lambda architecture, speed/batch/serving layers, reprocessing"
+  },
+  {
+    "q": "An organization wants to enable data scientists to query data across Cloud Storage (parquet), BigQuery, and Spanner from a single SQL interface without data movement. Which service enables this?",
+    "opts": [
+      "BigQuery Omni with cross-cloud query support for AWS S3 and Azure Blob, exposing Cloud Storage and Spanner through a single endpoint",
+      "BigQuery federated queries with external tables and Spanner federation",
+      "Dataproc Metastore with Hive federation across BigQuery, Cloud Storage, and Spanner using a unified Thrift-based query layer for SQL access",
+      "Cloud Data Fusion pipelines exposing a unified JDBC endpoint that abstracts Cloud Storage parquet, BigQuery, and Spanner sources"
+    ],
+    "ans": 1,
+    "explain": "BigQuery supports federated queries: external tables over Cloud Storage, and native federation with Cloud Spanner via EXTERNAL_QUERY. This allows SQL queries spanning all three sources with no data movement.",
+    "concept": "BigQuery external tables, federated queries, Spanner federation"
+  },
+  {
+    "q": "You are designing a data processing system for a healthcare company. Patient data must never leave a specific GCP region, and data access must be logged for HIPAA auditing. Which combination of controls achieves both requirements?",
+    "opts": [
+      "VPC Service Controls with regional access levels + Cloud Audit Logs data access logging enabled",
+      "CMEK encryption with regional Cloud KMS keys combined with Cloud Monitoring dashboards capturing all data access events",
+      "Cloud Armor WAF rules restricting external access combined with BigQuery authorized views over patient datasets",
+      "Private IP for all services with VPC peering combined with Cloud Storage bucket lifecycle policies that delete old data"
+    ],
+    "ans": 0,
+    "explain": "VPC Service Controls enforces data residency by restricting API access to specific regions. Cloud Audit Logs (data access logs) records every read/write operation for HIPAA compliance audit trails.",
+    "concept": "VPC Service Controls, Cloud Audit Logs, HIPAA compliance, data residency"
+  },
+  {
+    "q": "A Kappa architecture differs from Lambda architecture in what fundamental way?",
+    "opts": [
+      "Kappa uses only batch processing of stored events while Lambda uses only real-time streaming with no batch reconciliation layer",
+      "Kappa eliminates the batch layer — all processing (including reprocessing) uses a single streaming path; Lambda maintains separate batch and speed layers",
+      "Kappa requires Apache Kafka as the message bus while Lambda requires Apache Spark batch jobs and cannot run on Dataflow streaming engine",
+      "Kappa is a GCP-specific architecture exposed via Dataflow templates while Lambda is open-source and must be self-managed on Dataproc"
+    ],
+    "ans": 1,
+    "explain": "Kappa architecture simplifies Lambda by using a single stream-processing system for both real-time and reprocessing. To reprocess, you replay historical data through the same streaming pipeline. This reduces operational complexity at the cost of requiring a scalable streaming system for batch-size replays.",
+    "concept": "Kappa architecture, streaming reprocessing, Lambda vs Kappa comparison"
+  },
+  {
+    "q": "Your data pipeline must handle both structured (CSV) and semi-structured (JSON with varying schemas) data from the same source. Which BigQuery feature accommodates semi-structured JSON without flattening?",
+    "opts": [
+      "Store JSON as STRING columns and parse them at the application layer using client-side libraries to handle the varying schemas across rows",
+      "BigQuery JSON data type (native JSON column) allowing dot-notation queries on nested keys",
+      "Use STRUCT columns with all possible fields declared upfront and NULLABLE on optional fields to accommodate schema variation across records",
+      "Use BigQuery external tables with JSON auto-detection scanning a sample of files at query time to infer per-query schemas dynamically"
+    ],
+    "ans": 1,
+    "explain": "BigQuery's native JSON data type stores variable-schema JSON and allows querying with dot-notation (json_col.key.subkey) and JSON functions without flattening. Unlike STRUCT, it doesn't require a fixed schema declaration, making it ideal for semi-structured sources.",
+    "concept": "BigQuery JSON type, semi-structured data, schema flexibility"
+  },
+  {
+    "q": "An event-driven architecture uses Eventarc to trigger a Cloud Run service when a BigQuery job completes. What is the correct Eventarc trigger event type for BigQuery job completion?",
+    "opts": [
+      "google.cloud.bigquery.job.v1.JobCompleted",
+      "google.cloud.storage.object.v1.finalized routed through Eventarc audit log filter",
+      "google.cloud.pubsub.topic.v1.messagePublished with a BigQuery job-id payload attribute",
+      "google.cloud.dataflow.job.v1.statusChanged filtered for BigQuery-source pipelines only"
+    ],
+    "ans": 0,
+    "explain": "Eventarc supports BigQuery audit log events. The google.cloud.bigquery.job.v1.JobCompleted event fires when a BigQuery job finishes. This enables event-driven pipelines where downstream processing starts immediately when a BigQuery job completes, without polling.",
+    "concept": "Eventarc, event-driven pipelines, BigQuery audit log triggers"
+  },
+  {
+    "q": "You need to process 50 GB files stored in Cloud Storage using Dataflow. The job takes 45 minutes with 10 workers. What is the most effective way to reduce processing time to under 15 minutes?",
+    "opts": [
+      "Switch to a Dataproc cluster with a larger HDFS capacity and Spark executors tuned for the 50 GB input file processing workload",
+      "Increase the number of Dataflow workers; Dataflow autoscaling will add workers up to maxNumWorkers",
+      "Compress the input files to gzip to reduce I/O time during the read phase and allow Dataflow to process them more efficiently",
+      "Upgrade to n2-highmem-8 machine types for all Dataflow workers to provide additional memory headroom for the batch transformation"
+    ],
+    "ans": 1,
+    "explain": "For CPU-bound or I/O-bound batch Dataflow jobs, increasing worker count is the most direct lever. Set maxNumWorkers to ~30 for 3x throughput. Dataflow automatically distributes work across workers. Compression helps I/O but doesn't reduce compute time proportionally.",
+    "concept": "Dataflow horizontal scaling, maxNumWorkers, batch throughput optimization"
+  },
+  {
+    "q": "BigQuery Analytics Hub allows organizations to share datasets. What is the key difference between Analytics Hub and simply granting IAM access to a BigQuery dataset?",
+    "opts": [
+      "Analytics Hub is restricted to sharing within a single GCP project only, while IAM dataset grants are required for any cross-project data sharing access",
+      "Analytics Hub provides a subscription model where subscribers get a linked dataset that mirrors the publisher's data without copying it; the publisher controls data, subscribers see updates automatically",
+      "Analytics Hub encrypts shared data using a separate CMEK key per subscriber, while IAM-shared datasets use Google-managed encryption keys by default",
+      "Analytics Hub is only for public datasets exposed through the Google Cloud Marketplace, while private organization-internal sharing must use direct IAM grants"
+    ],
+    "ans": 1,
+    "explain": "Analytics Hub creates linked datasets: subscribers see a read-only view that always reflects the publisher's current data. No data copy occurs — storage costs stay with the publisher. The publisher can revoke access centrally. This is fundamentally different from IAM grants, which allow direct table access.",
+    "concept": "Analytics Hub, data sharing, linked datasets, no-copy architecture"
+  },
+  {
+    "q": "A Dataflow pipeline writes to BigQuery using the BigQueryIO sink. You observe duplicate rows in the output table. The pipeline uses at-least-once mode. How do you eliminate duplicates?",
+    "opts": [
+      "Add a DISTINCT query as a post-processing step after pipeline completion to remove duplicate rows from the BigQuery output table",
+      "Switch BigQueryIO to use the Storage Write API in committed mode (STORAGE_WRITE_API with withNumStorageWriteApiStreams) for exactly-once guarantees",
+      "Add a deduplication ParDo using GroupByKey on a unique key combined with stateful filtering to drop duplicates before BigQueryIO write",
+      "Enable BigQuery streaming insert deduplication via insertId on each row, which provides best-effort dedup within a one-minute sliding window"
+    ],
+    "ans": 1,
+    "explain": "The BigQuery Storage Write API in committed mode provides exactly-once semantics through atomic stream commits. Switching from legacy streaming inserts to STORAGE_WRITE_API eliminates duplicates at the write level without post-processing deduplication logic.",
+    "concept": "BigQuery Storage Write API, exactly-once writes, deduplication"
+  },
+  {
+    "q": "Which design pattern should be used when a Dataflow pipeline needs to enrich each event with data from a constantly-updating reference dataset (updated every 5 minutes)?",
+    "opts": [
+      "Load the reference dataset once as a side input at pipeline start and configure Cloud Scheduler to restart the streaming pipeline every 5 minutes for refresh",
+      "Use Dataflow's watchForNewFiles() to continuously reload the reference data as a side input using View.asSingleton() with periodic refresh",
+      "Store reference data in BigQuery and query the reference table per-element using BigQueryIO.read() with one BigQuery call per processed event in the ParDo",
+      "Cache reference data in Cloud Memorystore (Redis) using a 5-minute TTL and call the cache from within each ParDo for per-element enrichment lookups"
+    ],
+    "ans": 1,
+    "explain": "Dataflow supports updatable side inputs through the watchForNewFiles pattern with PCollectionView. When the reference file changes, the view refreshes automatically without restarting the pipeline. This is the correct pattern for slowly-changing reference data in long-running streaming pipelines.",
+    "concept": "Dataflow updatable side inputs, slowly-changing data, streaming pipeline patterns"
+  },
+  {
+    "q": "Your organization processes financial transactions. Auditors require the ability to query the exact state of any BigQuery table at any point in the past 6 months. What BigQuery feature supports this and what configuration is needed?",
+    "opts": [
+      "BigQuery snapshots created manually every day via scheduled queries, retaining a daily snapshot table for each business day in a separate dataset",
+      "BigQuery time travel configured to max_time_travel_hours=4380 (6 months); use FOR SYSTEM_TIME AS OF for historical queries",
+      "BigQuery table clones that retain full historical row versions and support FOR SYSTEM_TIME AS OF queries against the clone for past 6 months",
+      "Incremental BigQuery exports to Cloud Storage every hour for the past 6 months, supporting historical reconstruction via external table queries"
+    ],
+    "ans": 1,
+    "explain": "BigQuery time travel retains historical table data for up to 7 days by default, but can be extended up to 6 months (168–4380 hours) via table or dataset settings. FOR SYSTEM_TIME AS OF 'TIMESTAMP' queries the exact table state at that time — without manually maintaining snapshots.",
+    "concept": "BigQuery time travel, historical queries, extended retention"
+  },
+  {
+    "q": "When would you choose Pub/Sub message ordering keys, and what constraint does enabling ordering impose?",
+    "opts": [
+      "Ordering keys guarantee global ordering across all topics in the project; there are no throughput or regional constraints introduced by enabling the feature",
+      "Ordering keys guarantee in-order delivery of messages with the same key to a single subscriber; enabling ordering requires publishing through a single region endpoint and reduces throughput per key",
+      "Ordering keys are only available for Pub/Sub Lite zonal subscriptions and not for standard Pub/Sub topics, regardless of the subscription configuration",
+      "Ordering keys enable exactly-once delivery semantics across all subscriptions; no ordering or throughput constraints apply when enabling the feature on a topic"
+    ],
+    "ans": 1,
+    "explain": "Pub/Sub ordering keys guarantee that messages with the same key are delivered in the order published to a single subscription. The constraint: all messages with the same key must be published to the same region endpoint. Throughput per ordering key is limited (~1 MB/s). Plan carefully for high-volume keys.",
+    "concept": "Pub/Sub ordering keys, message ordering, throughput constraints"
+  },
+  {
+    "q": "A data platform team needs to design storage for user activity events (billions per day). The access patterns are: (1) last 7 days with high frequency, (2) 7-30 days with low frequency, (3) > 30 days archive only. What is the correct multi-tier storage design?",
+    "opts": [
+      "Store all data in BigQuery with PARTITION BY date; use partition expiration policies for automatic management",
+      "Use Bigtable for 0-7 days hot reads, Cloud Storage Standard for 7-30 days warm tier, and Cloud Storage Archive for 30+ day cold archive",
+      "Store 0-7 days in BigQuery Standard Edition slots, 7-30 days in BigQuery native long-term pricing, and 30+ days in Cloud Storage Coldline external tables",
+      "Use Redis Memorystore for 0-7 days hot lookup, Cloud SQL for 7-30 days warm querying, and BigQuery for 30+ days analytical archive"
+    ],
+    "ans": 0,
+    "explain": "BigQuery partition expiration automatically manages data lifecycle. Configure partition expiration on the table; separately, set table-level time partitioning. For pure cold archival, BigQuery long-term pricing kicks in after 90 days of no modification. Single-tier BigQuery with partitioning is simpler to manage than three separate systems.",
+    "concept": "BigQuery partition expiration, data tiering, storage lifecycle management"
+  },
+  {
+    "q": "You need to expose a BigQuery dataset to external researchers while ensuring they cannot combine it with other data to re-identify individuals. Which technique achieves this privacy guarantee at the data level?",
+    "opts": [
+      "Apply row-level security policies filtered by researcher email and restrict the dataset to authorized researchers via IAM dataset-level grants",
+      "Apply k-anonymity or differential privacy using Cloud DLP de-identification transformations before sharing",
+      "Use authorized views exposing only pre-aggregated GROUP BY results so that no individual records are visible to external researchers",
+      "Encrypt PII columns using AEAD.ENCRYPT with a Cloud KMS-wrapped key and share decryption keys only with approved researcher service accounts"
+    ],
+    "ans": 1,
+    "explain": "Cloud DLP supports de-identification transformations including k-anonymity (suppress or generalize quasi-identifiers until each combination appears in k rows) and differential privacy noise addition. These provide mathematical privacy guarantees that prevent re-identification, unlike access controls which only limit who sees data.",
+    "concept": "Cloud DLP, k-anonymity, differential privacy, de-identification"
+  },
+  {
+    "q": "A streaming Dataflow job has a bottleneck: one ParDo step has 100x more elements to process than others. The step is not parallelizable by key. How do you address this pipeline bottleneck?",
+    "opts": [
+      "Increase the Dataflow worker count and rely on autoscaling to redistribute the hot ParDo workload more evenly across the available worker pool",
+      "Rewrite the hot step as a batched operation using GroupIntoBatches before the slow ParDo to reduce call overhead",
+      "Split the pipeline into two separate Dataflow jobs connected via a Pub/Sub topic so the slow ParDo runs as an isolated downstream streaming job",
+      "Use Dataflow FlexRS to schedule the job during off-peak hours when more spare capacity is available, reducing contention on the hot ParDo step"
+    ],
+    "ans": 1,
+    "explain": "GroupIntoBatches collects N elements before passing them to the next step, reducing the number of function calls by N. If the bottleneck is per-element overhead (API calls, initialization), batching dramatically reduces that overhead. This is the canonical solution for high-fan-in ParDo bottlenecks.",
+    "concept": "Dataflow GroupIntoBatches, pipeline bottlenecks, batching optimization"
+  },
+  {
+    "q": "Cloud Composer 2 uses GKE Autopilot for the Airflow workers. How does this differ from Cloud Composer 1 in terms of resource management?",
+    "opts": [
+      "Composer 2 requires manual node pool sizing and node count configuration while Composer 1 is fully managed with no infrastructure tuning required",
+      "Composer 2 workers scale to zero between tasks and scale up per-task demand on GKE Autopilot; Composer 1 uses pre-allocated VMs",
+      "Composer 2 only supports Airflow 1.x APIs while Composer 1 was upgraded to support Airflow 2.x DAGs and the modern TaskFlow programming model",
+      "Composer 2 does not support KubernetesPodOperator-based task execution while Composer 1 supports running pods on the cluster as Airflow tasks"
+    ],
+    "ans": 1,
+    "explain": "Composer 2 leverages GKE Autopilot — workers are ephemeral Kubernetes pods that spin up for each task and terminate when done. This means near-zero resource cost between tasks. Composer 1 used pre-allocated GKE nodes that ran continuously regardless of workload.",
+    "concept": "Cloud Composer 2, GKE Autopilot, autoscaling workers, resource efficiency"
+  },
+  {
+    "q": "You need to build a real-time leaderboard that shows the top 100 players by score, updated within 1 second of each score change. Millions of players update scores concurrently. Which storage technology is most appropriate?",
+    "opts": [
+      "Use BigQuery with streaming inserts of score updates and scheduled queries that refresh a TOP 100 materialized view every second for the leaderboard",
+      "Cloud Bigtable with a row key of inverted_score#player_id to enable range scan for top 100",
+      "Use Cloud Spanner with an ORDER BY score DESC LIMIT 100 query backed by a secondary index on score for low-latency leaderboard reads at scale",
+      "Use Firestore with a top-level players collection ordered by the score field and a real-time listener subscription to push updates to clients"
+    ],
+    "ans": 1,
+    "explain": "Bigtable excels at this use case: design row key as zero_padded_inverted_score#player_id (e.g., MAX_LONG - score). A single range scan from the beginning of the table returns top players in order. Writes are single-row mutations — extremely fast. Spanner would work but is more expensive; Firestore has Firestore query limitations at millions of concurrent writes.",
+    "concept": "Bigtable row key design, leaderboard pattern, range scans, inverted scores"
+  },
+  {
+    "q": "Dataform is used to manage SQL transformations in BigQuery. What are the key advantages of Dataform over raw BigQuery scheduled queries?",
+    "opts": [
+      "Dataform supports Python and JavaScript transformations natively while BigQuery scheduled queries only support standard SQL transformations with no scripting",
+      "Dataform provides dependency management between transformations, unit testing, git-based version control, incremental table management, and documentation — none of which BigQuery scheduled queries provide natively",
+      "Dataform is fundamentally faster than BigQuery scheduled queries for large transformations because it compiles SQL into optimized Dataflow execution graphs",
+      "Dataform auto-generates target table schemas from query output while BigQuery scheduled queries require fully manual schema declaration before each run"
+    ],
+    "ans": 1,
+    "explain": "Dataform (now integrated into BigQuery) provides a full data transformation framework: SQLX files define transformations with ref() dependencies, enabling a DAG of transformations. Built-in testing, incremental strategies (merge/insert_overwrite), documentation, and git integration make it vastly more manageable than raw scheduled queries.",
+    "concept": "Dataform, BigQuery transformations, dependency management, SQLX"
+  },
+  {
+    "q": "What is the purpose of Dataproc Metastore and when should you use it?",
+    "opts": [
+      "Dataproc Metastore stores Dataproc cluster initialization configurations and YARN settings; use it to share node pool configs between long-lived clusters",
+      "Dataproc Metastore is a fully managed Apache Hive Metastore service; use it when multiple clusters (Dataproc, Dataflow, Spark) need to share table metadata, schemas, and partition information",
+      "Dataproc Metastore is a NoSQL key-value store for caching Dataproc job intermediate outputs across multiple Spark stages and reducing shuffle costs",
+      "Dataproc Metastore replaces Cloud Storage as the backing data store for Dataproc Spark jobs and provides higher throughput than HDFS for shuffles"
+    ],
+    "ans": 1,
+    "explain": "Dataproc Metastore (managed Hive Metastore) stores table schemas, partition metadata, and SerDes for distributed query engines. When multiple Dataproc clusters, Dataflow jobs, or other Spark environments need to share access to the same tables in Cloud Storage, they all point to the same Metastore.",
+    "concept": "Dataproc Metastore, Hive Metastore, shared metadata, data lake catalog"
+  },
+  {
+    "q": "A multinational company needs BigQuery datasets to reside in specific regions based on the data subject's country for GDPR. How should datasets be organized?",
+    "opts": [
+      "Create a single multi-region EU dataset for all European data and rely on the EU multi-region scope to satisfy country-specific GDPR rules",
+      "Create separate datasets per country, each pinned to the closest single-region location (e.g., europe-west1 for Germany)",
+      "GDPR only mandates encryption of personal data at rest using CMEK, not specific regional storage — a single US-located dataset with CMEK is compliant",
+      "Use BigQuery cross-region replication to asynchronously maintain copies in all required country regions to satisfy GDPR residency requirements"
+    ],
+    "ans": 1,
+    "explain": "For strict GDPR data residency, create datasets pinned to specific regional BigQuery locations (europe-west3 for Frankfurt/Germany, europe-west2 for London/UK, etc.). Multi-region EU guarantees data stays in Europe broadly but not necessarily in a specific country — insufficient for some member states' laws.",
+    "concept": "BigQuery regional datasets, GDPR data residency, single-region vs multi-region"
+  },
+  {
+    "q": "You need to build a data catalog that classifies 10,000 BigQuery tables automatically based on content. Which GCP service provides automated discovery and sensitive data classification?",
+    "opts": [
+      "Manual tagging by data stewards using the Dataplex Catalog UI, with stewards reviewing each BigQuery table weekly to apply governance labels",
+      "Cloud DLP automatic discovery configured to scan BigQuery datasets; results appear as Data Catalog tags",
+      "BigQuery INFORMATION_SCHEMA.COLUMNS scanning combined with a classification stored procedure that pattern-matches column names for sensitive data",
+      "Cloud Asset Inventory configured with custom asset types and Cloud Functions that scan column names for PII patterns and apply tags automatically"
+    ],
+    "ans": 1,
+    "explain": "Cloud DLP's Auto Discovery feature can be configured to periodically scan entire BigQuery datasets and projects, detect sensitive data (PII, financial data, etc.), and automatically create Dataplex/Data Catalog annotations. At 10,000 tables, manual tagging is infeasible.",
+    "concept": "Cloud DLP Auto Discovery, automated classification, Data Catalog integration"
+  },
+  {
+    "q": "Which pattern correctly implements a BigLake table to allow BigQuery and Dataproc to share access to the same Parquet files in Cloud Storage with unified governance?",
+    "opts": [
+      "Create a BigQuery external table over Cloud Storage parquet files and have Dataproc read directly from Cloud Storage using a separate Spark connector",
+      "Create a BigLake table with a connection resource; grant access through BigLake; both BigQuery SQL and Dataproc (via BigQuery Storage API) read through BigLake, enabling row/column policy enforcement",
+      "Use Dataplex to create a lake zone over the Cloud Storage location and let BigQuery and Dataproc auto-discover tables via the Dataplex metadata service",
+      "Create a Bigtable instance that periodically mirrors Cloud Storage parquet content and expose it to both BigQuery and Dataproc through the HBase API"
+    ],
+    "ans": 1,
+    "explain": "BigLake decouples storage from compute: data stays in Cloud Storage as Parquet/ORC. Both BigQuery and Dataproc access data through the BigLake table, which enforces row access policies, column masking, and DLP inspection centrally — regardless of which engine is used.",
+    "concept": "BigLake, unified storage access, cross-engine governance, Cloud Storage"
+  },
+  {
+    "q": "A streaming pipeline needs to aggregate user sessions. Sessions end when a user is inactive for more than 10 minutes. Which Beam window type is correct for this?",
+    "opts": [
+      "Tumbling windows of 10 minutes with the AfterWatermark default trigger applied",
+      "Sliding windows of 10 minutes with 5-minute slides to overlap session activity",
+      "Session windows with a gap duration of 10 minutes",
+      "Global window with an AfterCount trigger firing every 10 events per user key"
+    ],
+    "ans": 2,
+    "explain": "Beam session windows are variable-length windows that close when no elements arrive within the gap duration (10 minutes). Each user's session is tracked independently — active users have long windows, inactive users have short windows. This directly models user session behavior.",
+    "concept": "Beam session windows, gap duration, user session analysis"
+  },
+  {
+    "q": "You want to migrate 500 TB of data from an on-premises data warehouse to BigQuery with minimal network bandwidth usage. What is the recommended GCP service?",
+    "opts": [
+      "Use gsutil -m cp with parallel transfers running over a dedicated Cloud Interconnect connection between the on-premises data center and GCP",
+      "Transfer Appliance — physical hardware shipped to your data center; data loaded offline, then shipped to Google for cloud upload",
+      "BigQuery Data Transfer Service with the on-premises JDBC connector configured to incrementally transfer the warehouse tables over the public internet",
+      "Cloud Storage Transfer Service running over the public internet with multiple agents on the on-premises servers to parallelize the upload"
+    ],
+    "ans": 1,
+    "explain": "For 500 TB, Transfer Appliance is the recommended solution. Google ships a ruggedized NAS device to your data center; you load data locally, then ship it back to Google who uploads directly to Cloud Storage/BigQuery. At typical network speeds, 500 TB over the internet would take weeks.",
+    "concept": "Transfer Appliance, large-scale migration, offline data transfer"
+  },
+  {
+    "q": "What is Workload Identity Federation and when would a data engineer use it?",
+    "opts": [
+      "A GCP feature for federating BigQuery cross-project workloads, allowing one project's slots to be shared with another project's BigQuery jobs and reservations",
+      "A mechanism allowing workloads running outside GCP (AWS, Azure, on-premises) to authenticate to GCP APIs using their native identity credentials, without creating or managing service account keys",
+      "A mechanism to share a single service account's keys across multiple GCP organizations to simplify cross-organization data engineering pipeline access",
+      "An IAM feature that allows multiple GCP workloads to authenticate as a single shared service account using mutual TLS and short-lived OAuth tokens"
+    ],
+    "ans": 1,
+    "explain": "Workload Identity Federation allows external workloads (GitHub Actions CI/CD, AWS Lambda, Azure Functions, on-premises processes) to exchange their native credentials (AWS IAM role, Azure AD token, OIDC token) for short-lived GCP access tokens. Eliminates the need to store service account keys.",
+    "concept": "Workload Identity Federation, keyless authentication, cross-cloud identity"
+  },
+  {
+    "q": "A Dataflow pipeline needs to read from a private Cloud SQL database. The Cloud SQL instance has no public IP. How should the Dataflow workers connect to it?",
+    "opts": [
+      "Enable a temporary public IP on the Cloud SQL instance during pipeline execution and disable it afterwards via a Cloud Function for cleanup",
+      "Configure Dataflow workers to use the same VPC as Cloud SQL; use Private IP connection via Cloud SQL Auth Proxy or direct Private IP",
+      "Use Cloud SQL Federated Queries from BigQuery as an intermediary step and have Dataflow read from BigQuery rather than directly from Cloud SQL",
+      "Connect via Cloud VPN from the Dataflow worker VPC to a separate Cloud SQL VPC and route traffic through a Cloud NAT gateway to reach the database"
+    ],
+    "ans": 1,
+    "explain": "Dataflow workers can be deployed in a specific VPC. If Cloud SQL is in the same VPC (or peered VPC), workers connect via Private IP. The Cloud SQL Auth Proxy handles authentication and SSL. This avoids exposing Cloud SQL to the internet.",
+    "concept": "Dataflow VPC configuration, Cloud SQL private connectivity, Cloud SQL Auth Proxy"
+  },
+  {
+    "q": "You need to design a multi-hop data pipeline: Cloud Storage → Dataflow transform → BigQuery staging → dbt transformation → BigQuery production. How should you handle pipeline failures at each hop?",
+    "opts": [
+      "Use Cloud Composer to orchestrate all hops with task-level retry and alerting; write idempotent transformations that can be safely rerun",
+      "Run all hops as a single monolithic shell script with chained commands; if any hop fails, restart the entire pipeline from the very first step",
+      "Accept data loss if any pipeline hop fails; downstream consumers will detect missing data and request a re-extract from the upstream source team",
+      "Use Cloud Scheduler to retry the entire pipeline every hour until it succeeds without per-hop checkpointing or idempotent transformation logic"
+    ],
+    "ans": 0,
+    "explain": "Cloud Composer orchestrates each step as a task with individual retry logic. Idempotent operations (WRITE_TRUNCATE in BigQuery, dbt idempotent models using incremental with unique keys) ensure that retrying any step doesn't produce duplicates or inconsistencies.",
+    "concept": "Pipeline fault tolerance, idempotency, Cloud Composer orchestration, multi-hop pipelines"
+  },
+  {
+    "q": "A company has a hybrid architecture: some processing runs on-premises (Apache Spark) and some in GCP (Dataflow). They want a unified metadata store for both. What is the recommended approach?",
+    "opts": [
+      "Manually synchronize table definitions between the on-premises Hive Metastore and a Dataproc Metastore using a weekly export/import script",
+      "Use Dataproc Metastore as the central Hive Metastore; configure on-premises Spark to point to it via Cloud Interconnect/VPN",
+      "Store all Hive metadata in a Cloud SQL MySQL instance shared between on-premises Spark and GCP Dataproc clusters via the JDBC metastore connection",
+      "Use BigQuery as the central metadata store and expose on-premises data as BigQuery external tables, letting Spark read through the BigQuery connector"
+    ],
+    "ans": 1,
+    "explain": "Dataproc Metastore exposes a standard Hive Metastore Thrift API. On-premises Spark clusters can be configured with the Metastore endpoint (accessible via Cloud Interconnect or VPN), enabling both environments to share table definitions, schemas, and partition metadata.",
+    "concept": "Dataproc Metastore, hybrid architecture, Hive Metastore federation"
+  },
+  {
+    "q": "What is the primary use case for Dataflow FlexRS (Flexible Resource Scheduling)?",
+    "opts": [
+      "Running streaming Dataflow jobs with built-in autoscaling that adjusts worker count based on the streaming backlog and CPU utilization metrics in real time",
+      "Running batch Dataflow jobs at reduced cost by mixing preemptible VMs and scheduling jobs during off-peak hours when GCP has spare capacity",
+      "Scheduling Dataflow jobs to start at a specific time of day using Cloud Scheduler triggers and a fixed worker count for deterministic completion times",
+      "Running Dataflow jobs with a higher priority queue to guarantee SLA completion time and dedicated slot capacity over other batch jobs in the project"
+    ],
+    "ans": 1,
+    "explain": "Dataflow FlexRS reduces batch job cost by up to 40% by using a mix of regular and preemptible (Spot) VMs, and scheduling the job when GCP has available capacity. Suitable for batch jobs that can tolerate a flexible start time (up to 6 hours delay) and occasional preemption.",
+    "concept": "Dataflow FlexRS, Spot VMs, batch cost optimization"
+  },
+  {
+    "q": "A data pipeline reads from BigQuery and writes results back to BigQuery. During transformation, it processes personal data. How should you ensure DLP de-identification occurs before writing to the output table?",
+    "opts": [
+      "Apply Cloud DLP de-identification as a post-processing step after BigQuery writes the data, scheduled via a Cloud Workflow on the output table each hour",
+      "Add a Dataflow ParDo step in the pipeline that calls Cloud DLP deidentifyContent API on each batch of rows before writing to the output BigQuery table",
+      "Configure BigQuery to auto-apply Cloud DLP policy tags on write using policy tag taxonomy bindings that trigger transformation as rows are inserted",
+      "Use Cloud DLP findings from a scheduled scan to manually remove PII from the BigQuery output table after the pipeline completes via a stored procedure"
+    ],
+    "ans": 1,
+    "explain": "The correct pattern is inline DLP transformation: a Dataflow ParDo calls the Cloud DLP deidentifyContent API with appropriate transformation configs (masking, tokenization, bucketing) before the BigQueryIO write sink. This ensures no PII ever reaches the output table.",
+    "concept": "Cloud DLP, Dataflow PII transformation, inline de-identification"
+  },
+  {
+    "q": "You need to query data stored in AWS S3 from BigQuery without moving the data to GCP. Which feature enables this?",
+    "opts": [
+      "BigQuery federated queries using the BigQuery external table connector configured for AWS S3 buckets with IAM role-based authentication",
+      "BigQuery Omni — BigQuery on AWS (BQ Omni) can query S3 data using BigQuery syntax",
+      "Cloud Storage Transfer Service running a daily sync from S3 to a Cloud Storage bucket and then querying the synced data using BigQuery",
+      "Build a Dataflow pipeline that reads from S3 via the AWS SDK Java client and writes the data into BigQuery using the Storage Write API sink"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Omni extends BigQuery to run query processing on AWS infrastructure, querying data directly in S3 without moving it to GCP. This enables multi-cloud analytics with centralized BigQuery governance while data stays in AWS.",
+    "concept": "BigQuery Omni, multi-cloud analytics, S3 federation"
+  },
+  {
+    "q": "Which Bigtable replication feature allows you to route read traffic to a specific cluster for geographic latency optimization?",
+    "opts": [
+      "Bigtable autoscaling automatically routes reads to the cluster with the lowest current load across all replicated clusters in the instance configuration",
+      "Bigtable app profiles — configure a single-cluster routing app profile pointing to the geographically closest cluster; write traffic uses multi-cluster routing",
+      "Bigtable read replicas behave like Cloud SQL read replicas with explicit primary/replica routing and read-only endpoints exposed per replica region",
+      "Bigtable zone distribution automatically routes reads to the nearest zone within the cluster, providing transparent latency optimization to applications"
+    ],
+    "ans": 1,
+    "explain": "Bigtable app profiles control routing. For latency optimization, create app profiles with single-cluster routing pointing to the cluster nearest the application (e.g., US app → us-central1 cluster, EU app → europe-west1 cluster). This ensures reads are served from the closest cluster.",
+    "concept": "Bigtable app profiles, cluster routing, geo-distributed reads"
+  },
+  {
+    "q": "A data pipeline produces output tables that downstream teams depend on. You need to signal when new data is ready for consumption without polling. Which pattern achieves this?",
+    "opts": [
+      "Have downstream teams schedule BigQuery queries every 5 minutes to poll for new data in the upstream tables and proceed when row counts increase",
+      "Write a completion record to a Pub/Sub topic or update a BigQuery 'ready' table when the pipeline finishes; downstream systems subscribe to the notification",
+      "Share a team calendar with the expected pipeline completion times and have downstream teams manually trigger their jobs based on the calendar entries",
+      "Use Cloud Scheduler to trigger downstream jobs one hour after the expected upstream completion time, with a fixed buffer to absorb pipeline delays"
+    ],
+    "ans": 1,
+    "explain": "Event-driven data contracts: when the pipeline completes, publish a message to Pub/Sub (or update a metadata table). Downstream teams subscribe and trigger their jobs immediately on notification. This eliminates polling overhead, reduces latency, and provides a clear data contract interface.",
+    "concept": "Event-driven pipelines, data contracts, Pub/Sub notifications, pipeline dependencies"
+  },
+  {
+    "q": "You need to ingest 10,000 events/second from IoT devices to BigQuery with the lowest possible ingestion latency. Which approach is optimal?",
+    "opts": [
+      "Device → Cloud Storage with batch uploads every minute → BigQuery load job triggered by Cloud Storage object finalize Eventarc events",
+      "Device → Pub/Sub → Dataflow → BigQuery Storage Write API (streaming mode)",
+      "Device → Cloud SQL inserts with read replicas → BigQuery scheduled query every 5 minutes that pulls new rows from the Cloud SQL replica",
+      "Device → BigQuery legacy tabledata.insertAll streaming inserts directly from the device SDK using a per-device service account credential"
+    ],
+    "ans": 1,
+    "explain": "The standard low-latency IoT ingestion pattern: Pub/Sub buffers device messages reliably (handles spikes), Dataflow processes and transforms, and BigQuery Storage Write API writes at high throughput with exactly-once guarantees. Legacy streaming inserts directly from devices lack buffering and have higher per-message overhead.",
+    "concept": "IoT ingestion pipeline, Pub/Sub buffering, Storage Write API, low-latency streaming"
+  },
+  {
+    "q": "A data team needs to implement column-level encryption in BigQuery where certain columns are encrypted at rest and at query time using AEAD. Which approach correctly implements this?",
+    "opts": [
+      "Enable CMEK on the BigQuery dataset with a Cloud KMS key, which encrypts all columns including individual sensitive columns at rest transparently",
+      "Use BigQuery AEAD encryption functions (AEAD.ENCRYPT/AEAD.DECRYPT) with key material from Cloud KMS wrapped keys; store key URIs in a separate key table",
+      "Use Cloud DLP de-identification to encrypt individual sensitive columns before inserting them to BigQuery, using format-preserving encryption transforms",
+      "BigQuery does not support column-level encryption natively; instead encrypt the entire table using customer-supplied encryption keys (CSEK) at create time"
+    ],
+    "ans": 1,
+    "explain": "BigQuery's AEAD functions provide deterministic or probabilistic column-level encryption using KEYS.NEW_KEYSET() or KMS-wrapped keys. AEAD.ENCRYPT() stores ciphertext in a BYTES column; AEAD.DECRYPT_STRING() decrypts at query time. Only users with the decryption key can read plaintext.",
+    "concept": "BigQuery AEAD encryption, column-level encryption, Cloud KMS key wrapping"
+  },
+  {
+    "q": "What does the BigQuery Editions pricing model (Standard, Enterprise, Enterprise Plus) change compared to the older flat-rate model?",
+    "opts": [
+      "BigQuery Editions only affect storage pricing tiers, with compute remaining on the legacy on-demand model billed per bytes scanned across all editions",
+      "Editions replace the old flat-rate commitment model with tiered compute options using BaselineSlots + autoscaling; Enterprise includes CMEK and VPC Service Controls; Enterprise Plus adds cross-region failover and 1-year/3-year commitments",
+      "BigQuery Editions are identical to the on-demand pricing model with different marketing names but no underlying changes to slot allocation or billing logic",
+      "BigQuery Editions eliminate slot-based pricing entirely and run all workloads on a fully serverless compute layer billed per query execution second"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Editions (2023+) restructure reservations: you purchase a baseline slot count at hourly rates and can autoscale up to a max. Standard has no commitments; Enterprise adds CMEK, BQML, and VPC SC; Enterprise Plus adds BI Engine, multi-region failover, and deeper commitment discounts.",
+    "concept": "BigQuery Editions, capacity pricing, autoscaling slots, commitment discounts"
+  },
+  {
+    "q": "You need to run a BigQuery ML model for real-time scoring within a Dataflow streaming pipeline. What is the correct architectural pattern?",
+    "opts": [
+      "Export the BQML model as a TensorFlow SavedModel and load it into the Dataflow pipeline as a side input PCollectionView for local inference per ParDo",
+      "Call BigQuery ML PREDICT SQL from Dataflow via the BigQueryIO source connector with a parameterized query per micro-batch of streaming events processed",
+      "Export BQML model to Vertex AI; deploy as an online prediction endpoint; call from Dataflow via HTTP in a ParDo",
+      "Train and serve the BQML model directly in Dataflow using TFX components embedded in a Beam pipeline that handles both training and online scoring"
+    ],
+    "ans": 2,
+    "explain": "For real-time scoring in Dataflow: export the BQML model to Vertex AI Model Registry (bqml export) and deploy as a Vertex AI online prediction endpoint. The Dataflow ParDo calls the Vertex AI endpoint via HTTP for each event. This enables sub-100ms scoring with managed scalability.",
+    "concept": "BQML model export, Vertex AI online prediction, Dataflow real-time scoring"
+  },
+  {
+    "q": "A team uses Apache Airflow on Cloud Composer. They find that DAG parsing time is 45 seconds, causing scheduler lag. What is the most effective fix?",
+    "opts": [
+      "Increase the Cloud Composer environment's CPU and memory allocation, since allocating more resources to the scheduler will linearly reduce DAG parsing time",
+      "Reduce the number of Python imports at DAG file level; move heavy imports inside functions; use .airflowignore to exclude non-DAG files",
+      "Reduce the number of DAGs in the environment from 200 to 50 by consolidating multiple DAGs into single-file mega-DAGs with internal task branching",
+      "Upgrade to Cloud Composer 3 to take advantage of the new parallel DAG parser, which removes the per-file Python import overhead in the scheduler loop"
+    ],
+    "ans": 1,
+    "explain": "DAG parsing runs every 30-300 seconds and imports every Python file in the dags/ folder. Heavy top-level imports (pandas, tensorflow, etc.) dramatically slow parsing. Fix: use lazy imports (move imports inside function bodies), add .airflowignore for non-DAG files, and use DAG factory patterns.",
+    "concept": "Airflow DAG parsing performance, lazy imports, .airflowignore, Composer optimization"
+  },
+  {
+    "q": "You need to implement data versioning for a BigQuery table so analysts can reproduce past analyses using the exact dataset that existed on a specific date. Which approach is most scalable?",
+    "opts": [
+      "Export the table to Cloud Storage as a CSV snapshot every day and maintain a manifest of snapshots so analysts can load any specific date's snapshot",
+      "Use BigQuery table snapshots (CREATE SNAPSHOT TABLE) on a schedule; snapshots store only changed data (deltas) and are queryable directly with SQL",
+      "Create a new BigQuery table for each day's data with the date as a table name suffix, allowing analysts to query specific dates by table name reference",
+      "Use BigQuery time travel exclusively, since it provides a built-in 7-day versioning window without requiring configuration changes or table snapshots"
+    ],
+    "ans": 1,
+    "explain": "BigQuery table snapshots create a point-in-time reference to a table without physically copying unchanged data (uses copy-on-write). Analysts query snapshots directly with SELECT * FROM snapshot_table. This is more storage-efficient than full copies and more permanent than time travel (which only goes back 7 days).",
+    "concept": "BigQuery table snapshots, copy-on-write, data versioning"
+  },
+  {
+    "q": "A data pipeline must process files from Cloud Storage in strict FIFO order. Files arrive throughout the day. Which design achieves ordered processing?",
+    "opts": [
+      "Cloud Storage and Dataflow do not guarantee file ordering, so processing is always fully parallel; FIFO ordering cannot be achieved with Cloud Storage events",
+      "Use a Cloud Storage notification → Pub/Sub → Cloud Functions that appends the filename to a Cloud Firestore ordered queue; a separate process dequeues and processes in order",
+      "Dataflow can enforce strict per-file ordering automatically when using a single worker with a global window and an AfterWatermark trigger configuration",
+      "Use BigQuery load jobs which process input files in the order they are specified in the sourceUris list, with one load job per arriving file in sequence"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage and Dataflow process files in parallel without strict ordering. For FIFO: Cloud Storage event → Pub/Sub → Cloud Function writes file metadata to an ordered queue (Firestore, Spanner, or ordering-key Pub/Sub). A single-threaded consumer processes the queue in order.",
+    "concept": "FIFO processing, ordered queues, Firestore ordered collections, event-driven design"
+  },
+  {
+    "q": "Which statement about BigQuery slot autoscaling (in Editions) is correct?",
+    "opts": [
+      "BigQuery autoscaling increases slots without any upper limit based on workload demand and bills only for the slot-seconds used by each query execution",
+      "Autoscaling scales between the baseline slot count and a configured max slots limit; you are only billed for autoscaled slots when they are actively used",
+      "BigQuery autoscaling only works for streaming Storage Write API queries and not for interactive batch SQL queries against partitioned table sources",
+      "BigQuery autoscaling requires manual approval through the GCP console before additional slots are added beyond the baseline reservation slot count"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Editions autoscaling: you define a baseline (always available) and a maximum. When workload exceeds baseline, GCP adds slots up to the maximum automatically. You're billed per-slot-second for autoscaled capacity only when used. This combines cost efficiency with burst capacity.",
+    "concept": "BigQuery autoscaling slots, Editions pricing, burst capacity"
+  },
+  {
+    "q": "A financial reporting pipeline fails with a BigQuery error: 'Quota exceeded: Your project exceeded quota for concurrent interactive queries.' What is the correct resolution?",
+    "opts": [
+      "Rerun the failed queries immediately since the BigQuery concurrent interactive query quota resets every minute and transient quota errors are recoverable",
+      "Migrate reporting workloads to BigQuery Reservations to bypass on-demand quotas; or restructure queries to run sequentially with Cloud Composer",
+      "Reduce the complexity of each individual query to reduce concurrent quota usage, since BigQuery counts complex queries as multiple slots against the limit",
+      "Contact GCP support to permanently remove the concurrent interactive query quota for the project to allow unlimited parallel reporting query execution"
+    ],
+    "ans": 1,
+    "explain": "The concurrent interactive query quota (default 100 concurrent) applies to on-demand usage. Solutions: (1) use BigQuery Reservations (slot-based), which have no concurrent query limits; (2) queue queries via Cloud Composer to control concurrency; (3) request a quota increase if the use case requires it.",
+    "concept": "BigQuery quotas, concurrent queries, Reservations vs on-demand"
+  },
+  {
+    "q": "A Dataflow job processes sensor data and should trigger an alert when temperature readings exceed 100°C. The alert must fire within 10 seconds of the anomaly. Which Dataflow pattern handles this?",
+    "opts": [
+      "Use an AfterWatermark trigger in a 10-second tumbling window over the temperature stream and emit alerts when the window aggregation exceeds 100°C",
+      "Use a stateful DoFn with a timer that fires after 10 seconds if the max temperature in the state exceeds 100°C",
+      "Write all sensor readings to BigQuery via the Storage Write API and run a Cloud Scheduler-triggered alerting query every 10 seconds against the table",
+      "Use Cloud Monitoring custom metrics emitted by Dataflow per reading and configure an alerting policy that fires after a 10-second condition window"
+    ],
+    "ans": 1,
+    "explain": "Stateful DoFn with timers: a state cell tracks the maximum temperature; a processing-time timer fires after 10 seconds. If the max state exceeds 100°C, fire the alert. This is in-pipeline, sub-second capable alerting without external dependencies.",
+    "concept": "Dataflow stateful processing, timer APIs, streaming alerting patterns"
+  },
+  {
+    "q": "How does BigQuery handle query costs for partitioned tables when using wildcard queries like SELECT * FROM project.dataset.table_*?",
+    "opts": [
+      "Wildcard table queries bypass partition pruning entirely; BigQuery scans all partitions across all matching tables and bills for the full combined scan size",
+      "BigQuery applies partition pruning on wildcard table queries if you add a _TABLE_SUFFIX filter in the WHERE clause",
+      "BigQuery wildcard table queries are not supported on partitioned tables at all; you must use a UNION ALL query across explicit table names instead",
+      "Wildcard table queries cost nothing because they only scan table metadata in the BigQuery information schema rather than the underlying partitioned data"
+    ],
+    "ans": 1,
+    "explain": "For sharded tables (table_20240101, table_20240102...), wildcard queries scan all matching tables unless you filter: WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20240131'. This is the partition-pruning equivalent for sharded table designs, limiting scan to only the relevant tables.",
+    "concept": "BigQuery wildcard tables, _TABLE_SUFFIX, shard pruning, cost optimization"
+  },
+  {
+    "q": "A data team wants to build a real-time dashboard of streaming events with data guaranteed to be at most 30 seconds stale. They are using Dataflow + BigQuery. What architectural element ensures the freshness SLA?",
+    "opts": [
+      "Set the Dataflow streaming parallelism to the maximum allowed value to reduce per-record processing time and ensure events flow through the pipeline faster",
+      "Use Dataflow streaming with the Streaming Engine enabled; write to BigQuery via Storage Write API streaming mode; dashboards query BigQuery directly — data is available seconds after Dataflow writes it",
+      "Use Dataflow batch jobs triggered every 30 seconds via Cloud Scheduler, with each micro-batch loading the latest events from Pub/Sub into BigQuery",
+      "Store streaming data in Cloud Bigtable for a 30-second freshness guarantee and have BigQuery query Bigtable via federated external tables for the dashboard"
+    ],
+    "ans": 1,
+    "explain": "Dataflow Streaming Engine + Storage Write API (streaming mode) provides end-to-end latency of 2-10 seconds from event ingestion to BigQuery availability. This comfortably meets a 30-second freshness SLA. Enabling Streaming Engine reduces latency and cost vs. the standard shuffle-based approach.",
+    "concept": "Dataflow Streaming Engine, Storage Write API, real-time dashboard freshness"
+  },
+  {
+    "q": "You need to copy a BigQuery dataset (100 TB) from one GCP project to another in the same region for environment promotion (dev → prod). What is the fastest and cheapest method?",
+    "opts": [
+      "Export both datasets to Cloud Storage in the same region and then load them into the new project's BigQuery, which incurs both egress and storage costs",
+      "Use BigQuery dataset copy (bq cp --copy_all_tables or BigQuery Data Transfer Service cross-project copy); in-region copies are free of charge for data transfer",
+      "Use a Dataflow pipeline to read all tables from the source project and write them into the destination BigQuery project via BigQueryIO write transforms",
+      "Replicate the dataset using Datastream change data capture between the two BigQuery projects, with continuous synchronization until the cutover point"
+    ],
+    "ans": 1,
+    "explain": "BigQuery's native copy operation (within the same region) uses Google's internal network and is free for data transfer. The bq cp command or BigQuery Data Transfer Service handles all tables. In-region copies avoid both egress costs and the latency of export/import cycles.",
+    "concept": "BigQuery dataset copy, cross-project promotion, in-region copy, zero egress cost"
+  },
+  {
+    "q": "What is the difference between a Dataflow template (Classic) and a Flex Template?",
+    "opts": [
+      "Classic templates execute faster at launch time than Flex Templates while Flex Templates are restricted to streaming-only pipelines using the Beam SDK",
+      "Classic templates compile pipeline code into a JSON specification at build time — parameters are limited to predefined options. Flex Templates package pipeline code in a Docker container — parameters can be dynamic and evaluated at launch time",
+      "Classic templates support all Apache Beam features and connectors while Flex Templates have a limited feature set restricted to managed Google connectors",
+      "Flex Templates require Java only as the pipeline language while Classic templates support both Python and Java for pipeline graph construction and launch"
+    ],
+    "ans": 1,
+    "explain": "Classic templates freeze the execution graph at compile time. Parameters are passed as runtime values but the graph topology is fixed. Flex Templates run the pipeline code in a Docker container at launch — the full pipeline logic executes in the launcher, enabling dynamic graph construction, custom connectors, and complex parameterization.",
+    "concept": "Dataflow Flex Templates vs Classic Templates, dynamic pipeline construction"
+  },
+  {
+    "q": "A pipeline joins two BigQuery tables in Dataflow: a 10 TB fact table and a 1 GB dimension table. The join is taking too long. What optimization should be applied?",
+    "opts": [
+      "Run the join inside BigQuery SQL instead of Dataflow for better performance, since BigQuery's vectorized join engine handles 10 TB scans more efficiently",
+      "Load the 1 GB dimension table as a Dataflow side input; all workers cache it in memory and perform local lookups against the fact table stream",
+      "Increase the number of Dataflow workers to parallelize the join shuffle and rely on autoscaling to distribute keys evenly across the additional worker pool",
+      "Partition both the 10 TB fact table and the 1 GB dimension table by the join key in BigQuery before processing to align the shuffle phase across both inputs"
+    ],
+    "ans": 1,
+    "explain": "Side inputs are ideal when one dataset is small enough to fit in worker memory (1 GB is fine). The dimension table is loaded once per worker at startup; each element of the 10 TB fact table is joined locally without any shuffle. This eliminates network I/O for the join entirely.",
+    "concept": "Dataflow side inputs, broadcast join, large-small table join optimization"
+  },
+  {
+    "q": "Datastream is used for CDC from MySQL to BigQuery. After an upstream DBA truncates a table and reloads it, the BigQuery destination has duplicate rows. What causes this and how do you resolve it?",
+    "opts": [
+      "Truncate operations are not captured by CDC binary logs; Datastream backfills the full table and merges with existing rows creating duplicates. Fix: configure Datastream with merge mode (not append) to upsert rows by primary key",
+      "Datastream does not support MySQL TRUNCATE operations at all; the duplicates are an artifact of a manual backfill outside the Datastream replication path",
+      "The duplicates are caused by an inherent BigQuery streaming deduplication lag; waiting 1 hour allows BigQuery's background deduplication to resolve them",
+      "Disable Datastream CDC entirely and switch to a daily full-table reload pattern using BigQuery Data Transfer Service to avoid duplicate generation issues"
+    ],
+    "ans": 0,
+    "explain": "TRUNCATE + reload creates a full table scan backfill in Datastream. In append mode, old rows + new rows both appear. Using Datastream's merge delivery mode (with primary key upsert), rows are upserted in BigQuery — duplicate primary keys are overwritten, not appended.",
+    "concept": "Datastream CDC, merge mode, TRUNCATE handling, upsert patterns"
+  },
+  {
+    "q": "A company needs to implement a data hub where multiple teams publish and subscribe to datasets. Publishers should not know who the subscribers are. Which GCP pattern achieves this decoupled architecture?",
+    "opts": [
+      "Use BigQuery authorized views shared directly between publisher and subscriber projects, granting each subscriber view-level access through dataset IAM",
+      "Analytics Hub — publishers list data exchanges; subscribers subscribe to listings as linked datasets without direct IAM grants from publisher to subscriber",
+      "Use Cloud Storage public buckets for all shared datasets and let subscribers query them as BigQuery external tables without explicit publisher coordination",
+      "Create a central GCP project as the data hub with IAM bindings configured for every publisher-subscriber pair through Terraform-managed access policies"
+    ],
+    "ans": 1,
+    "explain": "Analytics Hub creates a marketplace model: publishers create listings in an exchange; subscribers discover and subscribe without the publisher managing individual IAM grants. The publisher simply maintains the exchange listing; Analytics Hub handles the linked dataset provisioning for each subscriber.",
+    "concept": "Analytics Hub, data marketplace, decoupled data sharing, linked datasets"
+  },
+  {
+    "q": "A streaming Dataflow pipeline has been running for weeks and is accumulating excessive state in timer/state cells. The job memory is growing steadily. What is the correct diagnosis and fix?",
+    "opts": [
+      "State accumulation is a normal artifact of long-running streaming jobs; Dataflow automatically garbage-collects unused state cells via its background GC loop",
+      "Timers or state cells are not being cleared when processing is complete. Fix: ensure state.clear() is called when a session ends; or set a GC timer that clears stale state entries",
+      "The job needs additional workers to handle the increased state size; scaling out horizontally redistributes state cells across more workers and reduces memory",
+      "Disable the Streaming Engine and revert to standard shuffle-based state management, which automatically bounds state size to the shuffle buffer capacity"
+    ],
+    "ans": 1,
+    "explain": "In stateful streaming processing, developers must explicitly clear state when it is no longer needed (e.g., when a session ends, clear all associated state cells). Without explicit cleanup, state grows indefinitely. Setting a GC timer that fires after a maximum session length and calls state.clear() prevents unbounded growth.",
+    "concept": "Dataflow stateful processing, state GC, timer cleanup, memory management"
+  },
+  {
+    "q": "A pipeline must process CSV files from a vendor who uses a non-standard delimiter (pipe |) with no header row and with some rows having extra delimiters due to data quality issues. How should you handle this in Dataflow?",
+    "opts": [
+      "Use a BigQuery load job with CSV format and the field_delimiter option set to pipe, since BigQuery automatically handles delimiter variations and malformed rows",
+      "Write a custom DoFn in Dataflow that reads each line as a string and applies custom parsing logic with error handling for malformed rows",
+      "Use Cloud Data Fusion with the CSV Reader plugin configured for the pipe delimiter and rely on its automatic error handling for malformed input rows",
+      "Use gsutil to preprocess each file and replace the pipe delimiter with commas before Dataflow reads them, normalizing the format ahead of the pipeline"
+    ],
+    "ans": 1,
+    "explain": "Custom parsing logic in a DoFn gives full control: parse the pipe-delimited line, handle extra delimiters, route malformed rows to a dead-letter output (using tagged outputs). This is the most robust approach for non-standard and dirty input files.",
+    "concept": "Dataflow custom DoFn, CSV parsing, dead-letter pattern, tagged outputs"
+  },
+  {
+    "q": "What is the primary role of the Dataflow Shuffle Service?",
+    "opts": [
+      "It manages Pub/Sub message routing for streaming pipelines by offloading subscription state from Dataflow workers to a managed routing layer in the backend",
+      "It offloads GroupByKey shuffle operations to a managed, scalable GCP service — reducing worker memory pressure and enabling faster autoscaling during batch pipeline execution",
+      "It monitors Dataflow job progress and triggers autoscaling events by tracking per-stage backlog metrics and adjusting the worker pool size accordingly",
+      "It handles encryption and compression of pipeline data in transit between Dataflow workers using a managed Google-side network optimization service"
+    ],
+    "ans": 1,
+    "explain": "The Dataflow Shuffle Service moves GroupByKey (shuffle) data off workers into a managed GCP-side service. Benefits: workers use less memory (no local shuffle buffers), autoscaling is faster (no data to redistribute between workers), and jobs are more reliable. Enabled via --experiments=shuffle_mode=service.",
+    "concept": "Dataflow Shuffle Service, GroupByKey optimization, managed shuffle"
+  },
+  {
+    "q": "A BigQuery ML model achieves 95% accuracy on training data but only 72% on new data. What is the likely issue and solution?",
+    "opts": [
+      "The model is underfitting on the training set; increase model complexity by adding more layers or features and retrain to improve both training and test accuracy",
+      "The model is overfitting — apply L1/L2 regularization (l1_reg, l2_reg options in CREATE MODEL), or reduce model complexity, or use more training data",
+      "The training data has schema errors causing misaligned features; re-run the CREATE MODEL with schema auto-detection enabled to fix the feature mapping issues",
+      "BigQuery ML cannot generalize to new data due to its slot-based execution model; export the data and use Vertex AI custom training jobs for production models"
+    ],
+    "ans": 1,
+    "explain": "95% train / 72% test accuracy is a classic overfitting signature. BQML supports regularization: SET OPTIONS(l1_reg=0.1, l2_reg=0.1) in CREATE MODEL. Also consider: increase training data size, use data_split_method='AUTO_SPLIT' to ensure proper train/test split, and reduce feature count if using many high-cardinality features.",
+    "concept": "BigQuery ML overfitting, regularization, L1/L2, model generalization"
+  },
+  {
+    "q": "Which combination of IAM roles grants a service account the minimum permissions needed to run Dataflow jobs and read from Pub/Sub?",
+    "opts": [
+      "Grant roles/owner on the entire GCP project to the Dataflow service account so it has unrestricted access to Pub/Sub subscriptions and all required GCS buckets",
+      "roles/dataflow.worker + roles/pubsub.subscriber on the Pub/Sub subscription; the Dataflow service account also needs roles/dataflow.worker and roles/storage.objectAdmin on the GCS temp bucket",
+      "Grant roles/editor on the project to the Dataflow service account, which provides broad permissions covering Pub/Sub, Dataflow, and Cloud Storage operations",
+      "Grant roles/dataflow.admin combined with roles/bigquery.admin on the project to allow the Dataflow service account to manage jobs and write to BigQuery sinks"
+    ],
+    "ans": 1,
+    "explain": "Principle of least privilege for Dataflow: the worker service account needs roles/dataflow.worker (to execute jobs), roles/pubsub.subscriber on the specific subscription (to consume messages), and roles/storage.objectAdmin on the temp/staging bucket. Never use roles/editor or roles/owner for service accounts.",
+    "concept": "Dataflow IAM, least privilege, service account permissions"
+  },
+  {
+    "q": "How does Dataplex organize data governance? What are the three levels of the hierarchy?",
+    "opts": [
+      "GCP projects organize Dataplex by Projects → Datasets → Tables, mapping directly to the BigQuery resource hierarchy with no additional governance abstractions",
+      "Lakes → Zones → Assets — where a Lake is a top-level data management domain, Zones are data quality tiers (Raw/Curated), and Assets are the actual storage resources (GCS buckets, BigQuery datasets)",
+      "GCP resource hierarchy maps to Organizations → Folders → Projects, with Dataplex reusing this hierarchy directly for data governance and metadata management",
+      "Dataplex follows a Catalogs → Databases → Tables hierarchy similar to Hive Metastore, with catalogs scoping databases and databases containing managed tables"
+    ],
+    "ans": 1,
+    "explain": "Dataplex hierarchy: Lake (domain/business area, e.g., 'Marketing') → Zone (data quality tier: Raw Zone for unvalidated data, Curated Zone for validated data) → Asset (Cloud Storage bucket or BigQuery dataset). This maps organizational data domains to technical governance policies.",
+    "concept": "Dataplex hierarchy, lakes, zones, assets, data governance"
+  },
+  {
+    "q": "A data pipeline must comply with a regulatory requirement that all data transformations be logged with before/after values for audit purposes. Which design implements this in GCP?",
+    "opts": [
+      "Enable BigQuery Admin Activity audit logs only, which capture all DDL operations on tables and serve as the regulatory before/after audit trail for transformations",
+      "Implement custom audit logging in each transformation step: write before/after records to a dedicated BigQuery audit table as part of each transformation transaction; enable Data Access audit logs at the GCP project level",
+      "Use Cloud Monitoring custom metrics to capture all BigQuery DML operations, with each INSERT, UPDATE, and DELETE emitting metric samples with row count deltas",
+      "GCP automatically provides full transformation logging for all BigQuery and Dataflow workloads; no custom implementation is needed to satisfy compliance audits"
+    ],
+    "ans": 1,
+    "explain": "For regulatory transformation auditing: (1) enable Data Access audit logs in GCP (captures who ran which SQL and when); (2) implement custom before/after logging in transformation code (write to an audit BigQuery table). This two-layer approach provides both automatic API-level logging and business-level data change logging.",
+    "concept": "Audit logging, Cloud Audit Logs, custom transformation logging, compliance"
+  },
+  {
+    "q": "Your team needs to run exploratory data analysis (EDA) on a 50 TB BigQuery dataset cost-effectively. Analysts run many ad-hoc queries that often scan large portions of the table. What is the most effective cost-control measure?",
+    "opts": [
+      "Create a smaller 1 TB sample table containing a representative slice of the data and restrict all analysts to query only the sample table for exploratory work",
+      "Enable maximum bytes billed per query on each analyst's connection; set project-level maximum bytes billed; require analysts to use LIMIT clauses and preview before executing",
+      "Switch all analysts to BigQuery Reservations with a shared slot pool, which caps the total compute used by analyst queries regardless of bytes scanned per query",
+      "Use BigQuery views instead of base tables for analyst queries, since views are free to query and BigQuery only bills for the underlying table once per view refresh"
+    ],
+    "ans": 1,
+    "explain": "The maximum bytes billed setting (set via connection property or project quota) prevents runaway queries from scanning the full 50 TB. Analysts must preview estimated scan size before executing. Combining this with proper partitioning/clustering on the table ensures cost-conscious EDA.",
+    "concept": "BigQuery cost controls, maximum bytes billed, EDA cost management"
+  },
+  {
+    "q": "A Dataflow pipeline uses Pub/Sub as source and BigQuery as sink. You need to test this pipeline without consuming real production Pub/Sub messages or writing to the production BigQuery table. How do you structure the test?",
+    "opts": [
+      "Deploy the pipeline to production with a --dry-run flag, which prevents real Pub/Sub message consumption and writes to a shadow BigQuery table for testing",
+      "Use TestStream in the Beam DirectRunner: TestStream simulates a Pub/Sub-like source with pre-defined events and timing; use a BigQuery test dataset or BigQueryIO.write().to(testTable) in the test",
+      "Use a separate GCP staging project as a testing environment and replay production Pub/Sub messages into it using a snapshot/seek operation for repeatable runs",
+      "Mock the Beam source and sink classes at the Java or Python class level using a mocking library, replacing PubsubIO and BigQueryIO with in-memory test doubles"
+    ],
+    "ans": 1,
+    "explain": "Beam's TestStream creates a synthetic event stream with controlled event-time and processing-time advancement. Running with DirectRunner + TestStream + a test BigQuery table enables full pipeline testing without touching production resources. This is the standard Beam integration testing pattern.",
+    "concept": "Beam TestStream, DirectRunner testing, pipeline unit testing"
+  },
+  {
+    "q": "A BigQuery table uses integer range partitioning on customer_id (range: 0–10,000,000, interval: 100,000). A query filters WHERE customer_id = 42. How many partitions will BigQuery scan?",
+    "opts": [
+      "All 100 partitions are scanned because integer range partitioning does not support point lookups; BigQuery falls back to a full scan in this case",
+      "1 partition — customer_id 42 falls in the [0, 100000) partition; BigQuery prunes all other partitions",
+      "2 partitions are scanned because BigQuery always scans the adjacent partition for boundary safety when filtering on an integer range partition column",
+      "10 partitions are scanned because BigQuery scans 10% of partitions by default for any equality point lookup against an integer range partition column"
+    ],
+    "ans": 1,
+    "explain": "Integer range partitioning in BigQuery maps each row to a partition based on the range interval. customer_id 42 maps to the [0, 100000) partition. BigQuery prunes all other partitions at query planning time — only 1 partition is scanned. This is analogous to date partition pruning but for numeric keys.",
+    "concept": "BigQuery integer range partitioning, partition pruning, numeric partitioning"
+  },
+  {
+    "q": "You need to build a pipeline that processes genomics VCF files stored in Cloud Storage. Processing requires complex bioinformatics tools (bwa, samtools) not available in standard Dataflow transforms. What is the best approach?",
+    "opts": [
+      "Rewrite the bioinformatics tools in pure Python using Biopython and PySAM and run them inside a Dataflow ParDo with native package imports per worker",
+      "Use Dataflow with custom Docker containers (Flex Templates) containing the bioinformatics tools; or use Life Sciences API (Cloud Batch) which natively supports custom container-based genomic workflows",
+      "Use Dataproc with a custom initialization action that installs bwa and samtools on each cluster node and runs the bioinformatics pipeline as a Spark job",
+      "Install the bioinformatics tools on Dataflow workers using pip in the pipeline setup file, layering the binaries on top of the default Beam worker image"
+    ],
+    "ans": 1,
+    "explain": "For specialized scientific tools, Dataflow Flex Templates with custom Docker containers (FROM apache/beam_python3.10_sdk; RUN apt-get install bwa samtools) allows arbitrary tool execution. Alternatively, Cloud Batch (formerly Life Sciences API) is purpose-built for container-based scientific batch workloads.",
+    "concept": "Dataflow custom containers, Flex Templates, scientific computing, Cloud Batch"
+  },
+  {
+    "q": "What is the significance of the 'committed' vs 'buffered' write modes in the BigQuery Storage Write API?",
+    "opts": [
+      "Buffered mode is intended for batch Dataflow jobs while committed mode is restricted to streaming pipelines only, with neither providing exactly-once guarantees",
+      "Committed mode provides exactly-once guarantees with atomic row-level commits; buffered mode provides lower latency with rows visible within seconds but possible duplicates on failure. Default stream (legacy) provides no ordering guarantee",
+      "Both buffered and committed modes provide identical write guarantees with the same exactly-once semantics; buffered is simply the newer rebranded API mode",
+      "Committed mode is only available in BigQuery Enterprise Edition reservations and not in Standard or on-demand mode, due to its higher slot consumption per write"
+    ],
+    "ans": 1,
+    "explain": "Storage Write API stream types: Default stream (legacy, at-least-once, rows visible immediately). Committed mode: rows are appended to committed streams with offset-based exactly-once guarantee; rows visible on commit. Buffered mode: rows held in a buffer, committed in batches — balances latency and exactly-once-ness.",
+    "concept": "BigQuery Storage Write API, committed vs buffered streams, exactly-once guarantees"
+  },
+  {
+    "q": "A company's data team has 5 data engineers, 10 data analysts, and 3 data scientists, all needing different levels of BigQuery access. What is the recommended IAM structure?",
+    "opts": [
+      "Grant each individual person a custom IAM role with exactly the permissions they need, configured individually per user via gcloud iam policies for fine-grained control",
+      "Create three Google Groups (data-engineers, data-analysts, data-scientists); assign BigQuery IAM roles to groups at appropriate levels (project/dataset/table); manage individual membership in groups",
+      "Assign roles/bigquery.admin to all users across the data team for simplicity and rely on BigQuery audit logs to retroactively detect any inappropriate access patterns",
+      "Create a shared service account that all team members impersonate via roles/iam.serviceAccountTokenCreator, centralizing access control on the service account bindings"
+    ],
+    "ans": 1,
+    "explain": "Google recommends managing BigQuery access via Google Groups. Groups provide scalable, auditable access management. Typical bindings: data-engineers → roles/bigquery.dataEditor at project level; data-analysts → roles/bigquery.dataViewer on specific datasets; data-scientists → roles/bigquery.jobUser + viewer on ML datasets.",
+    "concept": "BigQuery IAM best practices, Google Groups, role-based access"
+  },
+  {
+    "q": "You need to monitor data quality in a production BigQuery pipeline and alert when more than 5% of records fail validation rules. Which approach automates this?",
+    "opts": [
+      "Manually sample the BigQuery table daily and count invalid records using a spreadsheet, then notify the team if the failure rate exceeds 5% of total records sampled",
+      "Use Dataplex Data Quality rules with expectation metrics (PERCENT_NULL, REGEX_MATCH, etc.); configure the quality scan to write results to BigQuery; create a Cloud Monitoring alert on the Dataplex data quality metric when failure rate exceeds 5%",
+      "Write a Cloud Function triggered by Cloud Scheduler that runs a BigQuery validation query nightly and sends an email if the failure rate exceeds the 5% threshold",
+      "Add a Dataflow ParDo that counts invalid records inline and writes counts to Stackdriver (Cloud Logging), then build a log-based metric and alert on its threshold"
+    ],
+    "ans": 1,
+    "explain": "Dataplex Data Quality scans define rules (not_null, regex_match, value_in_set, custom SQL) and execute on a schedule. Results (including pass/fail percentages) are logged to Cloud Monitoring. An alerting policy on the dataplex.googleapis.com/data_quality/... metric fires when failure rate > 5%.",
+    "concept": "Dataplex Data Quality, automated data quality monitoring, Cloud Monitoring alerts"
+  },
+  {
+    "q": "Which Google Cloud product allows you to create a complete Apache Iceberg table format on top of Cloud Storage, accessible from BigQuery, Dataproc, and Spark?",
+    "opts": [
+      "BigQuery managed tables with Iceberg compatibility mode that store data internally in BigQuery's columnar format with an external Iceberg metadata layer for reads",
+      "BigLake Managed Tables (Iceberg on BigLake) — data stored in Cloud Storage as Iceberg format; accessible from BigQuery, Dataproc Spark, and any Iceberg-compatible engine",
+      "Dataproc Metastore configured with Iceberg catalog support only, exposing Iceberg tables to Spark and Flink but not directly queryable from BigQuery without export",
+      "Cloud Spanner with Iceberg export enabled, which materializes Spanner tables into Cloud Storage as Iceberg format for downstream BigQuery and Dataproc queries"
+    ],
+    "ans": 1,
+    "explain": "BigLake Managed Tables implement the Apache Iceberg open table format on Cloud Storage. They support ACID transactions, time travel, schema evolution, and partition evolution. Both BigQuery (via BigLake external tables) and Dataproc Spark/Flink access the same Iceberg table with full ACID guarantees.",
+    "concept": "BigLake Managed Tables, Apache Iceberg, open table format, multi-engine access"
+  },
+  {
+    "q": "A data engineering team needs to document their BigQuery data assets including business definitions, ownership, and SLAs. Which GCP service is purpose-built for this?",
+    "opts": [
+      "Use BigQuery INFORMATION_SCHEMA.TABLES with custom user-defined columns appended via labels for storing business definitions, ownership, and SLA documentation",
+      "Dataplex Universal Catalog — supports business glossaries, data owner tags, custom metadata aspects, and SLA documentation alongside technical metadata",
+      "Use Cloud Monitoring dashboards with custom labels per table to document business definitions, ownership metadata, and SLA expectations alongside metric data",
+      "Use a Google Sheets spreadsheet shared with the team as the source of truth for table definitions, owners, and SLAs, linked from each BigQuery table description"
+    ],
+    "ans": 1,
+    "explain": "Dataplex Universal Catalog (evolved from Data Catalog) enables attaching custom metadata aspects and tag templates to BigQuery tables: business owner, data classification, SLA, quality score, glossary terms. This creates a unified business + technical metadata layer discoverable across the organization.",
+    "concept": "Dataplex Universal Catalog, data documentation, metadata management, business glossary"
+  },
+  {
+    "q": "A Pub/Sub topic receives messages from multiple publishers. Some messages have duplicate message IDs. What behavior should a correctly designed consumer expect?",
+    "opts": [
+      "Pub/Sub guarantees exactly-once delivery and automatically deduplicates messages with the same publisher-assigned message ID across all subscriptions on the topic",
+      "Pub/Sub guarantees at-least-once delivery — duplicates are possible even without publisher duplicates. Consumers must implement idempotent processing or deduplication using message IDs",
+      "Pub/Sub Lite guarantees exactly-once delivery semantics while standard Pub/Sub cannot handle duplicate message IDs and silently drops any second copy on receipt",
+      "Duplicate message IDs cause Pub/Sub to automatically reject the second message at publish time, returning an ALREADY_EXISTS error to the publisher application"
+    ],
+    "ans": 1,
+    "explain": "Standard Pub/Sub guarantees at-least-once delivery. Even with unique publisher message IDs, network retries can cause the same message to be delivered twice. Consumer applications must be idempotent (processing the same message twice produces the same result) or perform deduplication using insertion tables keyed on message ID.",
+    "concept": "Pub/Sub delivery guarantees, at-least-once, consumer idempotency, deduplication"
+  },
+  {
+    "q": "You have a Cloud Composer environment running critical pipelines. The Airflow webserver becomes slow during peak DAG execution. What should you do?",
+    "opts": [
+      "Restart the Airflow webserver pod via kubectl to clear accumulated memory, since webserver slowness during peak execution is typically due to memory pressure",
+      "Upgrade the Composer environment to a larger environment size (scale up the webserver and scheduler resources); optimize DAG count and complexity to reduce scheduler load",
+      "Switch from Cloud Composer to self-managed Apache Airflow on GKE for manual scaling control of the webserver, scheduler, and worker components per workload",
+      "Disable the Airflow webserver entirely and rely on gcloud composer environments run commands for DAG triggering and inspection, removing webserver load entirely"
+    ],
+    "ans": 1,
+    "explain": "Webserver slowness during peak execution is usually due to resource contention. In Composer 2, you can independently scale webserver resources. Also: reduce DAG complexity (fewer Python imports, simpler task graph), use concurrency limits, and ensure scheduler resources are adequate for the DAG count.",
+    "concept": "Cloud Composer sizing, webserver scaling, Composer 2 resource configuration"
+  },
+  {
+    "q": "A Dataflow pipeline reads from BigQuery and the read is taking longer than expected. The BigQuery table has 100 partitions but Dataflow is using only 10 read streams. How do you increase read parallelism?",
+    "opts": [
+      "Increase the Dataflow worker count and rely on autoscaling, which will automatically increase the number of parallel BigQuery read streams in proportion",
+      "Use BigQueryIO.read().withTemplateCompatibility() to force the connector to open more read streams against the BigQuery Storage Read API for parallelism",
+      "Use BigQueryIO.read().withMethod(DIRECT_READ) which uses the BigQuery Storage Read API with configurable parallelism, or set .withMaxStreamCount()",
+      "Read the BigQuery data into Cloud Storage as Avro files first using a BigQuery export job, then read from Cloud Storage with Dataflow for higher parallelism"
+    ],
+    "ans": 2,
+    "explain": "BigQueryIO has two read modes: EXPORT (copies to GCS then reads — slow) and DIRECT_READ (uses BigQuery Storage Read API for parallel streaming). DIRECT_READ with withMaxStreamCount() controls the number of parallel Storage API streams, directly mapping to read parallelism. This is the fastest way to read large BigQuery tables in Dataflow.",
+    "concept": "BigQuery Storage Read API, Dataflow DIRECT_READ, parallel read streams"
+  },
+  {
+    "q": "You need to implement a Blue/Green deployment for a BigQuery transformation pipeline (dbt project). How would you structure this in GCP?",
+    "opts": [
+      "BigQuery does not support Blue/Green deployment patterns natively; transformation changes must be applied in-place to the production dataset using dbt run --full-refresh",
+      "Maintain two BigQuery datasets (blue and prod): run dbt against the blue dataset; validate results; use BigQuery dataset copy or view swapping to atomically promote blue to prod; the switch is instant with no downtime",
+      "Create two separate GCP projects, one for blue and one for green environments, with separate BigQuery datasets, and promote by repointing dbt profiles between projects",
+      "Use BigQuery's ALTER TABLE RENAME statement to swap production and staging tables atomically, providing instant promotion of the validated transformation results"
+    ],
+    "ans": 1,
+    "explain": "Blue/Green for BigQuery transformations: dbt runs against a blue dataset (separate from prod). After validation, promote: either rename/swap datasets atomically, or update views in the prod dataset to point to blue table names. This gives zero-downtime promotion with instant rollback capability.",
+    "concept": "Blue/Green deployment, BigQuery dataset promotion, zero-downtime transformation"
+  },
+  {
+    "q": "A streaming pipeline with Dataflow receives 1,000,000 events/sec. The processing logic is CPU-intensive (parsing and transforming JSON). Workers are CPU-bound at 100%. What is the correct scaling action?",
+    "opts": [
+      "Increase the worker boot disk size to speed up I/O-limited shuffle operations during the streaming JSON parse stage, which is typically disk-bound on Dataflow",
+      "Add more Dataflow workers (increase maxNumWorkers); if using Streaming Engine, increase n2-standard machine type to higher CPU; Dataflow autoscaling should handle this if maxNumWorkers is configured correctly",
+      "Switch from Dataflow to Dataproc Spark Streaming for CPU-intensive workloads, since Spark's executor model handles CPU-bound transformations more efficiently",
+      "Reduce the number of concurrent ParDo operations in the pipeline graph by fusing multiple JSON transformations into a single ParDo to lower CPU context-switching"
+    ],
+    "ans": 1,
+    "explain": "CPU-bound Dataflow workers need either more workers (horizontal scaling via maxNumWorkers) or larger machines (higher CPU count per worker, e.g., n2-highcpu-16). With Streaming Engine, autoscaling adds workers automatically. The root cause is often JSON parsing overhead — consider switching to Avro/Protobuf to reduce parsing cost.",
+    "concept": "Dataflow CPU scaling, machine types, streaming performance, serialization formats"
+  },
+  {
+    "q": "What is the purpose of BigQuery's column-level security using Policy Tags in Dataplex?",
+    "opts": [
+      "Policy tags encrypt column data at rest using a per-tag Cloud KMS key, so any user without access to the key receives an Access Denied response when querying the column",
+      "Policy tags define a taxonomy of sensitive data types; columns tagged with a policy tag require the reader to have a specific IAM role (Fine-Grained Reader) to see that column's data — others get Access Denied",
+      "Policy tags are documentation metadata only and do not affect BigQuery query execution; users see all column values regardless of tag assignment or IAM grants",
+      "Policy tags replace row access policies for row-level filtering by tagging rows rather than columns, restricting visibility based on the row's tag classification"
+    ],
+    "ans": 1,
+    "explain": "BigQuery column-level security (CLS) uses Dataplex Policy Tag taxonomies. Tag a column (e.g., SSN) with a sensitive tag. Users without roles/datacatalog.categoryFineGrainedReader on that tag get 'Access Denied' when querying that column — even if they have access to the table. This enforces column-level data access control.",
+    "concept": "BigQuery column-level security, Policy Tags, Dataplex taxonomy, Fine-Grained Reader"
+  },
+  {
+    "q": "You need to ingest streaming data from Apache Kafka (on-premises) to BigQuery. Which GCP service provides a managed connector for this without writing custom code?",
+    "opts": [
+      "Cloud Pub/Sub combined with Kafka MirrorMaker 2 for replicating Kafka topics into Pub/Sub topics and then ingesting to BigQuery via a subscription",
+      "Dataflow with the Apache Beam Kafka connector (KafkaIO); or use the managed Dataflow Kafka-to-BigQuery template",
+      "Cloud Data Fusion configured with the Kafka source plugin and the BigQuery sink plugin, building a graphical pipeline that reads from Kafka into BigQuery",
+      "All three GCP options require custom code; there is no fully managed Kafka-to-BigQuery connector available without writing Beam or Spark source code"
+    ],
+    "ans": 1,
+    "explain": "Dataflow provides a managed Kafka-to-BigQuery template: configure Kafka bootstrap servers, topic, schema, and BigQuery destination — no code needed. Alternatively, KafkaIO in Beam gives code-level control. Both are production-grade. Pub/Sub cannot directly ingest from Kafka without a bridge.",
+    "concept": "Kafka to BigQuery, Dataflow Kafka connector, KafkaIO, managed templates"
+  },
+  {
+    "q": "A data governance policy requires that all production BigQuery tables have a defined owner, data classification, and retention period. How do you enforce this organization-wide?",
+    "opts": [
+      "Document the governance requirements in a wiki page and rely on team compliance through code review processes to ensure all production tables meet the standards",
+      "Create mandatory tag templates in Dataplex (owner, classification, retention_days fields); use Organization Policy or Dataplex metadata enforcement to require tags before tables can be queried; automate tagging in CI/CD pipelines",
+      "Use BigQuery table descriptions to annotate each table description text with the required fields (owner, classification, retention) in a structured comment format",
+      "Apply IAM conditions on each BigQuery table that check for the presence of required tags as policy attributes before granting any read access to the underlying data"
+    ],
+    "ans": 1,
+    "explain": "Dataplex tag templates define required metadata fields. Create a mandatory template and use Dataplex data quality + governance automation: CI/CD pipeline (Cloud Build + Terraform) applies tags at table creation time. Dataplex policies can enforce tag completeness. This shifts governance left — metadata is enforced at creation, not retroactively.",
+    "concept": "Dataplex tag templates, metadata enforcement, governance automation, CI/CD data governance"
+  },
+  {
+    "q": "A pipeline fails because a Dataflow job cannot read from a Cloud Storage bucket in a different GCP project. All IAM permissions are correct. What else might be causing the issue?",
+    "opts": [
+      "Cross-project Cloud Storage access from Dataflow is not supported by the BigQuery Storage Read API and requires copying the source bucket into the Dataflow project",
+      "The Cloud Storage bucket is in a VPC Service Controls perimeter that does not include the Dataflow job's project. Add the Dataflow project to the perimeter or create an access level exception",
+      "Dataflow workers must be deployed in the same region as the Cloud Storage bucket; cross-region reads from Cloud Storage are blocked by default in production projects",
+      "The Cloud Storage bucket requires Requester Pays to be enabled for cross-project access from Dataflow workers running under a different project's service account"
+    ],
+    "ans": 1,
+    "explain": "VPC Service Controls perimeters are a common cause of cross-project access failures even when IAM is correct. If the Cloud Storage bucket's project is in a perimeter, all access must come from within the perimeter. Add the Dataflow worker project to the same perimeter, or configure an ingress/egress rule to allow the specific access.",
+    "concept": "VPC Service Controls, perimeter access, cross-project Dataflow, troubleshooting"
+  }
+]

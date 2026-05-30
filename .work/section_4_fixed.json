@@ -1,0 +1,878 @@
+[
+  {
+    "q": "A data scientist wants to train a custom ML model using BigQuery data but avoid exporting data. Which Google Cloud service allows ML model training directly within BigQuery?",
+    "opts": [
+      "Vertex AI Feature Store with BigQuery offline store connector for in-place training",
+      "BigQuery ML (BQML) using CREATE MODEL statement",
+      "Dataproc ML with Spark MLlib reading BigQuery via the storage connector",
+      "Cloud AutoML Tables with BigQuery connector for managed in-database training"
+    ],
+    "ans": 1,
+    "explain": "BigQuery ML allows creating and training ML models using standard SQL with CREATE MODEL — no data export needed. Supported: linear/logistic regression, k-means, XGBoost, deep neural nets, and remote LLM models.",
+    "concept": "BigQuery ML, CREATE MODEL, in-database ML training"
+  },
+  {
+    "q": "A BI tool (Looker) issues thousands of identical queries to BigQuery simultaneously. You want to reduce cost and latency. Which BigQuery feature should you enable?",
+    "opts": [
+      "BigQuery Query Caching — identical queries return cached results for 24 hours at no charge",
+      "BigQuery Reservations with flat-rate pricing dedicated to all the Looker dashboard queries",
+      "Create a materialized view that pre-computes every individual dashboard query result",
+      "Enable BI Engine for in-memory analysis of all dashboard tables in the project"
+    ],
+    "ans": 0,
+    "explain": "BigQuery's query cache returns results from a previous identical query within 24 hours at no charge. For BI tools issuing repeated dashboard queries, this eliminates most compute cost. Requires deterministic queries (no CURRENT_TIMESTAMP(), etc.).",
+    "concept": "BigQuery query cache, cost reduction, BI tool patterns"
+  },
+  {
+    "q": "You need to implement data lineage tracking — knowing which upstream sources contributed to a BigQuery table. Which service provides this natively in GCP?",
+    "opts": [
+      "Cloud Audit Logs with BigQuery job history parsed by a custom Dataflow lineage extractor",
+      "Dataplex Data Lineage API, which auto-captures lineage from BigQuery, Dataflow, and Data Fusion",
+      "Cloud Monitoring custom metrics tracking table read and write operations across pipelines",
+      "Apache Atlas deployed on Dataproc with Hive metastore integration for cross-service lineage"
+    ],
+    "ans": 1,
+    "explain": "Dataplex Data Lineage API automatically captures lineage events from BigQuery (DDL/DML), Dataflow pipelines, and Cloud Data Fusion without any code changes — building a lineage graph of upstream sources and downstream consumers.",
+    "concept": "Dataplex Data Lineage, data governance, lineage tracking"
+  },
+  {
+    "q": "A dashboard runs a complex aggregation query over a 10 TB BigQuery table, refreshed hourly. The query takes 45 seconds. How do you reduce dashboard query latency to under 2 seconds?",
+    "opts": [
+      "Increase BigQuery slots via reservations to give the aggregation query more parallel compute",
+      "Create a BigQuery materialized view of the aggregation; queries automatically use it if eligible",
+      "Enable BigQuery BI Engine on the dashboard table to cache raw rows in memory per session",
+      "Export the 10TB dataset to Cloud Spanner with secondary indexes for low-latency analytics"
+    ],
+    "ans": 1,
+    "explain": "BigQuery materialized views pre-compute and cache aggregation results. When a query matches, BigQuery uses the pre-computed result — reducing 45-second full scans to sub-second lookups. The view refreshes automatically when underlying data changes.",
+    "concept": "BigQuery materialized views, query acceleration, incremental refresh"
+  },
+  {
+    "q": "Which Looker Studio connector allows real-time data exploration of BigQuery data without data extracts?",
+    "opts": [
+      "Looker Studio BigQuery direct connector with Live Connection mode",
+      "Looker Studio extracts pulled on a 15-minute scheduled refresh cycle",
+      "BigQuery scheduled query writing results to Google Sheets, then the Sheets connector",
+      "JDBC connector from Looker Studio to BigQuery using a service account driver"
+    ],
+    "ans": 0,
+    "explain": "Looker Studio's BigQuery direct connector in Live Connection mode issues SQL queries to BigQuery on demand whenever a report loads — no data extract needed. This ensures data freshness but incurs BigQuery query costs.",
+    "concept": "Looker Studio, Live Connection, BigQuery connector"
+  },
+  {
+    "q": "A data analyst writes: SELECT * FROM orders WHERE CAST(order_date AS STRING) = '2024-01-15'. Why is this problematic?",
+    "opts": [
+      "CAST is not supported in BigQuery WHERE clauses when filtering on partitioned date columns",
+      "CAST on order_date prevents partition pruning — BigQuery cannot use the date partition filter on a function-wrapped column. Fix: WHERE order_date = DATE '2024-01-15'",
+      "The query will fail at parse time because a STRING-to-DATE equality comparison is invalid syntax",
+      "There is no issue; BigQuery's optimizer automatically rewrites CAST predicates for partition pruning"
+    ],
+    "ans": 1,
+    "explain": "Wrapping a partitioned column in a function (CAST, FORMAT, etc.) prevents BigQuery from performing partition pruning — it must scan ALL partitions. Always filter partitioned columns directly.",
+    "concept": "BigQuery partition pruning, function-wrapped predicates, query optimization"
+  },
+  {
+    "q": "A machine learning team needs consistent features between online serving (millisecond latency) and batch training. Which GCP service is purpose-built for this requirement?",
+    "opts": [
+      "BigQuery ML Feature Store with row-level access for low-latency online lookups",
+      "Vertex AI Feature Store — provides both online serving and batch offline storage with point-in-time correctness",
+      "Cloud Bigtable as a dual-purpose feature store handling both online lookups and offline training scans",
+      "Dataflow pipeline that writes features to BigQuery for batch and Memorystore Redis for online serving"
+    ],
+    "ans": 1,
+    "explain": "Vertex AI Feature Store solves online-offline skew. Features are written once and served for both batch retrieval (with point-in-time correctness to prevent leakage) and online serving (low-latency HTTP lookups).",
+    "concept": "Vertex AI Feature Store, online-offline consistency, training-serving skew"
+  },
+  {
+    "q": "You are building a recommendation system and need to find the 10 most similar items to a query vector from 100 million items within 100ms. Which GCP service supports approximate nearest neighbor (ANN) search at this scale?",
+    "opts": [
+      "BigQuery ARRAY_AGG with cosine similarity computed in SQL using ML.DISTANCE per row",
+      "Vertex AI Vector Search (Matching Engine) — purpose-built for billion-scale ANN search",
+      "Cloud Bigtable with vector embeddings stored as wide columns and scanned per query",
+      "Elasticsearch on GKE with the dense_vector field type and approximate kNN plugin"
+    ],
+    "ans": 1,
+    "explain": "Vertex AI Vector Search (formerly Matching Engine) uses ScaNN (Scalable Approximate Nearest Neighbors) to serve billion-scale vector similarity searches with < 100ms p99 latency. A full SQL scan of 100M vectors would take seconds.",
+    "concept": "Vertex AI Vector Search, ANN, embeddings, recommendation systems"
+  },
+  {
+    "q": "A compliance team requires that all BigQuery query results involving columns tagged 'CONFIDENTIAL' must be masked for users without explicit access. Which feature enforces this without modifying the underlying data?",
+    "opts": [
+      "BigQuery Authorized Views that filter out confidential columns via SELECT projection rewrites",
+      "BigQuery Dynamic Data Masking — apply masking rules to columns based on IAM policy bindings; users without access see masked values",
+      "BigQuery Column-Level Security with policy tags — users without access receive permission denied errors at query time",
+      "Encrypt confidential columns using AEAD functions before storage and grant decrypt keys via KMS"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Dynamic Data Masking extends Column-Level Security: instead of blocking access, masking rules (nullify, default value, SHA256 hash, etc.) are applied for users without the unmasked data role.",
+    "concept": "BigQuery Dynamic Data Masking, policy tags, column-level security"
+  },
+  {
+    "q": "A data team uses dbt on BigQuery. They want to ensure that dbt models are only re-run when their source data has changed. Which dbt feature enables this?",
+    "opts": [
+      "dbt --select flag with tag-based filtering to manually pick which models to run each invocation",
+      "dbt snapshots configured with strategy=timestamp to track upstream change timestamps automatically",
+      "dbt state-based selection with --select state:modified+ to run only models with changed SQL or changed upstream sources",
+      "dbt seeds configured to cache source data and trigger model reruns when seed files change"
+    ],
+    "ans": 2,
+    "explain": "dbt's state-based selection compares the current project state to a previous manifest.json. --select state:modified+ runs only models whose SQL or upstream dependencies have changed — avoiding unnecessary reprocessing.",
+    "concept": "dbt state-based selection, dbt on BigQuery, incremental model execution"
+  },
+  {
+    "q": "What is the purpose of BigQuery Reservations (formerly known as Flat-rate pricing)?",
+    "opts": [
+      "Reservations ensure data is physically stored in a specific geographic region for compliance",
+      "Reservations provide dedicated BigQuery compute slots; workloads are isolated and not subject to on-demand slot contention",
+      "Reservations enable automatic schema detection for external tables backed by Cloud Storage",
+      "Reservations are required for running BigQuery ML model training jobs at production scale"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Reservations (Capacity-based pricing) provides dedicated slot capacity. Organizations buy slots and assign them to projects/folders via assignments. Workloads use only their reserved slots, providing cost predictability and isolation.",
+    "concept": "BigQuery Reservations, slot management, capacity vs on-demand pricing"
+  },
+  {
+    "q": "You need to profile a 1 TB BigQuery table to identify null rates, outlier distributions, and schema anomalies. Which GCP service automates this?",
+    "opts": [
+      "Run manual COUNT, AVG, and STDDEV SQL queries iteratively across all 500 columns",
+      "Dataplex data quality auto-profiling — scans tables and generates statistical profiles without writing SQL",
+      "BigQuery INFORMATION_SCHEMA.COLUMNS view for statistical profiling and outlier detection",
+      "Cloud Data Fusion Data Preview feature combined with Wrangler transformation suggestions"
+    ],
+    "ans": 1,
+    "explain": "Dataplex auto data profiling scans BigQuery tables and generates column-level statistics (null %, distinct count, min/max, quartiles, top values) automatically — without writing SQL.",
+    "concept": "Dataplex data profiling, data quality, automated scanning"
+  },
+  {
+    "q": "A BI analyst needs to join a BigQuery table (10 TB) with a Google Sheets spreadsheet updated daily. What is the recommended approach?",
+    "opts": [
+      "Export the BigQuery data to a Google Sheet daily and perform the join with VLOOKUP in Sheets",
+      "Create a BigQuery External Table pointing to the Google Sheet; join it with the BigQuery table in standard SQL",
+      "Use Cloud Data Fusion to sync the Google Sheets data to BigQuery as a native managed table each morning",
+      "Manually download the Sheet as a CSV and bq load it into a BigQuery staging table every day"
+    ],
+    "ans": 1,
+    "explain": "BigQuery supports Google Sheets as an external data source. Create an External Table pointing to the Sheet URL — BigQuery queries it live. This allows SQL JOIN between the 10 TB BigQuery table and the Sheets data without manual data movement.",
+    "concept": "BigQuery external tables, Google Sheets integration, federated analysis"
+  },
+  {
+    "q": "Which SQL window function correctly computes a 7-day rolling average of daily sales in BigQuery?",
+    "opts": [
+      "AVG(sales) OVER (PARTITION BY product_id ORDER BY sale_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)",
+      "AVG(sales) OVER (PARTITION BY product_id ORDER BY sale_date RANGE BETWEEN INTERVAL 7 DAY PRECEDING AND CURRENT ROW)",
+      "AVG(sales) OVER (ORDER BY sale_date ROWS BETWEEN -7 AND 0 PARTITION BY product_id)",
+      "SUM(sales) / 7 OVER (ORDER BY sale_date PARTITION BY product_id ROWS UNBOUNDED PRECEDING)"
+    ],
+    "ans": 0,
+    "explain": "ROWS BETWEEN 6 PRECEDING AND CURRENT ROW creates a 7-row window (current + 6 previous). This computes a 7-day rolling average per product when data has one row per day.",
+    "concept": "BigQuery window functions, rolling aggregations, ROWS vs RANGE"
+  },
+  {
+    "q": "A company wants to implement row-level security in BigQuery: analysts in EMEA should only see European customer rows, analysts in APAC should only see APAC rows. Which feature implements this cleanly?",
+    "opts": [
+      "Create separate physical tables per region and grant IAM dataset access to the matching analyst groups",
+      "BigQuery Row-Level Access Policies with CREATE ROW ACCESS POLICY filtering by region and binding to IAM groups",
+      "Authorized views per region with region-specific WHERE clauses and dataset-level access bindings",
+      "VPC Service Controls perimeter rules restricting BigQuery API access by network origin and region"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Row Access Policies: CREATE ROW ACCESS POLICY statements filter rows based on SESSION_USER() or IAM group membership. EMEA analysts automatically see only WHERE region='EMEA' — no separate tables or views needed.",
+    "concept": "BigQuery row access policies, row-level security, IAM group filtering"
+  },
+  {
+    "q": "You need to calculate the percentile distribution (P50, P90, P99) of API response times from a BigQuery table of 1 billion rows. Which BigQuery function is appropriate?",
+    "opts": [
+      "AVG() with GROUP BY response bucket — computes a fast approximate average response time per percentile",
+      "APPROX_QUANTILES(response_time, 100) — returns approximate quantiles efficiently on large datasets",
+      "PERCENTILE_CONT(0.99) OVER () — exact window function but requires a full distributed sort of all rows",
+      "STDDEV() combined with AVG() to approximate the percentile distribution via the normal distribution"
+    ],
+    "ans": 1,
+    "explain": "APPROX_QUANTILES(expression, N) computes approximate quantiles using HyperLogLog++ sketches — O(1) memory regardless of dataset size. For 1 billion rows, this is dramatically more efficient than exact methods like PERCENTILE_CONT which require a full sort. Returns an ARRAY of N+1 quantile values.",
+    "concept": "BigQuery APPROX_QUANTILES, approximate aggregations, percentile computation"
+  },
+  {
+    "q": "A data team runs 200 BigQuery queries per day from a Looker dashboard. Each query costs $5 on average (on-demand). What is the break-even analysis for switching to BigQuery Reservations?",
+    "opts": [
+      "Reservations are never cost-effective for dashboard workloads — on-demand is always cheaper because dashboard queries are bursty and short-lived, so reserved slots would sit idle most of the time and inflate the total monthly bill",
+      "Daily on-demand cost: 200 queries × $5 = $1,000/day = $30,000/month. Compare to Reservation cost: at ~$0.04/slot/hour, ~750 slots needed for 200 queries, costing ~$21,600/month. Reservations break even at consistent high utilization",
+      "Reservations are always cheaper than on-demand by 50%, so switching immediately reduces monthly cost regardless of slot utilization or workload pattern across the dashboard usage cycle",
+      "Reservations cost more than on-demand but provide guaranteed performance through dedicated slot pools, predictable concurrency, and SLA-backed query latency that on-demand pricing cannot match"
+    ],
+    "ans": 1,
+    "explain": "Break-even analysis: calculate daily on-demand spend × 30 days vs. monthly reservation cost at the required slot count. Reservations become cost-effective when consistent high utilization (>60-70% of the time) fills the reserved slots. For bursty or unpredictable workloads, on-demand may be cheaper.",
+    "concept": "BigQuery cost analysis, Reservations vs on-demand break-even, slot utilization"
+  },
+  {
+    "q": "What is the difference between BigQuery's DISTINCT vs APPROX_COUNT_DISTINCT for counting unique users in a 100 billion row table?",
+    "opts": [
+      "They are identical in both results and performance because BigQuery transparently rewrites COUNT(DISTINCT) into the same HyperLogLog++ sketch under the hood for any table exceeding a configurable size threshold",
+      "COUNT(DISTINCT user_id) computes the exact count using full deduplication — memory and time scales with unique value count. APPROX_COUNT_DISTINCT uses HyperLogLog++ with ~1% error — processes in constant memory regardless of dataset size. Use APPROX for large-scale analytics, COUNT(DISTINCT) only when exact count is required",
+      "APPROX_COUNT_DISTINCT is only available within BigQuery ML training pipelines as a feature engineering helper and cannot be invoked from a standard SELECT statement against a regular BigQuery analytics table",
+      "COUNT(DISTINCT) is faster in BigQuery because the columnar execution engine uses native SIMD optimization to deduplicate values in a single pass without requiring memory proportional to the distinct cardinality"
+    ],
+    "ans": 1,
+    "explain": "For 100 billion rows with millions of unique users, COUNT(DISTINCT) requires holding all unique values in memory for deduplication — potentially slow and resource-intensive. APPROX_COUNT_DISTINCT uses HyperLogLog++ sketches with ~1-2% error but O(1) memory. Choose based on business need for exactness.",
+    "concept": "BigQuery COUNT DISTINCT vs APPROX_COUNT_DISTINCT, HyperLogLog++, scalable cardinality"
+  },
+  {
+    "q": "You need to run a BigQuery query that compares each customer's purchase to the average purchase of all customers in the same city. Which SQL construct achieves this efficiently?",
+    "opts": [
+      "Correlated subquery: WHERE amount > (SELECT AVG(amount) FROM orders WHERE city = o.city) per row",
+      "Window function: AVG(amount) OVER (PARTITION BY city) — computes city average in a single pass without subquery",
+      "Self-join: JOIN orders AS avg_orders ON o.city = avg_orders.city followed by GROUP BY city, customer",
+      "Create a separate aggregated table of city averages and INNER JOIN it back to the main orders table"
+    ],
+    "ans": 1,
+    "explain": "Window function AVG(amount) OVER (PARTITION BY city) computes the average amount per city in a single table scan — no subquery or self-join. The original row context is preserved, enabling direct comparison: amount vs. AVG(amount) OVER (PARTITION BY city).",
+    "concept": "BigQuery window functions, PARTITION BY, analytical queries"
+  },
+  {
+    "q": "A data analyst needs to understand why a specific BigQuery query is slow. Which tools in BigQuery help diagnose query performance?",
+    "opts": [
+      "Cloud Monitoring metrics for BigQuery — they show per-query execution time breakdown and stage-level slot consumption directly in the metrics explorer",
+      "BigQuery Query Execution Details (query plan explanation) in the BigQuery UI or via EXPLAIN statement — shows each stage's elapsed time, slot usage, bytes processed, and shuffle data",
+      "Cloud Logging query logs filtered by jobservice.jobcompleted — they contain stage-by-stage query performance details and slot utilization timelines",
+      "BigQuery INFORMATION_SCHEMA.JOBS view for aggregate job-level statistics only, without per-stage timing or shuffle data needed for performance tuning"
+    ],
+    "ans": 1,
+    "explain": "BigQuery's query execution plan (available in the UI under 'Execution Details' or via INFORMATION_SCHEMA.JOBS_TIMELINE) shows: each query stage, worker count, elapsed time, bytes shuffled between stages, and slot consumption. This pinpoints bottlenecks (large shuffles, slow stages).",
+    "concept": "BigQuery query plan, execution details, performance diagnosis"
+  },
+  {
+    "q": "Which BigQuery feature allows creating reusable SQL components that can be called like functions, supporting complex business logic without code duplication?",
+    "opts": [
+      "BigQuery stored procedures only — BigQuery does not support user-defined function objects callable from SELECT statements",
+      "BigQuery User-Defined Functions (UDFs) using SQL or JavaScript; Persistent UDFs are stored in datasets and reusable across queries",
+      "BigQuery macros defined via DECLARE statements at session scope, callable as inline SQL fragments across queries",
+      "BigQuery table-valued functions only — they fully replace views and scalar UDFs for all reusable SQL logic patterns"
+    ],
+    "ans": 1,
+    "explain": "BigQuery UDFs: SQL UDFs use standard SQL expressions; JavaScript UDFs enable complex logic not expressible in SQL. Persistent UDFs are stored in a dataset and callable with project.dataset.function_name() syntax. Remote Functions call Cloud Run/Cloud Functions for external computation.",
+    "concept": "BigQuery UDFs, user-defined functions, reusable SQL logic"
+  },
+  {
+    "q": "You need to join a streaming Pub/Sub event stream with a slowly-changing BigQuery dimension table in real-time. The dimension table updates once per hour. What is the most efficient join pattern in Dataflow?",
+    "opts": [
+      "Query BigQuery for each event in the stream using a per-element BigQueryIO read, paying one BigQuery query cost per streamed event for the dimension lookup",
+      "Load the BigQuery dimension table as a Dataflow side input at pipeline start; use a timer to reload it every hour. Join the stream against the in-memory side input for sub-millisecond per-event lookups",
+      "Write streaming events to BigQuery via streaming inserts and use BigQuery scheduled queries to perform the dimension join hourly into a denormalized output table",
+      "Use Cloud Spanner as an intermediary store — Dataflow queries Spanner for each event via the Spanner connector to fetch the matching dimension row before output"
+    ],
+    "ans": 1,
+    "explain": "For slowly-changing dimension tables, side inputs with periodic refresh are optimal: the dimension table is loaded once per hour into worker memory (side input view). Each streaming event is joined locally against the cached data — no external service call per event. This provides sub-millisecond join latency.",
+    "concept": "Dataflow side inputs, streaming dimension join, slowly-changing data refresh"
+  },
+  {
+    "q": "What is the purpose of a BigQuery 'Scripting' and DECLARE/SET in a BigQuery SQL script?",
+    "opts": [
+      "BigQuery scripting is only for DDL operations such as CREATE and DROP, and does not support procedural variables or conditional execution at the session level",
+      "BigQuery scripting enables imperative SQL: DECLARE variables, SET values, IF/ELSE conditions, WHILE loops, CALL procedures — enabling complex multi-step data transformations in a single session without client-side code",
+      "DECLARE and SET are syntactic synonyms for CREATE TABLE and INSERT — they only define and populate persistent tables, not session-scope variables for use across statements",
+      "BigQuery scripting only works inside stored procedures and cannot be used in ad-hoc query sessions or scheduled queries that execute outside a CREATE PROCEDURE block"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Scripting brings procedural SQL to BigQuery: DECLARE @var INT64; SET @var = (SELECT COUNT(*) FROM table); IF @var > 0 THEN ... END IF; LOOP...END LOOP. This enables complex conditional logic, loops over result sets, and multi-step transformations without orchestration tools.",
+    "concept": "BigQuery scripting, procedural SQL, DECLARE/SET, conditional logic"
+  },
+  {
+    "q": "You are building a data pipeline that transforms raw clickstream data into sessionized user journeys. Each session = consecutive clicks with < 30 min gap. Which BigQuery SQL approach sessionizes efficiently?",
+    "opts": [
+      "Use SELECT DISTINCT on the user_id and timestamp columns to identify unique sessions, then group by the resulting deduplicated rows for session aggregation",
+      "Use window functions: LAG() to compare timestamp with previous click per user; mark session start when gap > 30 min; use SUM(is_new_session) OVER (PARTITION BY user_id ORDER BY timestamp) to assign session IDs",
+      "Create a stored procedure that iterates row by row using a cursor for each user, assigning session IDs based on the gap between the current and previous timestamp",
+      "Use BigQuery ML's ARIMA_PLUS time-series anomaly detection to find session boundaries by treating large gaps as anomalous spikes in the inter-arrival time distribution"
+    ],
+    "ans": 1,
+    "explain": "Standard sessionization SQL: LAG(timestamp) OVER (PARTITION BY user_id ORDER BY timestamp) gets the previous event time. CASE WHEN timestamp - prev_timestamp > INTERVAL 30 MINUTE THEN 1 ELSE 0 END marks new sessions. Running sum assigns incrementing session IDs per user.",
+    "concept": "BigQuery sessionization, LAG window function, session analytics"
+  },
+  {
+    "q": "What is the BigQuery MERGE statement used for and what are its key clauses?",
+    "opts": [
+      "MERGE is used for joining two tables together in analytical SELECT queries, equivalent to an INNER JOIN with conflict-resolution semantics on the matching key columns",
+      "MERGE (DML) implements upsert semantics: WHEN MATCHED THEN UPDATE, WHEN NOT MATCHED BY TARGET THEN INSERT, WHEN NOT MATCHED BY SOURCE THEN DELETE — enabling efficient CDC/SCD updates in a single atomic statement",
+      "MERGE is BigQuery's version of UNION ALL for combining tables with deduplication, replacing the standard SQL set operator with a clause-based syntax for distinct row selection",
+      "MERGE replaces CREATE TABLE AS SELECT for ETL workloads — it is the recommended pattern for full table refresh from a source query result without DML overhead"
+    ],
+    "ans": 1,
+    "explain": "BigQuery MERGE performs upsert/CDC operations: MERGE target USING source ON key WHEN MATCHED THEN UPDATE SET ... WHEN NOT MATCHED THEN INSERT .... A single MERGE statement atomically handles inserts, updates, and deletes — essential for Type 2 SCD, CDC replay, and idempotent pipeline reruns.",
+    "concept": "BigQuery MERGE statement, upsert, CDC, SCD Type 2, idempotent ETL"
+  },
+  {
+    "q": "A data team needs to analyze customer churn using BigQuery ML. Which BQML model type is appropriate for binary classification (churned / not churned)?",
+    "opts": [
+      "k-means clustering (KMEANS) — groups customers into churn segments based on feature similarity",
+      "Logistic regression (LOGISTIC_REG) or Boosted Trees (BOOSTED_TREE_CLASSIFIER) — binary classification models predicting probability of churn",
+      "Linear regression (LINEAR_REG) — predicts a continuous churn score that can be thresholded into a binary label",
+      "Time series (ARIMA_PLUS) — forecasts future churn rates over a configurable horizon per customer cohort"
+    ],
+    "ans": 1,
+    "explain": "Binary classification (churned=1/0) requires LOGISTIC_REG or BOOSTED_TREE_CLASSIFIER in BigQuery ML. Logistic regression is interpretable and fast to train; boosted trees (XGBoost) typically achieve higher accuracy. Both output predicted probabilities via ML.PREDICT().",
+    "concept": "BigQuery ML model types, binary classification, churn prediction"
+  },
+  {
+    "q": "You need to visualize BigQuery data in Looker Studio but the report is slow. Which optimizations improve performance for a 100M-row BigQuery table?",
+    "opts": [
+      "Enable Looker Studio caching only — it refreshes every 15 minutes automatically across all chart components in the report and requires no BigQuery-side configuration changes",
+      "Apply multiple optimizations: partition and cluster the BigQuery table for dashboard filters; enable Looker Studio data extract for frequently-used date ranges; configure BigQuery BI Engine for in-memory acceleration of common aggregations",
+      "Export the data from BigQuery to a Cloud SQL for PostgreSQL replica so Looker Studio reads it directly through the Cloud SQL connector with faster latency than BigQuery",
+      "Reduce the number of charts on each report page to limit the number of concurrent BigQuery queries triggered per page load and lower the per-render dashboard cost"
+    ],
+    "ans": 1,
+    "explain": "Multi-layer optimization for Looker Studio: (1) BigQuery partitioning/clustering aligns with dashboard filter patterns; (2) Looker Studio extracts cache stable data; (3) BI Engine accelerates common aggregations in-memory. Layer these based on report freshness requirements.",
+    "concept": "Looker Studio performance, BigQuery BI Engine, data extracts, dashboard optimization"
+  },
+  {
+    "q": "What is BigQuery's EXCEPT ALL and INTERSECT ALL for set operations?",
+    "opts": [
+      "EXCEPT returns rows in the left query that are not in the right query; INTERSECT returns rows present in both. ALL retains duplicates; without ALL, duplicates are removed",
+      "EXCEPT and INTERSECT are not supported in BigQuery — use NOT EXISTS and EXISTS subqueries instead for set semantics",
+      "EXCEPT ALL is functionally equivalent to NOT IN with row tuple comparison; INTERSECT ALL is functionally equivalent to IN with multi-column tuple matching",
+      "EXCEPT and INTERSECT operate only on tables with identical schemas and identical row counts on both sides of the set operator"
+    ],
+    "ans": 0,
+    "explain": "BigQuery supports standard SQL set operations: UNION (combine), INTERSECT (common rows), EXCEPT (left-only rows). The ALL modifier retains duplicate rows; without it, duplicates are implicitly removed (DISTINCT). Useful for finding delta between two datasets.",
+    "concept": "BigQuery set operations, EXCEPT ALL, INTERSECT ALL, UNION"
+  },
+  {
+    "q": "A report requires calculating the month-over-month growth rate for each product. Which BigQuery approach is most expressive and efficient?",
+    "opts": [
+      "Create a self-join on the sales table joining each row to its prior-month row on product_id and DATE_SUB(month, INTERVAL 1 MONTH)",
+      "Use LAG(revenue) OVER (PARTITION BY product_id ORDER BY month) to get prior month revenue; calculate (current - prior) / prior as growth rate in a single query",
+      "Use two subqueries that each calculate one month's total separately and divide them at the outer level to produce the per-product growth rate",
+      "Create a materialized view that pre-computes growth rates for all products by aggregating historical month pairs through a scheduled refresh"
+    ],
+    "ans": 1,
+    "explain": "LAG() window function retrieves the value from the previous row within the partition. (revenue - LAG(revenue) OVER (PARTITION BY product_id ORDER BY month)) / LAG(revenue) ... computes MoM growth in a single pass. Self-joins for time-offset comparisons are less readable and less efficient.",
+    "concept": "BigQuery LAG window function, month-over-month analysis, time-series comparison"
+  },
+  {
+    "q": "What is the purpose of BigQuery's UNNEST function?",
+    "opts": [
+      "UNNEST flattens a repeated STRING column into a single comma-separated value joined with STRING_AGG semantics on the array elements",
+      "UNNEST converts an ARRAY column into a set of rows — one row per array element — enabling SQL operations on individual array elements as if they were regular rows",
+      "UNNEST materializes a new BigQuery table from an existing array column by writing each element into a separate persistent row in storage",
+      "UNNEST flattens nested STRUCT columns into separate top-level scalar columns automatically based on the struct field schema and ordering"
+    ],
+    "ans": 1,
+    "explain": "UNNEST flattens ARRAY fields into rows: SELECT * FROM table, UNNEST(tags) AS tag creates one row per tag value per original row. This enables filtering, grouping, and joining on array elements. Essential for working with BigQuery's repeated fields.",
+    "concept": "BigQuery UNNEST, ARRAY flattening, repeated fields, SQL on arrays"
+  },
+  {
+    "q": "You need to build a real-time analytics dashboard that shows product sales in the last 5 minutes with 1-second refresh. What is the optimal architecture?",
+    "opts": [
+      "BigQuery streaming inserts feeding a Looker Studio dashboard with 1-second auto-refresh on a Live Connection to the streaming target table",
+      "Pub/Sub → Dataflow aggregation in 1-minute tumbling windows → BigQuery → Looker Studio with 1-second query refresh against the rolling aggregate table",
+      "Pub/Sub → Dataflow 5-minute sliding window aggregation → BigQuery → Looker Studio Live Connection. For truly real-time (< 1 sec), use Bigtable for the aggregated results and a custom dashboard querying Bigtable",
+      "Cloud Spanner as the primary store for all sales data with Looker Studio direct connection over the JDBC driver and 1-second polling on aggregate views"
+    ],
+    "ans": 2,
+    "explain": "For 1-second real-time dashboards: BigQuery has 1-2 second query latency minimum — insufficient for true 1-second refresh. The optimal architecture: Dataflow computes 5-minute sliding window aggregations → writes to Bigtable (sub-ms reads) → custom dashboard polls Bigtable every second.",
+    "concept": "Real-time dashboard architecture, Bigtable for real-time, Dataflow aggregation"
+  },
+  {
+    "q": "A data team wants to understand the business impact of outliers in a BigQuery dataset. Which statistical functions identify outliers?",
+    "opts": [
+      "Use SELECT DISTINCT to find unique values that occur only once in the dataset and treat them as outliers by their low frequency of occurrence",
+      "Use STDDEV() and AVG() to identify rows where value > AVG + 3*STDDEV (Z-score method); or use APPROX_QUANTILES() to find P1 and P99 as outlier boundaries; or use BigQuery ML's k-means to cluster and identify outliers as small clusters",
+      "Use MAX() and MIN() to compute the data range — any value falling strictly between the minimum and maximum is considered to be a non-outlier value",
+      "Use ARRAY_AGG with ORDER BY value and inspect the first and last elements of the resulting array to find the extreme values as outliers"
+    ],
+    "ans": 1,
+    "explain": "Statistical outlier detection in BigQuery: (1) Z-score: WHERE ABS(value - AVG(value) OVER()) > 3 * STDDEV(value) OVER(); (2) IQR method using APPROX_QUANTILES for Q1/Q3; (3) BQML k-means clustering where small clusters indicate outliers. All three approaches are expressible in standard BigQuery SQL.",
+    "concept": "BigQuery outlier detection, statistical functions, Z-score, IQR"
+  },
+  {
+    "q": "What is a BigQuery 'reservation assignment' and how does it control which workloads use reserved slots?",
+    "opts": [
+      "Reservation assignments are BigQuery table-level labels for billing breakdown and chargeback reporting purposes within the cost console",
+      "A reservation assignment binds a project, folder, or organization to a specific reservation. Any BigQuery job submitted from the assigned project uses slots from that reservation — not from the on-demand pool. Unassigned projects use on-demand pricing",
+      "Reservation assignments are simply a synonym for BigQuery IAM role assignments granted at the dataset or project level to user principals",
+      "Reservation assignments are mandatory for all BigQuery operations in Enterprise edition and must be created before any query can run against a dataset"
+    ],
+    "ans": 1,
+    "explain": "Reservations + Assignments: create a Reservation (slot pool), then create an Assignment linking a project/folder/org to the reservation. Jobs from assigned entities draw from the reservation's slot pool. Multiple reservations provide workload isolation — ETL jobs don't compete with analytics queries for slots.",
+    "concept": "BigQuery reservation assignments, slot pool management, workload isolation"
+  },
+  {
+    "q": "You need to implement a Type 2 Slowly Changing Dimension (SCD) in BigQuery — tracking historical changes with start/end dates. What is the correct approach?",
+    "opts": [
+      "Use a BigQuery INSERT OVERWRITE statement to fully replace the dimension table with current source values on each scheduled run cycle",
+      "Use BigQuery MERGE statement: WHEN MATCHED AND source differs from target THEN INSERT new row with effective_start = today and UPDATE old row's effective_end = yesterday",
+      "Recreate the entire dimension table daily from source data using CREATE OR REPLACE TABLE AS SELECT and discard historical row versions on each run",
+      "Use BigQuery append-only inserts and filter to the latest record at query time via ROW_NUMBER OVER PARTITION BY natural_key ORDER BY load_ts DESC"
+    ],
+    "ans": 1,
+    "explain": "SCD Type 2 in BigQuery: MERGE target USING source ON natural_key WHEN MATCHED AND target.current_flag AND (differences exist) THEN mark old row (effective_end = today, current_flag = false) AND INSERT new row (effective_start = today, current_flag = true) WHEN NOT MATCHED THEN INSERT new row.",
+    "concept": "SCD Type 2, BigQuery MERGE, slowly changing dimensions, historical tracking"
+  },
+  {
+    "q": "A data scientist exports BigQuery data to Pandas for EDA on a local machine. The table has 100 million rows. What is the efficient way to do this?",
+    "opts": [
+      "Use bq extract to write Avro files to Cloud Storage, then download the files locally and parse them with pandas.read_avro for analysis",
+      "Use the BigQuery Storage Read API with the BigQuery client library (read_gbq or BigQuery Storage Read API directly) — streams data directly to Pandas/Arrow without intermediate GCS export",
+      "Download rows one by one using the BigQuery REST API tabledata.list endpoint with pagination tokens until all 100M rows have been retrieved client-side",
+      "Use Google Sheets as an intermediate staging area — export the BigQuery table to Sheets via Connected Sheets, then download as CSV for pandas.read_csv"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Storage Read API (available in google-cloud-bigquery via read_gbq or bigquery_storage) streams data directly to Pandas DataFrames via Apache Arrow format. This is 10-100x faster than the export-to-GCS method and doesn't require intermediate storage.",
+    "concept": "BigQuery Storage Read API, Pandas integration, read_gbq, Apache Arrow"
+  },
+  {
+    "q": "You need to implement a pipeline that detects when a sensor reading deviates more than 3 standard deviations from its historical mean. The analysis must happen in BigQuery using available ML features. Which approach is most straightforward?",
+    "opts": [
+      "Train a BigQuery ML isolation forest model with CREATE MODEL OPTIONS(model_type='ISOLATION_FOREST') for unsupervised anomaly detection on the sensor data",
+      "Compute historical mean and std per sensor using window functions; flag anomalies where |current - mean| > 3 * std in a SQL query. Alternatively, use BigQuery ML PCA or autoencoder models for multivariate anomaly detection",
+      "Use Cloud AI Platform with a custom TensorFlow anomaly detection container reading the BigQuery table through the tf.data BigQuery reader connector",
+      "Export the sensor table to a Python environment and apply scipy.stats.zscore over the historical readings to flag anomalies row-by-row in a local notebook"
+    ],
+    "ans": 1,
+    "explain": "SQL-based Z-score anomaly detection: SELECT *, ABS(value - AVG(value) OVER (PARTITION BY sensor_id ORDER BY ts ROWS BETWEEN 100 PRECEDING AND 1 PRECEDING)) / NULLIF(STDDEV(value) OVER (...), 0) AS z_score FROM readings. Flag rows where z_score > 3.",
+    "concept": "BigQuery anomaly detection, Z-score, window function analytics"
+  },
+  {
+    "q": "What does BigQuery's PARTITION BY clause in window functions do versus CREATE TABLE PARTITION BY?",
+    "opts": [
+      "They are identical — both physically partition the underlying table data the same way at storage time and at query time",
+      "PARTITION BY in window functions defines groups within which the window function is applied — it's a logical grouping within a query, not physical storage. CREATE TABLE PARTITION BY physically stores data in separate partitions on disk. One is a query-time analytical construct; the other is a physical storage optimization",
+      "PARTITION BY in window functions physically splits the underlying table into shards on disk during query execution for parallel processing",
+      "CREATE TABLE PARTITION BY is deprecated in BigQuery and has been fully replaced by window function PARTITION BY for all new analytical workloads in Standard SQL"
+    ],
+    "ans": 1,
+    "explain": "Two different PARTITION BY concepts: (1) Window function PARTITION BY logically divides rows into groups within a query for analytic functions (ROW_NUMBER, AVG, etc.) — no physical effect. (2) CREATE TABLE PARTITION BY physically stores data in separate partitions — enables partition pruning, expiration, and efficient filtering.",
+    "concept": "BigQuery window PARTITION BY vs table partitioning, logical vs physical partitioning"
+  },
+  {
+    "q": "A marketing team needs a BigQuery query that ranks customers by lifetime value and assigns each to a decile (1-10). Which SQL approach implements this?",
+    "opts": [
+      "Use RANK() OVER (ORDER BY ltv DESC) to assign dense rank values and then bucket them by floor division into ten equal segments",
+      "Use NTILE(10) OVER (ORDER BY ltv DESC) to assign each customer to one of 10 equally-sized groups (deciles)",
+      "Use PERCENT_RANK() OVER (ORDER BY ltv DESC) and multiply by 10, then CEIL the result to derive a decile bucket per customer",
+      "Use CUME_DIST() OVER (ORDER BY ltv DESC) to compute the cumulative distribution and bucket the result into ten percentile groups"
+    ],
+    "ans": 1,
+    "explain": "NTILE(N) divides the result set into N buckets of approximately equal size, ordered by the specified column. NTILE(10) OVER (ORDER BY ltv DESC) assigns each customer a decile 1-10. NTILE handles ties by distributing them across buckets.",
+    "concept": "BigQuery NTILE, percentile bucketing, customer segmentation, window functions"
+  },
+  {
+    "q": "You need to create a BigQuery dataset that is accessible to all authenticated users in your GCP organization for BI reporting. What is the correct IAM configuration?",
+    "opts": [
+      "Grant roles/bigquery.dataViewer to allUsers — this provides public unauthenticated access to the dataset for any internet user",
+      "Grant roles/bigquery.dataViewer to allAuthenticatedUsers — restricts to any Google account but not specifically your org. For org-wide internal access: grant to 'domain:yourcompany.com' which covers all Workspace users in the org",
+      "Grant roles/bigquery.dataViewer to a manually maintained Google Workspace group that contains every employee user account in the org",
+      "Create a fully public BigQuery dataset with no access restrictions configured and rely on VPC Service Controls to limit traffic"
+    ],
+    "ans": 1,
+    "explain": "For organization-wide access: bind roles/bigquery.dataViewer to 'domain:yourcompany.com' — this grants access to all Google Workspace users in your domain automatically without managing individual accounts or groups. allAuthenticatedUsers is too broad (any Google account worldwide).",
+    "concept": "BigQuery IAM, domain-wide access, Workspace integration, org-wide datasets"
+  },
+  {
+    "q": "Which BigQuery function efficiently computes a Bloom filter over a large dataset for approximate membership testing?",
+    "opts": [
+      "BigQuery does not support Bloom filters natively — use APPROX_COUNT_DISTINCT combined with a HASH lookup as an approximation pattern",
+      "BF_BUILD() creates a Bloom filter from a large column; BF_CONTAINS() tests membership. These are HyperLogLog-based probabilistic data structures with configurable false positive rates",
+      "Use APPROX_COUNT_DISTINCT with a SAMPLE clause for membership testing — it produces a binary membership sketch as a side output column",
+      "Store all candidate values inside a BigQuery ARRAY column and use OFFSET-based lookups to test membership through array containment semantics"
+    ],
+    "ans": 1,
+    "explain": "BigQuery (2023+) introduced Bloom filter functions: BF_BUILD(column, fp_rate) creates a binary Bloom filter blob from a large dataset; BF_CONTAINS(bloom_filter, value) tests whether a value was in the original dataset with controlled false positive rate. Useful for large-scale approximate joins.",
+    "concept": "BigQuery Bloom filters, BF_BUILD, BF_CONTAINS, approximate membership testing"
+  },
+  {
+    "q": "You need to run a BigQuery job that requires reading from a table in Project A and writing to a table in Project B. The job runs under a service account in Project C. What billing project is charged?",
+    "opts": [
+      "Project A — where the source data physically lives is charged for all the bytes read by the query job",
+      "Project B — where the result table is created is charged for the bytes scanned during the read of Project A's source",
+      "Project C — the project where the job runs (the billing project) is charged for query compute; Project A and B are charged for storage only",
+      "Split evenly between Projects A and B based on the proportion of data volume read from A vs written to B"
+    ],
+    "ans": 2,
+    "explain": "BigQuery charges compute (query processing) to the project running the job — Project C in this case (the billing project configured in the client). Source data storage stays in Project A; result storage in Project B. Only the job-running project is charged for compute.",
+    "concept": "BigQuery billing project, cross-project queries, compute vs storage charges"
+  },
+  {
+    "q": "A data analyst needs to compare sales performance across multiple months side by side in a single BigQuery query row. Which technique achieves this?",
+    "opts": [
+      "Use multiple correlated subqueries each returning one month's aggregate value, then UNION ALL them together as separate rows in the final result set",
+      "PIVOT or conditional aggregation: SUM(CASE WHEN month='2024-01' THEN amount END) AS jan_sales, SUM(CASE WHEN month='2024-02' THEN amount END) AS feb_sales, ... per product in a single query",
+      "Create separate physical tables for each month's data and INNER JOIN them on product_id to produce side-by-side columns at the end of the join chain",
+      "Use BigQuery ML ARIMA_PLUS time-series analysis to forecast each month independently and pivot the resulting forecast horizons into columns"
+    ],
+    "ans": 1,
+    "explain": "Conditional aggregation (CASE WHEN) or BigQuery's PIVOT clause (added 2021) transforms row-oriented month data into columns. PIVOT (SUM(amount) FOR month IN ('2024-01' AS jan, '2024-02' AS feb, ...)) achieves the same result more declaratively.",
+    "concept": "BigQuery PIVOT, conditional aggregation, crosstab queries"
+  },
+  {
+    "q": "What is the difference between BigQuery's correlated subquery and a JOIN, and when should you prefer each?",
+    "opts": [
+      "There is no difference — BigQuery's distributed query optimizer rewrites both into identical execution plans regardless of the query author's chosen syntax for the operation",
+      "A correlated subquery references columns from the outer query and is re-evaluated per row — potentially expensive. A JOIN is evaluated once and can be optimized by BigQuery's distributed engine. Prefer JOINs for performance; use correlated subqueries when the logic requires row-by-row evaluation (e.g., complex EXISTS conditions)",
+      "Correlated subqueries are always faster than equivalent JOINs because they avoid the network data shuffle that a hash join requires across the distributed worker pool",
+      "BigQuery does not support correlated subqueries — references to outer query columns from within a nested SELECT raise a compilation error at query planning time"
+    ],
+    "ans": 1,
+    "explain": "In BigQuery's distributed execution, JOIN operations are highly optimized (broadcast or hash join). Correlated subqueries (SELECT ... WHERE x = outer_table.x) may be re-executed per row in the outer query, creating N subquery executions. BigQuery often rewrites correlated subqueries as JOINs, but complex ones may not be rewritten — test with EXPLAIN.",
+    "concept": "BigQuery correlated subqueries vs JOINs, query optimization, execution plan"
+  },
+  {
+    "q": "A team uses Google Data Studio (now Looker Studio) and needs to blend data from BigQuery and Google Analytics 4 in a single report. What is the recommended approach?",
+    "opts": [
+      "Export GA4 raw event data to a spreadsheet daily and use manual VLOOKUP formulas to combine it with BigQuery exports inside Google Sheets",
+      "Export GA4 data to BigQuery using GA4's BigQuery Export; join with other BigQuery data in SQL or Looker Studio data blending; use the unified BigQuery connector in Looker Studio",
+      "Use Looker Studio data blending to combine the live BigQuery connector and the GA4 connector side by side as separate data sources in the report",
+      "Use Cloud Data Fusion to merge the GA4 reporting API output and BigQuery tables into a unified staging dataset via a scheduled ETL pipeline"
+    ],
+    "ans": 1,
+    "explain": "GA4 BigQuery Export streams events to BigQuery daily. Once in BigQuery, you can JOIN with CRM, ad spend, or other datasets using SQL. Looker Studio connects to BigQuery for the unified dataset. This is more powerful than Looker Studio data blending (which has join limitations).",
+    "concept": "GA4 BigQuery Export, Looker Studio, cross-source analytics"
+  },
+  {
+    "q": "A Vertex AI Feature Store serves online features for a recommendation model. A data engineer needs to update features in real-time (sub-second) as user behavior changes. Which ingestion pattern achieves this?",
+    "opts": [
+      "Batch ingest features from BigQuery to Vertex AI Feature Store once per day using the ImportFeatureValues batch ingestion job scheduled by Cloud Composer",
+      "Use Pub/Sub → Dataflow → Vertex AI Feature Store online ingestion API (FeaturestoreService.WriteFeatureValues) for real-time feature updates with sub-second latency",
+      "Use Cloud Composer to trigger a feature ingestion DAG every minute, calling the Feature Store batch import endpoint for the latest user activity window",
+      "Use BigQuery scheduled queries to push features into the Vertex AI Feature Store hourly via the batch ingestion connector for online entity records"
+    ],
+    "ans": 1,
+    "explain": "For real-time feature updates: Pub/Sub captures user behavior events → Dataflow processes and computes features → WriteFeatureValues API updates the Feature Store online serving layer. This enables features to reflect user behavior within seconds of it occurring.",
+    "concept": "Vertex AI Feature Store real-time ingestion, WriteFeatureValues, streaming features"
+  },
+  {
+    "q": "You need to detect and remediate personally identifiable information (PII) in BigQuery query results before they reach an analytics dashboard. Which pipeline handles this?",
+    "opts": [
+      "Manually review query results before publishing to the dashboard and redact any sensitive columns that appear in the rendered report output",
+      "BigQuery Dynamic Data Masking with policy tags: tag PII columns; grant dashboard service account the masked data role — PII appears as hashed or nulled values automatically",
+      "Cloud DLP scans each exported query result in a Cloud Storage staging bucket before the dashboard's connector reads the file for display",
+      "Use authorized views that explicitly exclude PII columns from the dashboard's reporting dataset via column-level SELECT projection rewrites"
+    ],
+    "ans": 1,
+    "explain": "Dynamic Data Masking is the right tool here: tag PII columns (SSN, email, DOB) with a taxonomy policy tag; grant the dashboard's service account only the Masked Data Reader role (not Fine-Grained Reader). The dashboard automatically receives masked values — hashed SSN, nulled DOB, etc.",
+    "concept": "BigQuery Dynamic Data Masking, PII protection, dashboard access control"
+  },
+  {
+    "q": "What is BigQuery's table sampling function TABLESAMPLE and when is it appropriate?",
+    "opts": [
+      "TABLESAMPLE creates a permanent reduced-cost sample table that persists across query sessions and refreshes with a configurable sampling rate",
+      "TABLESAMPLE SYSTEM (N PERCENT) returns an approximate N% random sample of rows — read from a random selection of BigQuery storage blocks. Appropriate for exploratory data analysis, model prototyping, and approximate analytics where scanning the full table is cost-prohibitive",
+      "TABLESAMPLE returns exactly N percent of rows — the result is fully deterministic and repeatable for the same table version across subsequent query executions",
+      "TABLESAMPLE is only available for BigQuery tables under 1 TB in size — larger tables must use APPROX_QUANTILES-based sampling for cost-effective exploration"
+    ],
+    "ans": 1,
+    "explain": "SELECT * FROM table TABLESAMPLE SYSTEM (10 PERCENT) returns approximately 10% of rows (sampled at block level — not exact row count). Cost is approximately 10% of a full table scan. Use for EDA, testing transformations, or validating logic before running on full data.",
+    "concept": "BigQuery TABLESAMPLE, random sampling, cost-effective EDA"
+  },
+  {
+    "q": "You have a BigQuery dataset that users query with many different filter combinations on 5 columns. How do you optimize this without creating a separate view or index for each combination?",
+    "opts": [
+      "Create 32 (2^5) separate materialized views for each possible filter combination of the 5 columns and route queries to them via stored procedure dispatch",
+      "Cluster the BigQuery table on the 5 most frequently filtered columns (BigQuery supports up to 4 clustering columns); queries with any prefix subset of clustering columns benefit from block elimination",
+      "Create a separate physical partition for each unique filter value combination and route each incoming query to the matching partition via a dispatch view",
+      "BigQuery cannot optimize ad-hoc queries with multiple filter combinations — accept the full table scan cost and use Reservations to control compute spend"
+    ],
+    "ans": 1,
+    "explain": "BigQuery clustering eliminates blocks based on any left-prefix of the clustering columns. If you cluster on (region, product, customer_tier, channel), queries filtering on region alone, region+product, region+product+tier all benefit from block elimination. Queries not starting with region (the first cluster key) don't benefit.",
+    "concept": "BigQuery clustering, block elimination, multi-column filter optimization"
+  },
+  {
+    "q": "A data scientist needs to run feature importance analysis after training a BQML model. Which BQML function provides this?",
+    "opts": [
+      "ML.EVALUATE — evaluates trained model accuracy metrics such as precision, recall, and AUC on a holdout split",
+      "ML.FEATURE_IMPORTANCE — returns the importance of each feature used in training a supported model type (linear regression, boosted trees, random forest)",
+      "ML.EXPLAIN_PREDICT — explains individual per-row prediction outputs by attributing the contribution of each input feature",
+      "ML.TRAINING_INFO — shows per-iteration training loss curves and convergence diagnostics for the model fit process"
+    ],
+    "ans": 1,
+    "explain": "ML.FEATURE_IMPORTANCE(MODEL model_name) returns a table with each feature's importance score (relative contribution to model predictions). Supported for: linear regression (coefficients), boosted trees (gain/weight), random forest, AutoML. Use it after training to identify the most predictive features.",
+    "concept": "BigQuery ML feature importance, ML.FEATURE_IMPORTANCE, model interpretability"
+  },
+  {
+    "q": "You need to apply a complex custom business rule to categorize BigQuery rows that cannot be expressed in standard SQL. Which feature extends BigQuery with custom logic?",
+    "opts": [
+      "BigQuery stored procedures with nested IF/ELSE control flow blocks for the complex business rule branching logic at query time",
+      "BigQuery Remote Functions — define a Cloud Function or Cloud Run service with the custom logic; register it as a BigQuery function; call it in SQL like a regular function",
+      "Create a Dataflow pipeline that reads from the BigQuery table, applies the classification logic in a ParDo, and writes the labeled result back to BigQuery",
+      "Use deeply nested CASE WHEN expressions to encode the entire business rule directly inside the SELECT clause without any external code dependencies"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Remote Functions bridge BigQuery SQL with external compute: CREATE FUNCTION my_func(x STRING) RETURNS STRING REMOTE WITH CONNECTION ... RETURNS your-cloud-run-url. SQL calls the function; Cloud Run executes the Python/Java/Go business logic. Enables any custom logic accessible in SQL.",
+    "concept": "BigQuery Remote Functions, custom logic, Cloud Run integration, function extension"
+  },
+  {
+    "q": "What is the BigQuery INFORMATION_SCHEMA.PARTITIONS view used for?",
+    "opts": [
+      "PARTITIONS view lists every BigQuery table in a project along with its partition strategy and overall schema definition metadata",
+      "PARTITIONS view shows metadata for each partition in a partitioned table: partition_id, total_rows, total_logical_bytes, last_modified_time. Data engineers use it to monitor partition freshness, size imbalances, and identify empty partitions",
+      "PARTITIONS view shows which IAM principals have been granted read or write access to each partition of every partitioned table in the dataset",
+      "PARTITIONS view is used to issue DROP partition commands programmatically by joining its output back to a maintenance procedure for cleanup"
+    ],
+    "ans": 1,
+    "explain": "INFORMATION_SCHEMA.PARTITIONS provides per-partition metadata: SELECT partition_id, total_rows, last_modified_time FROM dataset.INFORMATION_SCHEMA.PARTITIONS WHERE table_name = 'my_table'. Essential for: detecting stale partitions (data freshness), monitoring partition size distribution, and identifying missing partitions in pipelines.",
+    "concept": "BigQuery INFORMATION_SCHEMA.PARTITIONS, partition metadata, data freshness monitoring"
+  },
+  {
+    "q": "A analytics engineer uses ARRAY_AGG() in BigQuery to collect all purchases per customer. What does ARRAY_AGG(DISTINCT product_id ORDER BY amount DESC LIMIT 10) compute?",
+    "opts": [
+      "An unordered array of all unique product_ids per customer because DISTINCT discards the ORDER BY and LIMIT clauses when used inside ARRAY_AGG",
+      "The top 10 distinct product_ids per customer ordered by total amount descending — ARRAY_AGG with DISTINCT, ORDER BY, and LIMIT all applied within the aggregate function",
+      "The 10 most frequently purchased product_ids computed globally across all customers in the dataset rather than per-customer aggregation",
+      "An error — BigQuery ARRAY_AGG does not support combining the ORDER BY and LIMIT modifiers in the same aggregate function invocation"
+    ],
+    "ans": 1,
+    "explain": "BigQuery's ARRAY_AGG supports modifiers: DISTINCT removes duplicates before aggregation; ORDER BY sorts elements within the array; LIMIT caps array size. Combined: ARRAY_AGG(DISTINCT product_id ORDER BY amount DESC LIMIT 10) returns the 10 highest-amount distinct products per customer as an ordered array.",
+    "concept": "BigQuery ARRAY_AGG, aggregate function modifiers, DISTINCT ORDER BY LIMIT"
+  },
+  {
+    "q": "What is Vertex AI's role in GCP's data engineering stack for model serving?",
+    "opts": [
+      "Vertex AI is only for model training; serving predictions in production requires deploying the trained model to Cloud Functions or Cloud Run separately with custom serving containers built by the team",
+      "Vertex AI provides end-to-end ML lifecycle: model training (custom containers, AutoML), Model Registry (versioning), Online Prediction (REST endpoint with autoscaling), Batch Prediction (BigQuery or GCS input/output), and monitoring (model drift, skew). Data engineers integrate Vertex AI endpoints into data pipelines for real-time scoring",
+      "Vertex AI only serves TensorFlow SavedModel artifacts natively; PyTorch, scikit-learn, and XGBoost models require running them on Dataproc with Spark MLlib serving containers",
+      "Vertex AI completely replaces BigQuery ML for all ML use cases in GCP and is the only supported path for any production-grade machine learning workload across the platform"
+    ],
+    "ans": 1,
+    "explain": "Vertex AI Online Prediction deploys any ML framework (TF, PyTorch, XGBoost, scikit-learn, custom containers) as autoscaling REST endpoints. Data pipelines call these endpoints via HTTP for real-time scoring. Batch Prediction takes BigQuery tables as input and writes results back to BigQuery — no endpoint needed for batch workflows.",
+    "concept": "Vertex AI, model serving, online prediction, batch prediction, MLOps"
+  },
+  {
+    "q": "You need to create a BigQuery view that aggregates data from 3 source tables. How do you grant access to the view without granting access to the underlying tables?",
+    "opts": [
+      "Grant view users direct roles/bigquery.dataViewer access to each of the 3 source tables and trust the view definition not to expose extra columns",
+      "Create the view in a separate dataset; authorize the view to access the source tables (Dataset Settings → Authorized Views); grant users access only to the view dataset — users cannot query source tables directly",
+      "Use BigQuery materialized views — they automatically isolate the source tables and revoke direct read access for any principal who can query the view",
+      "Apply Column-Level Security policy tags to the source tables so that non-authorized principals see masked values when the view aggregates them in SELECT"
+    ],
+    "ans": 1,
+    "explain": "Authorized views pattern: (1) Create the view in dataset_B referencing source tables in dataset_A; (2) In dataset_A settings, add dataset_B.view as an Authorized View — this grants the view service access to the source tables; (3) Grant users roles/bigquery.dataViewer on dataset_B only. Users see view results but cannot access source tables.",
+    "concept": "BigQuery authorized views, cross-dataset access, view-level security"
+  },
+  {
+    "q": "A data team wants to use BigQuery for both analytics and ML training. The ML training requires the last 2 years of data; analytics queries typically look at the last 30 days. How do you optimize the table design for both use cases?",
+    "opts": [
+      "Create two separate physical tables in BigQuery: one rolling 30-day analytics table and one 2-year ML training table, refreshed by daily scheduled queries",
+      "Partition the table by month (DATE_TRUNC(event_date, MONTH)) and cluster by feature columns. Analytics queries filter to the last 30 days (3 partitions scanned); ML training filters to 2 years (24 partitions scanned). One table, optimal for both",
+      "Use BigQuery materialized views for the analytics workload and have the ML training pipeline read from the underlying raw fact table with no partitioning applied",
+      "Create a separate BigQuery dataset dedicated to ML training with a copy of the last 2 years of data refreshed weekly by a transfer service replication job"
+    ],
+    "ans": 1,
+    "explain": "Monthly partitioning: analytics queries scan 1-3 partitions (last 30 days = 1-2 months); ML training scans 24 partitions (2 years). Both use cases benefit from the same partition strategy. Clustering on feature columns further optimizes ML training queries that filter by specific features.",
+    "concept": "BigQuery partition design for multiple use cases, analytics vs ML optimization"
+  },
+  {
+    "q": "What is the purpose of BigQuery's BI Engine memory reservations?",
+    "opts": [
+      "BI Engine memory is allocated dynamically per-query at runtime to hold intermediate query result sets during stage execution within the slot pool",
+      "BI Engine memory reservations purchase dedicated in-memory capacity for a specific BigQuery project/location. Queries that fit within the memory are served from memory (sub-second); queries that don't fit fall back to standard BigQuery execution",
+      "BI Engine memory reservations replace the need for BigQuery slots entirely — you pay only for the reserved memory capacity and not for any query compute",
+      "BI Engine memory is a globally shared resource pool used by every GCP project in the organization automatically without explicit per-project reservation"
+    ],
+    "ans": 1,
+    "explain": "BI Engine reservations: purchase X GB of in-memory capacity for a project in a region. Looker, Looker Studio, and direct SQL queries on eligible tables are accelerated using the in-memory data. Queries exceeding memory fall back to standard BigQuery. Memory is not per-query — it's shared capacity for all concurrent queries.",
+    "concept": "BigQuery BI Engine, in-memory reservations, sub-second query acceleration"
+  },
+  {
+    "q": "You need to join two BigQuery tables: Table A (10 TB) and Table B (50 MB). Which join optimization does BigQuery automatically apply?",
+    "opts": [
+      "BigQuery applies a hash join on the larger table side and a sort-merge join on the smaller table side based on table cardinality statistics",
+      "BigQuery automatically applies a broadcast join (shuffle-free join): Table B (50 MB) is broadcast to all workers processing Table A shards; workers perform local lookups against the broadcast copy — no Table B shuffle needed",
+      "BigQuery requires both tables to share identical partitioning and clustering keys for the join to execute efficiently across the distributed slot pool",
+      "BigQuery does not perform automatic join optimization — performance depends entirely on the order of tables and join hints specified by the user"
+    ],
+    "ans": 1,
+    "explain": "BigQuery's distributed query engine automatically detects when one table is small enough for a broadcast join. The 50 MB table is distributed to all workers; each worker holds a complete copy in memory and performs local joins against its shard of the 10 TB table. No shuffle needed for the small table.",
+    "concept": "BigQuery broadcast join, automatic join optimization, large-small table joins"
+  },
+  {
+    "q": "What does the BigQuery function JSON_VALUE() do and when would you use JSON_QUERY() instead?",
+    "opts": [
+      "JSON_VALUE() and JSON_QUERY() are functionally identical — they return the same result regardless of whether the targeted JSONPath points to a scalar or object",
+      "JSON_VALUE() extracts a scalar (STRING, NUMBER, BOOL) from a JSON string and returns it as a STRING. JSON_QUERY() extracts a JSON sub-object or array and returns it as a JSON STRING (preserving the JSON structure). Use JSON_QUERY() when the result is a nested object or array, not a scalar value",
+      "JSON_QUERY() works exclusively on BigQuery's native JSON type column; JSON_VALUE() works exclusively on STRING-typed columns that contain serialized JSON text",
+      "JSON_VALUE() returns NULL whenever the JSON path resolves to nested structure; JSON_QUERY() transparently flattens nested objects into a concatenated scalar string"
+    ],
+    "ans": 1,
+    "explain": "JSON_VALUE('{'a':{'b':1}}', '$.a.b') returns '1' (string scalar). JSON_QUERY('{'a':{'b':1}}', '$.a') returns '{\"b\":1}' (JSON object as string). Use JSON_VALUE for leaf values; JSON_QUERY when you need a sub-object to further parse or pass to another JSON function.",
+    "concept": "BigQuery JSON_VALUE vs JSON_QUERY, JSON extraction, nested JSON handling"
+  },
+  {
+    "q": "A data analyst notices that their BigQuery query ran in 10 seconds yesterday but takes 5 minutes today with the same query. The table size hasn't changed. What could cause this?",
+    "opts": [
+      "BigQuery caches all queries indefinitely — the query text must have changed between yesterday and today even if it looks the same to the analyst's eyes",
+      "Possible causes: (1) table was recently modified (bypassing query cache); (2) slots were consumed by concurrent high-priority jobs leaving fewer slots for this query; (3) data skew increased in a partition; (4) a new column with high cardinality was added affecting JOIN performance. Use INFORMATION_SCHEMA.JOBS_TIMELINE to compare slot consumption and execution stages",
+      "The BigQuery service had a regional incident — the only valid diagnostic step is to check the GCP status dashboard for outage notifications in the query region",
+      "The query plan changed because BigQuery's optimizer randomly varies the execution strategy across runs without any external trigger or change in input statistics"
+    ],
+    "ans": 1,
+    "explain": "Variable query performance with same query and table size: (1) Query cache miss (table modified → no cache hit); (2) Slot contention (concurrent jobs); (3) Data distribution change (skew). Diagnose: check INFORMATION_SCHEMA.JOBS for today's vs yesterday's slot_ms and bytes_processed. Compare execution stage timings in the query plan.",
+    "concept": "BigQuery query performance variability, slot contention, query cache, diagnosis"
+  },
+  {
+    "q": "You need to run a Vertex AI Batch Prediction job using a BigQuery table as input and write results back to BigQuery. What permissions does the Vertex AI service account need?",
+    "opts": [
+      "roles/bigquery.admin granted at the project level across all datasets to allow Vertex AI to read input data and write the prediction results table back",
+      "roles/bigquery.dataViewer on the input dataset (to read input rows) and roles/bigquery.dataEditor on the output dataset (to write prediction results). Vertex AI uses a default service agent that needs these minimal permissions",
+      "roles/bigquery.jobUser alone is sufficient — the Vertex AI service account inherits read and write access to all datasets automatically through this role binding",
+      "No additional IAM permissions are required — Vertex AI Batch Prediction has built-in pre-authorized access to any BigQuery dataset in the same project as the job"
+    ],
+    "ans": 1,
+    "explain": "Vertex AI Batch Prediction with BigQuery: the Vertex AI service agent needs bigquery.dataViewer on the input table's dataset to read feature rows, and bigquery.dataEditor on the output dataset to write prediction results. Apply the principle of least privilege — not project-level admin.",
+    "concept": "Vertex AI Batch Prediction, BigQuery permissions, IAM least privilege"
+  },
+  {
+    "q": "BigQuery supports 'connected sheets' which directly links Google Sheets to BigQuery. What is the primary advantage over Looker Studio for non-technical users?",
+    "opts": [
+      "Connected Sheets supports authoring of custom BigQuery SQL queries via an embedded Looker Studio connector that exposes the SQL editor inside the spreadsheet UI",
+      "Connected Sheets brings BigQuery data into familiar Google Sheets interface: pivot tables, charts, and formulas on BigQuery data using Sheets' UI without SQL knowledge. Looker Studio requires understanding the connector interface. Connected Sheets runs BigQuery queries transparently when users refresh",
+      "Connected Sheets is significantly faster than Looker Studio for large query results because it caches the entire result set locally in the spreadsheet for offline use",
+      "Connected Sheets replaces BigQuery ML for data analysts by providing native predictive modeling functions inside the spreadsheet that train against the linked BigQuery data"
+    ],
+    "ans": 1,
+    "explain": "Connected Sheets: non-technical users create pivot tables, charts, and formulas in Google Sheets backed by BigQuery. When they refresh or change the pivot, Sheets runs the corresponding BigQuery SQL automatically. This democratizes BigQuery analytics for business users who know Excel/Sheets but not SQL.",
+    "concept": "BigQuery Connected Sheets, non-technical analytics, Sheets-BigQuery integration"
+  },
+  {
+    "q": "What is the recommended approach for handling slowly-changing configuration parameters in BigQuery SQL queries (e.g., tax rates that change quarterly)?",
+    "opts": [
+      "Hardcode the current tax rates inline in every SQL query — this is the simplest approach and avoids the overhead of maintaining a separate lookup table",
+      "Store configuration in a separate BigQuery lookup table; JOIN in SQL queries. Alternatively, use BigQuery scripting (DECLARE @tax_rate) set from a config table. This centralizes config and avoids updating 100s of queries when rates change",
+      "Use Cloud Firestore to store configuration values and call them from every BigQuery query through a Remote Function dispatching to Cloud Run on each invocation",
+      "Use BigQuery ML model hyperparameters as the canonical storage for configuration values and retrieve them via ML.WEIGHTS in every analytical query that needs them"
+    ],
+    "ans": 1,
+    "explain": "Centralized config management: create a bigquery_config.parameters table with effective_start_date, parameter_name, value. SQL queries JOIN this table WHERE CURRENT_DATE BETWEEN effective_start AND effective_end to pick the active rate. Changing a rate requires updating only the config table, not all queries.",
+    "concept": "BigQuery configuration management, lookup tables, centralized parameters"
+  },
+  {
+    "q": "A data team uses Dataform for BigQuery transformations. How does Dataform handle incremental table updates to avoid reprocessing historical data?",
+    "opts": [
+      "Dataform always recreates tables from scratch on every run (full refresh only) — there is no incremental processing mode available in the Dataform framework for BigQuery",
+      "Dataform incremental tables: define a SQLX model with config type='incremental' and an is_incremental() conditional. On first run: full insert. On subsequent runs: WHERE clause filters to new data only; Dataform uses INSERT, MERGE, or INSERT OVERWRITE (depending on strategy) to add only new records",
+      "Dataform uses BigQuery time travel snapshots to automatically identify changed source rows since the last run by diffing the table against its prior version snapshot",
+      "Dataform incremental tables strictly require partitioned source tables and rely entirely on partition pruning to detect new data — non-partitioned tables cannot be incremental"
+    ],
+    "ans": 1,
+    "explain": "Dataform incremental models: config { type: 'incremental' } with ${when(incremental(), 'WHERE timestamp > (SELECT MAX(timestamp) FROM ' + self() + ')', '')} in the WHERE clause. Dataform detects if the table exists; on first run inserts all; on subsequent runs appends/merges only new rows.",
+    "concept": "Dataform incremental tables, is_incremental(), SQLX, BigQuery incremental processing"
+  },
+  {
+    "q": "You need to debug why a BigQuery scheduled query is producing incorrect aggregation results. What information should you check first?",
+    "opts": [
+      "Check the Cloud Storage source bucket for corrupted CSV or Avro files that may have been ingested into BigQuery as part of the upstream load step into the source table",
+      "Review the query's @run_date parameter substitution — if the query uses @run_date for incremental filtering and the parameter is incorrectly set (e.g., UTC vs local time), incorrect date ranges may be aggregated. Also verify the WRITE_DISPOSITION (WRITE_TRUNCATE vs WRITE_APPEND) is correct for idempotent reruns",
+      "The issue is almost always a source data quality problem — run a Cloud DLP inspection job over the input tables to identify malformed or anomalous source records",
+      "Check whether the destination BigQuery dataset was accidentally deleted and recreated between runs, which would reset the scheduled query's idempotency tracking and cause incorrect results"
+    ],
+    "ans": 1,
+    "explain": "Scheduled query debugging checklist: (1) @run_date parameter value — does it match the expected date? Is timezone handling correct? (2) WRITE_DISPOSITION — WRITE_APPEND accumulates data on rerun (double-counting); WRITE_TRUNCATE is idempotent. (3) Query logic — test manually with the specific @run_date that produced incorrect results.",
+    "concept": "BigQuery scheduled queries, @run_date parameter, WRITE_DISPOSITION debugging"
+  },
+  {
+    "q": "A financial analyst wants to run what-if analysis in BigQuery: 'What would total revenue be if we increased the price of Product X by 10%?' Which BigQuery feature supports this without modifying data?",
+    "opts": [
+      "Create a full physical copy of the sales table with the modified unit prices applied and run the aggregation against the copy rather than the original table",
+      "Use BigQuery scripting: DECLARE @price_increase FLOAT64 DEFAULT 1.10; SELECT product, SUM(quantity * unit_price * @price_increase) AS adjusted_revenue FROM sales WHERE product = 'X' GROUP BY product",
+      "Train a BigQuery ML regression model to forecast revenue under each candidate price scenario and use ML.PREDICT to retrieve the adjusted revenue value per scenario",
+      "Use Looker Studio calculated fields with a parameter control bound to the price multiplier — every chart in the report recomputes its aggregation when the parameter changes"
+    ],
+    "ans": 1,
+    "explain": "BigQuery scripting with DECLARE/SET enables parameterized what-if queries: declare a variable for the price multiplier, apply it in the SELECT clause. This runs as a single script without data modification. For interactive what-if, BigQuery BI Engine + Looker Studio parameters can pass values dynamically.",
+    "concept": "BigQuery scripting, what-if analysis, parameterized queries, DECLARE/SET"
+  },
+  {
+    "q": "You need to calculate customer lifetime value (CLV) in BigQuery as the sum of all transactions weighted by a time decay factor (more recent = higher weight). Which SQL approach implements this efficiently?",
+    "opts": [
+      "Use a chain of CASE WHEN expressions covering 10 different date ranges to manually assign discrete decay weights to each transaction bucket and sum them",
+      "Use a window function or correlated calculation: SUM(amount * EXP(-decay_rate * DATE_DIFF(CURRENT_DATE, transaction_date, DAY))) OVER (PARTITION BY customer_id) — applies exponential time decay to all transactions in a single pass",
+      "Create a separate BigQuery ML regression model trained on customer transaction history to predict the time-decay weighted CLV value for each customer in the dataset",
+      "Export the full transaction history table to a Python environment and apply scipy.optimize-based weighted aggregation per customer in a pandas DataFrame loop"
+    ],
+    "ans": 1,
+    "explain": "Time-decay weighted sum in BigQuery: EXP(-lambda * days_ago) is the exponential decay factor. Combining with SUM() OVER (PARTITION BY customer_id) computes CLV per customer in a single pass. The decay rate (lambda) controls how fast historical transactions diminish in value.",
+    "concept": "BigQuery time-decay functions, EXP, weighted aggregation, CLV calculation"
+  },
+  {
+    "q": "What is the effect of running CREATE OR REPLACE TABLE in BigQuery?",
+    "opts": [
+      "It fails with an error if the target table already exists — you must use ALTER TABLE statements to modify the schema or data of any existing BigQuery table object",
+      "CREATE OR REPLACE TABLE atomically drops the existing table and creates a new one with the specified schema and data. Any existing IAM bindings, time travel history, and partition configurations are lost. Use CTAS (CREATE TABLE AS SELECT) for non-destructive operations",
+      "CREATE OR REPLACE TABLE only replaces the table's schema definition but preserves its rows — existing data is retained and unioned with the new schema's columns at query time",
+      "CREATE OR REPLACE TABLE is an incremental DDL operation that merges the new schema with the existing schema, adding any missing columns and preserving prior partition definitions"
+    ],
+    "ans": 1,
+    "explain": "CREATE OR REPLACE TABLE is destructive: it drops and recreates the table atomically. Consequences: (1) time travel history is reset (cannot recover data before the replace); (2) IAM bindings on the table are lost; (3) partition/clustering configuration must be re-specified. For non-destructive updates, use MERGE or INSERT.",
+    "concept": "BigQuery CREATE OR REPLACE TABLE, destructive DDL, time travel reset"
+  },
+  {
+    "q": "Vertex AI Pipelines vs Cloud Composer — when would you use Vertex AI Pipelines for ML workflows instead of Cloud Composer?",
+    "opts": [
+      "Cloud Composer is always preferred for any workflow orchestration in GCP including ML training, evaluation, and serving — Vertex AI Pipelines is a deprecated legacy product",
+      "Vertex AI Pipelines (Kubeflow Pipelines) is optimized for ML workflows: built-in component caching (re-run only failed steps), artifact lineage tracking, ML metadata storage, and native Vertex AI integration (AutoML, training jobs, model registry). Cloud Composer is better for data engineering workflows mixing ML with non-ML steps",
+      "Vertex AI Pipelines is only intended for batch prediction orchestration; Cloud Composer is the supported tool for training pipelines and any custom ML model development workflow",
+      "They are functionally identical products with overlapping feature sets — choose whichever orchestration tool your team has more operational experience and familiarity with"
+    ],
+    "ans": 1,
+    "explain": "Choose Vertex AI Pipelines for pure ML workflows: experiment tracking, component caching, and ML metadata are built-in. Cloud Composer is better for heterogeneous workflows mixing Dataflow, BigQuery, and ML steps — its Airflow operators cover all GCP services. For pure ML → Vertex AI Pipelines; for mixed data + ML → Cloud Composer.",
+    "concept": "Vertex AI Pipelines vs Cloud Composer, ML workflow orchestration, pipeline selection"
+  },
+  {
+    "q": "You need to run ad-hoc queries on BigQuery for exploratory analysis without incurring costs for repeated full table scans. What query patterns minimize cost?",
+    "opts": [
+      "Always use SELECT * for simplicity — BigQuery's on-demand pricing model charges only per query job submitted, not per byte of data scanned by the query",
+      "Use SELECT only needed columns (column pruning reduces bytes scanned); add WHERE clause filters on partitioned/clustered columns; use LIMIT with TABLESAMPLE for exploration; preview with bq query --dry_run to estimate bytes before executing",
+      "BigQuery includes a free tier of 1 TB of query bytes scanned per month — you can explore freely below that quota threshold without worrying about per-query data scan costs",
+      "Use SELECT DISTINCT to deduplicate the returned rows and therefore reduce the number of bytes scanned by the underlying query against the BigQuery columnar storage"
+    ],
+    "ans": 1,
+    "explain": "BigQuery cost = bytes scanned. Cost reduction: (1) SELECT only needed columns (columnar storage scans only those columns); (2) WHERE on partition/cluster keys prunes data; (3) TABLESAMPLE scans a fraction of data; (4) --dry_run estimates cost before execution. SELECT DISTINCT doesn't reduce bytes scanned — the full scan happens then DISTINCT is applied.",
+    "concept": "BigQuery cost optimization, column pruning, partition filtering, exploratory queries"
+  },
+  {
+    "q": "What is the recommended way to share aggregated BigQuery data with external partners while ensuring underlying individual records are not exposed?",
+    "opts": [
+      "Grant the partner direct roles/bigquery.dataViewer access to the source table and rely on agreement contracts that they will only query aggregated summaries, not row-level data",
+      "Create BigQuery authorized views with GROUP BY aggregations (e.g., by region and week) — partners see only aggregated results. For additional protection, apply BigQuery differential privacy aggregation functions (with noise injection) to prevent re-identification from aggregates",
+      "Export the underlying data to Cloud Storage as pre-aggregated CSV files refreshed daily and share signed URLs with the external partner for download via their preferred analytics tool",
+      "Use BigQuery column-level encryption with AEAD functions — share decryption keys for only the aggregate-key columns so partners can decrypt the dimension values but not the row-level measures"
+    ],
+    "ans": 1,
+    "explain": "Authorized views with aggregations prevent individual record access. For regulatory-grade protection, BigQuery's differential privacy functions (ANON_SUM, ANON_AVG, ANON_COUNT with privacy budget parameters) add mathematical noise to aggregate results, preventing re-identification even from aggregate data.",
+    "concept": "BigQuery authorized views, differential privacy, data sharing, ANON functions"
+  },
+  {
+    "q": "You need to run a BigQuery query that processes 1 TB of data hourly for 30 days = 720 TB/month. With on-demand pricing at $5/TB, the monthly cost is $3,600. When would switching to Reservations (flat-rate) be cost-effective?",
+    "opts": [
+      "Reservations are never cost-effective for any predictable workload pattern — on-demand pricing remains cheaper regardless of consistency because slot reservations have a higher per-byte equivalent cost in every scenario",
+      "If 720 TB/month of consistent queries uses approximately 1,000 slots continuously, the monthly Reservation cost (1,000 slots × $0.04/slot-hr × 720 hrs = $28,800) would be MORE expensive. Reservations break even only when workload uses slots heavily (high concurrency or large concurrent jobs) — at 1 TB/hr sequential, on-demand is cheaper",
+      "Reservations are uniformly 50% cheaper than on-demand BigQuery pricing across every workload pattern and slot utilization level, so switching is the correct choice for any team running more than a handful of recurring queries per day",
+      "Switch to Reservations immediately because they provide guaranteed query performance with strict SLA enforcement on slot allocation and concurrency that on-demand pricing cannot ever match at this scale of data processed monthly"
+    ],
+    "ans": 1,
+    "explain": "Cost comparison depends on actual slot consumption, not just bytes. 1 TB processed sequentially may use only 200-500 slots for 30 seconds. Monthly slot-hours may be low, making on-demand ($3,600) cheaper than Reservations. Reservations excel when continuous high slot utilization fills the reserved capacity.",
+    "concept": "BigQuery cost analysis, Reservations vs on-demand, slot utilization economics"
+  },
+  {
+    "q": "What is a BigQuery authorized dataset and how does it differ from an authorized view?",
+    "opts": [
+      "They are identical concepts — 'authorized dataset' is simply the rebranded current name for the older feature previously known as an 'authorized view' in the BigQuery console",
+      "An authorized view grants a specific view access to query data in another dataset. An authorized dataset grants ALL views and tables within an entire dataset cross-dataset query access — useful when you have many views in a shared analysis dataset that all need access to the source data dataset",
+      "Authorized datasets are intended for external partner data sharing scenarios; authorized views are used only for internal cross-team data sharing inside the same organization boundary",
+      "Authorized datasets require BigQuery Enterprise Edition licensing tier and a Reservation assignment; authorized views are available on the standard pricing tier without additional licensing"
+    ],
+    "ans": 1,
+    "explain": "Authorized views: grant one specific view access to another dataset's tables. Authorized datasets: grant an entire dataset (all its resources) access to another dataset. Use authorized datasets when you have a reporting dataset with 20+ views that all need access to the same source dataset — one authorization covers all instead of authorizing each view individually.",
+    "concept": "BigQuery authorized datasets vs authorized views, cross-dataset access, dataset authorization"
+  },
+  {
+    "q": "You need to enable BigQuery to query data stored in an Apache Iceberg format on Cloud Storage. Which configuration is needed?",
+    "opts": [
+      "BigQuery cannot query Iceberg format files directly from Cloud Storage — the data must first be converted to native BigQuery storage or to Parquet via a Dataproc job",
+      "Create a BigLake Managed Table or a BigLake external table with file_format=ICEBERG pointing to the Iceberg table's metadata.json location. BigQuery then reads Iceberg snapshots and respects partition evolution, schema evolution, and time travel from Iceberg",
+      "Use a Dataproc Spark job with the Iceberg catalog to read the table and rewrite it into Parquet files in a separate GCS bucket that BigQuery can then query as external",
+      "Create a standard BigQuery external table over the data directory — BigQuery will automatically detect Iceberg format from the metadata.json file present in the GCS path"
+    ],
+    "ans": 1,
+    "explain": "BigQuery + Iceberg: create a BigLake table (CREATE EXTERNAL TABLE ... WITH CONNECTION ... OPTIONS (format='ICEBERG', uris=['gs://bucket/iceberg_table'])) pointing to the Iceberg table path. BigQuery reads the Iceberg metadata (snapshot selection, partition pruning) and data files (Parquet). Supports ACID reads and time travel.",
+    "concept": "BigQuery Iceberg integration, BigLake, open table formats"
+  }
+]

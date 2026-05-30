@@ -1,0 +1,878 @@
+[
+  {
+    "q": "A nightly Cloud Composer DAG fails because a BigQuery table it reads from was not updated by the upstream team. How should you implement a robust wait condition?",
+    "opts": [
+      "Use a TimeSensor configured to wait 2 hours, assuming upstream data has arrived by then before downstream tasks proceed",
+      "Use BigQueryTableExistenceSensor or a custom sensor that checks data freshness before proceeding",
+      "Add a try/except block in the BigQueryOperator to retry the task 10 times with a fixed backoff interval between attempts",
+      "Split the DAG into two separate DAGs and trigger the downstream one manually after verifying upstream completion"
+    ],
+    "ans": 1,
+    "explain": "Airflow sensors poll until the expected partition or row count is met before downstream tasks run. This is the correct pattern for inter-team data dependencies — the DAG waits rather than failing or running on stale data.",
+    "concept": "Airflow sensors, BigQueryTablePartitionExistenceSensor, DAG data dependencies"
+  },
+  {
+    "q": "You need to monitor BigQuery slot utilization and alert when average slot consumption exceeds 80% for 10 consecutive minutes. How do you implement this?",
+    "opts": [
+      "Check BigQuery job history manually in the console every morning and email the team when slot usage looks elevated based on visual review",
+      "Create a Cloud Monitoring alert policy on the bigquery.googleapis.com/storage/table_count metric with a threshold of 80% averaged over a 10-minute window",
+      "Use INFORMATION_SCHEMA.JOBS_BY_PROJECT to write a scheduled query that aggregates slot_ms hourly and sends alerts via email when usage seems high",
+      "Create a Cloud Monitoring alert policy on the bigquery.googleapis.com/reservation/slot_utilization metric with a threshold condition and notification channel"
+    ],
+    "ans": 3,
+    "explain": "BigQuery exports slot utilization metrics to Cloud Monitoring. Create an alert policy on the slot_utilization metric with a condition: average > 0.8 for 10 consecutive minutes, firing to a notification channel.",
+    "concept": "Cloud Monitoring, BigQuery metrics, reservation slot alerts"
+  },
+  {
+    "q": "A Dataflow streaming job has been running for 30 days. You need to update the pipeline code (add a new transform) with zero downtime. What is the correct procedure?",
+    "opts": [
+      "Stop the current job using gcloud dataflow jobs cancel, then immediately start a new job with the updated pipeline code; brief downtime is acceptable",
+      "Use Dataflow job update (--update flag with the same job name and compatible graph) to replace the running job in-place with no data loss",
+      "Create a new job alongside the old one using a parallel deployment, then route 50% of the Pub/Sub topic's traffic to each consumer subscription",
+      "Deploy the updated transform code as a new Cloud Function triggered by Pub/Sub messages and retire the original Dataflow streaming job entirely"
+    ],
+    "ans": 1,
+    "explain": "Dataflow supports in-place job updates via the --update flag. The runner drains the current job state to the new graph, maintaining checkpoints and Pub/Sub offsets. This achieves zero-downtime pipeline updates.",
+    "concept": "Dataflow job update, zero-downtime deployment, in-place graph replacement"
+  },
+  {
+    "q": "How should you implement Infrastructure as Code (IaC) for BigQuery datasets, tables, and IAM bindings to ensure reproducible environments?",
+    "opts": [
+      "Use bq CLI scripts wrapped in bash with set -e for error handling — bq commands are idempotent and safe to re-run across environments",
+      "Use Terraform with the google_bigquery_dataset and google_bigquery_table resources; store state in Cloud Storage; use CI/CD for automated deployment",
+      "Manually create resources in the Cloud Console and document each click-by-click step in a Confluence wiki page for repeatability",
+      "Use Cloud Deployment Manager YAML configuration files — it is preferred over Terraform because it is Google's first-party IaC tool for GCP"
+    ],
+    "ans": 1,
+    "explain": "Terraform is the industry standard for GCP IaC. The Google Terraform provider has full BigQuery support (datasets, tables, views, IAM). CI/CD pipelines (Cloud Build) apply changes on merge.",
+    "concept": "Terraform, IaC, BigQuery provisioning, CI/CD for data infrastructure"
+  },
+  {
+    "q": "A data pipeline's SLA requires BigQuery tables to be refreshed by 6 AM UTC daily. The pipeline occasionally misses this due to variable upstream delays. What monitoring and alerting setup detects SLA breaches?",
+    "opts": [
+      "Use Cloud Monitoring log-based metric on Composer DAG success; create an alert if success is not observed by 6:05 AM UTC",
+      "Manually review BigQuery table metadata via bq show every morning to verify freshness against the SLA target time",
+      "Set up Cloud Scheduler to query the table at 6 AM via the BigQuery API and email the resulting row counts to the on-call engineer",
+      "Use Datastream to track table modification time changes in the metadata stream and alert via a Cloud Function HTTP trigger"
+    ],
+    "ans": 0,
+    "explain": "Create a Cloud Monitoring log-based metric that counts DAG success events. An alert policy checks: if success count = 0 in the window [5:55 AM, 6:05 AM UTC], fire a PagerDuty alert. This is a tight, SLA-aware monitoring pattern.",
+    "concept": "SLA monitoring, Cloud Monitoring log-based metrics, DAG alerting, Composer"
+  },
+  {
+    "q": "Your team needs to manage BigQuery table access for 200 analysts. Access changes frequently. Using individual IAM bindings at the table level is unmanageable. What is the scalable approach?",
+    "opts": [
+      "Grant roles/bigquery.dataViewer to all 200 analysts at the project level using a single IAM binding with all user emails listed",
+      "Use Google Groups: create analyst groups; grant IAM bindings to groups; add/remove individuals from groups for access changes",
+      "Create a dedicated service account for each analyst with pre-generated JSON keys distributed via Secret Manager for table access",
+      "Use BigQuery authorized views for each analyst with their email in the WHERE clause filtering rows by SESSION_USER() at query time"
+    ],
+    "ans": 1,
+    "explain": "Managing IAM at the group level is Google's best practice. Individual-level IAM bindings create sprawl. Google Groups allow centralized membership management: add/remove an analyst from a group and their BigQuery access changes automatically.",
+    "concept": "IAM best practices, Google Groups, scalable access management"
+  },
+  {
+    "q": "A Dataproc job fails intermittently with 'Out of Memory' errors on the executor nodes when processing a particularly large partition. What is the correct tuning approach?",
+    "opts": [
+      "Double the number of Dataproc workers in the cluster to spread overall memory pressure across more executor nodes",
+      "Increase executor memory (spark.executor.memory) and/or reduce partition size using repartition() to prevent single large partitions; also increase spark.memory.fraction",
+      "Switch the workload from Dataproc Spark to Dataflow, which automatically manages JVM heap sizing and avoids OOM errors entirely",
+      "Reduce spark.executor.instances per node so each remaining executor receives a proportionally larger share of available worker memory"
+    ],
+    "ans": 1,
+    "explain": "OOM on executors is typically caused by data skew or insufficient memory. Fix: repartition() to break up large partitions; increase spark.executor.memory; tune spark.memory.fraction. Simply adding workers won't help if one worker still processes a massive partition.",
+    "concept": "Spark executor memory tuning, data skew, repartition, OOM debugging"
+  },
+  {
+    "q": "You need to implement automated data quality checks in a CI/CD pipeline that runs before any BigQuery table goes to production. Which approach is most robust?",
+    "opts": [
+      "Visual inspection of sample data by a data analyst in the BigQuery console before approving each production deployment manually",
+      "Use Great Expectations or dbt tests integrated into Cloud Build; fail the CI/CD pipeline if data quality assertions fail",
+      "Schedule a Cloud Monitoring alert that runs a SQL freshness query against the table 30 minutes after deployment to detect issues post-hoc",
+      "Trust BigQuery's native schema validation and column type enforcement to catch all data quality issues at table load time"
+    ],
+    "ans": 1,
+    "explain": "dbt tests or Great Expectations define data quality expectations as code. Integrating into Cloud Build CI/CD means BigQuery tables failing quality checks block deployment — shifting quality left and catching issues before production.",
+    "concept": "dbt tests, Great Expectations, data quality in CI/CD, Cloud Build"
+  },
+  {
+    "q": "A Dataflow job is consistently slow. Profiling shows 70% of time is spent in a ParDo reading from Cloud Spanner inside the hot loop. What optimization should you apply?",
+    "opts": [
+      "Increase Dataflow worker memory by switching to n2-highmem-8 machines because per-element Spanner RPC reads are CPU and heap bound",
+      "Move the Cloud Spanner lookup out of the ParDo into a Dataflow side input or batch multiple keys per Spanner read call to reduce RPC overhead",
+      "Switch the workload from Dataflow to Dataproc — Spark's executor model handles external system reads more efficiently than Beam's DoFn model",
+      "Disable Dataflow autoscaling and pin the worker count to reduce Spanner connection churn caused by frequent worker pool resizing"
+    ],
+    "ans": 1,
+    "explain": "Per-element RPCs in a hot loop create massive overhead. Fix: group elements by key and batch Spanner reads (batchRead API); or load reference dataset as a side input at startup. This reduces RPC count from N calls to N/batch_size calls.",
+    "concept": "Dataflow performance, batch RPC calls, side inputs, Spanner integration"
+  },
+  {
+    "q": "Your organization uses Cloud Build for CI/CD of data pipelines. You want to ensure that a Dataflow template deployed to production has been tested in staging first. Which Cloud Build + Dataflow pattern enforces this?",
+    "opts": [
+      "Deploy the new template to production first, then backfill the staging environment from production data to validate behavior",
+      "Use Cloud Build steps: (1) deploy Flex Template to staging bucket; (2) run integration test job against staging; (3) on success, promote the same template image to production bucket",
+      "Manually copy the template JSON file from the staging Cloud Storage bucket to the production bucket after a peer developer review approval",
+      "Use Dataflow's built-in staging-to-production promotion feature in the Cloud Console which validates and copies templates automatically"
+    ],
+    "ans": 1,
+    "explain": "Proper CI/CD gate: build the Flex Template image → deploy to staging → launch test Dataflow job → validate output → promote the identical template image to production. The exact tested artifact reaches production.",
+    "concept": "Dataflow Flex Templates, Cloud Build CI/CD, staging promotion patterns"
+  },
+  {
+    "q": "How does BigQuery handle concurrent DML statements (INSERT, UPDATE, DELETE) on the same table?",
+    "opts": [
+      "BigQuery DML uses pessimistic row-level locking — concurrent DML statements acquire write locks and execute serially in submission order",
+      "BigQuery DML uses optimistic concurrency — statements read a snapshot at start time; if conflicts are detected at commit, the statement is retried automatically up to 5 times",
+      "BigQuery does not support concurrent DML on a single table; only one DML statement may run at a time and others are rejected with an error",
+      "BigQuery DML has no isolation guarantees — concurrent statements may interleave reads and writes producing undefined or partial results in the output"
+    ],
+    "ans": 1,
+    "explain": "BigQuery uses snapshot isolation for DML. Each DML statement reads data at a consistent snapshot. Concurrent statements proceed; at commit time, if conflicting write is detected, BigQuery retries automatically.",
+    "concept": "BigQuery DML concurrency, snapshot isolation, ACID transactions"
+  },
+  {
+    "q": "A data pipeline uses Cloud Composer to trigger a BigQuery job daily. The Composer environment is in version 1 (Airflow 1.x) which reaches end-of-life. What is the migration path?",
+    "opts": [
+      "Upgrade the existing Composer 1 environment in-place to Composer 2 using the gcloud composer environments upgrade command with --image-version flag",
+      "Create a new Composer 2 environment; export DAGs, variables, and connections from Composer 1; import to Composer 2; validate; redirect traffic; delete Composer 1",
+      "Migrate all DAGs to Cloud Workflows, which is Google's recommended replacement for Cloud Composer for orchestration workloads going forward",
+      "Continue using Composer 1 indefinitely — GCP does not deprecate managed services that still have active enterprise customers running production workloads"
+    ],
+    "ans": 1,
+    "explain": "Cloud Composer 1 and 2 environments cannot be upgraded in-place. Create a new Composer 2 environment → export DAGs (already in Cloud Storage) → export Airflow variables/connections → import → test → delete old environment.",
+    "concept": "Cloud Composer migration, Composer 1 to 2, Airflow version upgrade"
+  },
+  {
+    "q": "You want to set a budget alert for BigQuery on-demand query costs per project and automatically pause workloads when budget is exceeded. How do you implement this?",
+    "opts": [
+      "BigQuery has no built-in cost controls available — use manual monthly invoice reviews from Cloud Billing reports to track spend",
+      "Cloud Billing Budget: create a budget with threshold alerts; use Pub/Sub notification on budget alert → Cloud Function to set custom project quota to 0 for BigQuery API, effectively pausing queries",
+      "Create a custom IAM Deny policy on the project that revokes all roles/bigquery.user bindings automatically at the end of each calendar month",
+      "Use BigQuery Reservations with a fixed slot commitment to hard-cap query costs at a predictable fixed monthly amount regardless of query volume"
+    ],
+    "ans": 1,
+    "explain": "Cloud Billing budgets send Pub/Sub notifications when thresholds are hit. A Cloud Function sets the bigquery.googleapis.com daily bytes processed quota on the project to 0, blocking all on-demand queries.",
+    "concept": "Cloud Billing budgets, cost controls, BigQuery quota management"
+  },
+  {
+    "q": "Which BigQuery feature allows you to schedule recurring SQL queries and write results to a destination table on a cadence?",
+    "opts": [
+      "BigQuery Materialized Views with auto-refresh configured via the enable_refresh and refresh_interval_minutes options at view creation",
+      "BigQuery Scheduled Queries using Cloud Scheduler integration (via the BigQuery Data Transfer Service scheduler)",
+      "Cloud Composer DAG with BigQueryInsertJobOperator scheduled by Airflow using a cron expression in the schedule_interval parameter",
+      "BigQuery Jobs API polled by Cloud Functions every hour, triggered by Cloud Scheduler to start new query jobs on a fixed schedule"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Scheduled Queries allows SQL queries to be scheduled at recurring intervals. Results can be written to a destination table with WRITE_TRUNCATE or WRITE_APPEND. Parameterized queries support @run_date substitution for incremental processing.",
+    "concept": "BigQuery Scheduled Queries, Data Transfer Service, recurring SQL"
+  },
+  {
+    "q": "A data team wants to track the cost of individual pipelines in a large GCP project with many BigQuery jobs. How should they attribute costs per pipeline?",
+    "opts": [
+      "Separate each pipeline into its own GCP project to achieve clean billing separation and per-project cost reports in the Cloud Billing console",
+      "Add consistent labels to BigQuery jobs (job_labels in JobConfiguration); use Cloud Billing export to BigQuery and filter/group by labels for cost attribution",
+      "Use BigQuery INFORMATION_SCHEMA.JOBS to manually estimate per-pipeline cost by summing total_bytes_processed multiplied by the $5/TB on-demand rate",
+      "Cost attribution in GCP is only possible at the project or folder level; finer-grained pipeline-level cost breakdown is not technically supported"
+    ],
+    "ans": 1,
+    "explain": "BigQuery job labels propagate to Cloud Billing export. Label jobs with pipeline=customer-churn, team=data-engineering. Exporting billing data to BigQuery and GROUP BY labels gives granular cost breakdowns per pipeline.",
+    "concept": "BigQuery job labels, cost attribution, Cloud Billing export"
+  },
+  {
+    "q": "A Dataflow streaming pipeline is running in production. You observe that the pipeline's data staleness metric is steadily increasing over 6 hours. What does this indicate and what should you do?",
+    "opts": [
+      "Steady data staleness increase is normal behavior for streaming pipelines and reflects watermark advancement under regular load conditions; no action is required",
+      "Increasing data staleness means the pipeline is falling behind — the watermark is not advancing as fast as real-time. This indicates the pipeline cannot keep up with input throughput. Increase maxNumWorkers, investigate slow transforms, or check for Pub/Sub backlog growth",
+      "The data staleness metric is purely informational and indicates how far behind the slowest worker is — it does not indicate a pipeline-level problem with throughput",
+      "Restart the Dataflow job using the cancel-and-relaunch pattern to reset the staleness metric counter back to zero and re-establish the watermark"
+    ],
+    "ans": 1,
+    "explain": "In Dataflow, data staleness = current processing time minus watermark. Steadily increasing staleness means the pipeline is accumulating a backlog — it cannot process messages as fast as they arrive. This will eventually cause unbounded lag. Actions: increase workers, optimize slow transforms, check for hot keys or resource contention.",
+    "concept": "Dataflow data staleness, streaming backlog, pipeline monitoring, watermark lag"
+  },
+  {
+    "q": "You need to set up automated alerting for Dataproc job failures across all clusters in a project. What is the most scalable approach?",
+    "opts": [
+      "SSH into each Dataproc master node to check the YARN ResourceManager UI and job history server logs every hour for failed application IDs",
+      "Create a Cloud Monitoring alert policy on the Dataproc job metric (dataproc.googleapis.com/job/state with filter state=FAILED); configure notification channels (PagerDuty, email, Pub/Sub)",
+      "Use Cloud Scheduler to invoke a Cloud Function every 5 minutes that calls the Dataproc jobs.list API and emails failures to the on-call engineer",
+      "Use Cloud Composer to schedule a polling DAG that queries Dataproc job status via the operator and emits alerts when failures are detected in any cluster"
+    ],
+    "ans": 1,
+    "explain": "Cloud Monitoring natively monitors Dataproc metrics. A metric alert on job/state=FAILED fires whenever any Dataproc job in the project fails. Notification channels (PagerDuty, Slack, email via Cloud Monitoring) deliver the alert immediately — more scalable than polling-based approaches.",
+    "concept": "Dataproc monitoring, Cloud Monitoring alerts, job failure detection"
+  },
+  {
+    "q": "A data engineering team uses git for version control. How should they manage Airflow DAGs in Cloud Composer to ensure DAGs are deployed via CI/CD and not manually edited in GCS?",
+    "opts": [
+      "Grant all engineers direct roles/storage.objectAdmin access to the Composer GCS bucket so they can manually upload DAG files after testing them locally",
+      "Store DAGs in a git repository; set up a Cloud Build trigger on the main branch that syncs changed DAG files to the Composer GCS bucket automatically via gsutil rsync; restrict direct GCS bucket access to the CI/CD service account only",
+      "Use Composer's built-in git-sync feature configured via the GIT_SYNC_REPO environment variable to automatically pull DAG files from a git repository every minute",
+      "Commit DAG files directly into the Cloud Storage bucket using the git-gcs Cloud SDK plugin which integrates git push with gsutil cp operations transparently"
+    ],
+    "ans": 1,
+    "explain": "CI/CD for DAGs: git push → Cloud Build trigger → gsutil rsync DAG files to Composer's GCS bucket. Restrict direct bucket write access to only the CI/CD service account. This enforces code review via PRs before any DAG change reaches Composer.",
+    "concept": "Cloud Composer CI/CD, DAG deployment, git integration, Cloud Build"
+  },
+  {
+    "q": "A Dataflow job reads from BigQuery, performs complex transformations, and writes results to BigQuery. The job runs daily for 4 hours and costs $200/run. How do you reduce cost?",
+    "opts": [
+      "Run the job weekly on Sunday instead of daily, accepting a 7-day data lag — this gives a 7x reduction in compute cost",
+      "Investigate Dataflow FlexRS: use --flexrs_goal=COST_OPTIMIZED to use Spot VMs during non-peak hours, reducing batch job costs by up to 40%",
+      "Switch the workload from Dataflow to Dataproc, since Dataproc with preemptible VMs is always cheaper than Dataflow for any batch workload",
+      "Reduce the number of BigQuery columns read by the pipeline — Dataflow charges per BigQuery column scanned in addition to compute costs"
+    ],
+    "ans": 1,
+    "explain": "Dataflow FlexRS (Flexible Resource Scheduling) reduces batch job cost by 30-40% by using Spot (preemptible) VMs and scheduling when GCP has spare capacity. Suitable for daily batch jobs that can tolerate a flexible start time (up to 6-hour delay). Dataproc isn't always cheaper — depends on job characteristics.",
+    "concept": "Dataflow FlexRS, batch job cost reduction, Spot VMs"
+  },
+  {
+    "q": "How does Cloud Composer handle failed tasks when a DAG has complex dependencies?",
+    "opts": [
+      "All downstream tasks automatically succeed when an upstream task fails because Airflow defaults to a 'continue on failure' execution model for resilience",
+      "Failed tasks are marked as failed; downstream tasks with dependencies on the failed task are also marked as upstream_failed — they don't run. After the root cause is fixed, you can clear (reset) only the failed task and its downstream tasks for re-execution without rerunning the entire DAG",
+      "Cloud Composer automatically retries all failed tasks indefinitely with exponential backoff until they succeed or the DAG is manually cancelled by an operator",
+      "The entire DAG is restarted from the first task whenever any task in the dependency chain fails, ensuring consistency by re-running all completed work"
+    ],
+    "ans": 1,
+    "explain": "Airflow's dependency model: when Task A fails, all tasks with depends_on_past=True or direct dependency on A are marked upstream_failed. Fix the issue, then use 'Clear' in the Airflow UI to selectively re-run only the failed task and its downstream chain — preserving already-succeeded task results.",
+    "concept": "Airflow task failure propagation, upstream_failed, selective DAG clearing"
+  },
+  {
+    "q": "You need to set up monitoring for data freshness — alerting when a BigQuery table hasn't been updated in more than 2 hours. What is the most automated approach?",
+    "opts": [
+      "Manually check BigQuery table metadata using bq show every 2 hours to inspect last_modified_time and email the team if it falls behind",
+      "Use INFORMATION_SCHEMA.PARTITIONS to check last_modified_time in a scheduled query; write a 0/1 flag to a monitoring table; Cloud Monitoring alert on the flag",
+      "Create a Cloud Monitoring custom metric: a Cloud Scheduler job every 30 minutes queries INFORMATION_SCHEMA.TABLE_METADATA_TIMELINE and writes a metric via the Cloud Monitoring API; alert when freshness_hours > 2",
+      "Query BigQuery directly from Cloud Monitoring using the native BigQuery freshness monitor pre-built dashboard, which automatically alerts on stale tables"
+    ],
+    "ans": 2,
+    "explain": "Cloud Monitoring custom metrics: Cloud Scheduler triggers a Cloud Function every 30 minutes → Cloud Function queries INFORMATION_SCHEMA for last_modified_time → computes hours since last update → writes a custom metric (custom.googleapis.com/bigquery/table_freshness_hours) → Cloud Monitoring alert fires when > 2.",
+    "concept": "Data freshness monitoring, Cloud Monitoring custom metrics, INFORMATION_SCHEMA"
+  },
+  {
+    "q": "A production Dataflow streaming pipeline has a memory leak — worker memory grows by 1 GB per hour. After 24 hours, workers run out of memory. How do you mitigate while debugging?",
+    "opts": [
+      "Ignore the issue — Dataflow's worker harness automatically detects memory pressure and handles memory leaks via internal garbage collection sweeps",
+      "Configure Dataflow to automatically restart workers after N hours (using max_idle_time) as a temporary mitigation. Also enable worker profiling (Google Cloud Profiler integration) to identify the memory leak source in the pipeline code",
+      "Add more memory to workers by switching to n2-highmem-16 machines — a leak occurring on a much larger machine simply takes longer to cause job failure",
+      "Switch the workload from Dataflow to Dataproc because Spark's executor JVMs have better generational garbage collection than the Dataflow worker harness"
+    ],
+    "ans": 1,
+    "explain": "Temporary mitigation: use the --max_worker_restart_count and worker drain triggers, or configure autoscaling to retire workers after extended use. The proper fix requires Cloud Profiler integration with Dataflow workers to identify which DoFn or state cell is accumulating memory — then fix the leak in code.",
+    "concept": "Dataflow memory leak mitigation, worker profiling, Cloud Profiler"
+  },
+  {
+    "q": "Which tool provides the most detailed view of BigQuery query execution — showing individual query stages, worker utilization, and data shuffle between stages?",
+    "opts": [
+      "Cloud Monitoring BigQuery dashboards that aggregate slot usage, scanned bytes, and query duration metrics over time at the project or reservation level",
+      "BigQuery Query Plan in the Query Details UI (or via API: jobs.get → statistics.queryPlan) — shows each execution stage, worker count, input/output rows, elapsed time, and shuffle data volume between stages",
+      "Cloud Logging BigQuery audit logs that record the query text, principal email, job duration, and bytes billed for every job submitted in the project",
+      "INFORMATION_SCHEMA.JOBS, which exposes aggregate per-job statistics such as total_slot_ms and total_bytes_processed but not stage-level execution details"
+    ],
+    "ans": 1,
+    "explain": "BigQuery Query Plan (Execution Details tab): each stage shows read/write operators, assigned workers, elapsed time, input bytes, and shuffle output. Hot stages (high wait time, high shuffle) indicate bottlenecks. This is the primary tool for query-level performance diagnosis.",
+    "concept": "BigQuery query plan, execution stages, performance diagnosis, query optimization"
+  },
+  {
+    "q": "Your data team runs hundreds of dbt models on BigQuery. Models take 4 hours to run daily. How do you reduce dbt run time?",
+    "opts": [
+      "Increase BigQuery slot reservations from 500 to 2000 slots — more slots make dbt model execution proportionally faster across the board",
+      "Use dbt incremental models (config type='incremental') for large tables that only need to process new records; parallelize dbt with --threads N to run independent models concurrently; use dbt's --select tag:daily to run only relevant models",
+      "Run the full dbt project once per week on Sunday nights instead of daily to reduce overall compute usage by a factor of seven days",
+      "Switch dbt's target warehouse from BigQuery to Cloud Spanner because Spanner's columnar engine processes dbt transformation SQL faster than BigQuery"
+    ],
+    "ans": 1,
+    "explain": "dbt run optimization: (1) incremental models process only new rows instead of full refresh — dramatically reduces processing time for large tables; (2) increase --threads (parallelism within a single dbt run); (3) tag-based selection runs only relevant models. These can reduce 4-hour runs to under 1 hour.",
+    "concept": "dbt optimization, incremental models, dbt threads, selective execution"
+  },
+  {
+    "q": "A Dataproc cluster running PySpark jobs is experiencing slow job startup (5-10 minutes) due to Python package installation on each job. How do you fix this?",
+    "opts": [
+      "Pre-install all required Python packages on the Dataproc cluster master node only — workers will fetch them via NFS at job startup time",
+      "Create a Dataproc custom image with all required Python packages pre-installed; or use Dataproc's conda/pip initialization action that caches packages in Cloud Storage. The custom image approach eliminates all per-job installation time",
+      "Install packages at job submission time using gcloud dataproc jobs submit pyspark --py-files=requirements.txt — this caches the deps for subsequent runs",
+      "Use Dataproc Serverless for Spark — it automatically detects Python imports and pre-fetches required packages from PyPI before the job begins execution"
+    ],
+    "ans": 1,
+    "explain": "Python package installation on every Dataproc job is a major startup overhead. Solutions: (1) Custom images: pre-bake all packages into the machine image — zero installation time at job start; (2) Initialization actions with caching: scripts install packages but cache to a shared location. Custom images provide the fastest startup.",
+    "concept": "Dataproc Python packages, custom images, initialization actions, job startup optimization"
+  },
+  {
+    "q": "You need to implement a data pipeline that is automatically retried on failure with exponential backoff. The pipeline runs as a Cloud Function. What is the recommended implementation?",
+    "opts": [
+      "Cloud Functions automatically retries any failed execution with exponential backoff by default — no configuration is required for built-in resilience to transient errors",
+      "Configure the Cloud Function with retry-on-failure enabled (--retry flag); Pub/Sub triggers re-deliver the message with exponential backoff (up to 600 seconds between retries) until the function succeeds or the message retention period expires",
+      "Use Cloud Scheduler with a cron expression to re-invoke the Cloud Function every 5 minutes after failure until the most recent invocation succeeds or is manually disabled",
+      "Write custom retry logic directly inside the Cloud Function code using time.sleep() with doubling intervals and a max_retries counter persisted to Firestore between invocations"
+    ],
+    "ans": 1,
+    "explain": "Pub/Sub-triggered Cloud Functions with retry enabled: if a function throws an exception (or returns non-2xx), Pub/Sub redelivers the message with exponential backoff (30s → 60s → 120s → ... up to 600s). This continues until success or the 7-day message retention expires.",
+    "concept": "Cloud Functions retry, Pub/Sub exponential backoff, event-driven retries"
+  },
+  {
+    "q": "How should you implement automated testing for a BigQuery data pipeline before deploying to production?",
+    "opts": [
+      "Run the pipeline directly in production using a small subset of input data and validate output row counts before scaling up to full production traffic",
+      "Unit test pipeline logic locally (Beam DirectRunner); integration test with a dedicated BigQuery test dataset using CI/CD (Cloud Build); run dbt tests against test data; validate row counts and schema in the test environment before production deployment",
+      "Trust the pipeline code reviews performed by senior engineers during pull requests — automated testing adds redundant overhead for SQL transformation pipelines",
+      "Use BigQuery time travel as a safety net so that production can be rolled back to a prior snapshot if any post-deployment tests would have failed retroactively"
+    ],
+    "ans": 1,
+    "explain": "Multi-layer testing: (1) unit tests using DirectRunner with TestStream for Beam pipelines; (2) integration tests in Cloud Build with a dedicated test BigQuery dataset; (3) dbt tests (not_null, unique, referential integrity) run in CI. Only promote to production when all tests pass.",
+    "concept": "Data pipeline testing, DirectRunner, Cloud Build CI/CD, dbt tests"
+  },
+  {
+    "q": "A data team uses Airflow on Cloud Composer. They want to prevent a single slow DAG from monopolizing all Airflow workers. How do you implement resource isolation in Airflow?",
+    "opts": [
+      "Airflow does not support resource isolation between DAGs — all DAGs share the same worker pool with no built-in mechanism for fair scheduling between teams",
+      "Use Airflow pools: create named pools with a limited number of slots; assign tasks to pools; slow DAGs are limited to their pool's slot count, preventing monopolization of all workers",
+      "Use Cloud Composer environment autoscaling to dynamically add new worker nodes whenever a slow DAG occupies all current workers in the cluster pool",
+      "Separate slow DAGs into a second Cloud Composer environment in a different project so they cannot consume worker capacity meant for fast latency-sensitive DAGs"
+    ],
+    "ans": 1,
+    "explain": "Airflow Pools: create a pool (Pool with N slots). Assign tasks: task = BigQueryOperator(..., pool='slow_dag_pool', pool_slots=1). Slow tasks can only occupy N pool slots total — ensuring fast DAG tasks always have worker availability by keeping them in the default_pool.",
+    "concept": "Airflow pools, resource isolation, DAG concurrency control"
+  },
+  {
+    "q": "You need to monitor Cloud Composer (Airflow) for SLA misses — DAGs that fail to complete within their expected duration. Which Airflow feature handles this natively?",
+    "opts": [
+      "Configure Cloud Monitoring alert policies on Cloud Composer scheduler metrics like dagbag_size and scheduler_heartbeat to detect DAGs running longer than expected",
+      "Use Airflow SLA miss callbacks: set sla=timedelta(hours=2) on a DAG or task; Airflow calls the sla_miss_callback function when the SLA is exceeded; configure the callback to send an alert via email or Pub/Sub",
+      "Use Cloud Scheduler to trigger an HTTP alerting endpoint whenever a DAG run remains in the 'running' state for longer than the configured 2-hour SLA window",
+      "Monitor Cloud Composer's Airflow worker logs in Cloud Logging using a log-based metric that matches slow execution patterns and fires alerts on the count metric"
+    ],
+    "ans": 1,
+    "explain": "Airflow SLA misses: set sla=timedelta(hours=2) on DAG or task. When execution time exceeds 2 hours, Airflow calls sla_miss_callback with details of the missed SLA. The callback can send Pub/Sub notifications, emails, or PagerDuty alerts. This is Airflow's native SLA enforcement mechanism.",
+    "concept": "Airflow SLA misses, sla_miss_callback, pipeline SLA enforcement"
+  },
+  {
+    "q": "A BigQuery table grows by 100 GB per day. At this rate, the table will cost more than budgeted in 6 months. What automated mechanism controls storage costs?",
+    "opts": [
+      "Manually delete old partitions using bq rm whenever the table's stored_bytes metric exceeds the budgeted storage threshold for the current month",
+      "Configure BigQuery partition expiration (partition_expiration_days on the table or at partition creation) to automatically delete partitions older than N days. Set up a Cloud Monitoring alert on bigquery.googleapis.com/storage/stored_bytes to track growth",
+      "Export partitions older than 30 days to Cloud Storage as Parquet files using a monthly bq extract job and then drop the old partitions from BigQuery",
+      "Set a BigQuery table size quota at the project level — BigQuery automatically rejects new inserts when the table size exceeds the configured size limit in bytes"
+    ],
+    "ans": 1,
+    "explain": "Partition expiration: set partition_expiration_days=90 on the table; BigQuery automatically deletes partitions older than 90 days. This caps the maximum table size at 90 × 100 GB = 9 TB regardless of data age. Combined with a Cloud Monitoring alert on stored_bytes, you get automated cost control with visibility.",
+    "concept": "BigQuery partition expiration, automated storage management, cost cap"
+  },
+  {
+    "q": "A Dataflow job reads from 1,000 small Cloud Storage files. The job is slow at startup due to file listing overhead. What is the most effective optimization?",
+    "opts": [
+      "Increase the Dataflow worker count via --numWorkers — more workers in parallel can list GCS files faster, reducing total startup overhead linearly",
+      "Pre-generate a manifest file (list of GCS URIs) at pipeline launch and pass it to FileIO.matchAll() rather than using wildcard globs. Also compact small files into larger Parquet/Avro files — smaller file count reduces parallelism overhead",
+      "Switch the data source from Cloud Storage to BigQuery using a federated external table — BigQuery's storage layer avoids the file listing overhead entirely",
+      "Enable Cloud Storage requester pays on the source bucket to prioritize GCS listing operations from Dataflow workers over other concurrent bucket consumers"
+    ],
+    "ans": 1,
+    "explain": "File listing overhead: GCS glob patterns require listing all objects matching the pattern — slow for 1,000 files. Pass a pre-computed list of URIs via FileIO.matchAll(). Long-term fix: compact small files into fewer large files to reduce parallelism overhead and improve throughput.",
+    "concept": "Dataflow file listing optimization, FileIO, GCS glob performance, small files"
+  },
+  {
+    "q": "You need to implement canary deployment for a Dataflow pipeline — gradually shift traffic from old to new pipeline version while monitoring for errors. What is the pattern?",
+    "opts": [
+      "Dataflow has a built-in canary deployment mode configured via the --canary_percentage flag that automatically splits Pub/Sub traffic between job versions",
+      "Run both old and new Dataflow pipelines simultaneously; route a small fraction of Pub/Sub messages to the new pipeline using Pub/Sub message filters or a routing pipeline; monitor error rates on both; gradually increase new pipeline share until 100%",
+      "Deploy the new Dataflow pipeline first using --update with a new job graph and immediately stop the old job once the new one reaches a stable running state",
+      "Use Dataflow's job update mechanism (--update flag) for all version changes — this provides built-in canary semantics by gradually swapping the underlying job graph"
+    ],
+    "ans": 1,
+    "explain": "Dataflow canary: publish messages to two Pub/Sub subscriptions (old and new) in split ratios using a routing Dataflow pipeline or Pub/Sub topic filters. Monitor new pipeline error rates (Cloud Monitoring). Increase new pipeline traffic share as confidence grows. Once at 100%, drain and stop the old pipeline.",
+    "concept": "Canary deployment, Dataflow, Pub/Sub traffic splitting, gradual rollout"
+  },
+  {
+    "q": "How does Terraform manage BigQuery Scheduled Query configurations to ensure they are version-controlled and reproducible?",
+    "opts": [
+      "Terraform cannot manage BigQuery Scheduled Queries because they are not exposed via the standard google_bigquery provider — only datasets and tables are supported",
+      "Use the google_bigquery_data_transfer_config Terraform resource to define scheduled query parameters (query, destination table, schedule, run_time_offset_duration, params). This allows version-controlling scheduled query definitions in git alongside table definitions",
+      "Use bq CLI commands wrapped inside a Terraform null_resource with local-exec provisioners to create and update BigQuery scheduled queries via the gcloud command line",
+      "BigQuery Scheduled Queries can only be managed through the BigQuery web UI by manually clicking through the schedule creation wizard — no programmatic interface exists"
+    ],
+    "ans": 1,
+    "explain": "Terraform's google_bigquery_data_transfer_config resource manages scheduled queries (via BigQuery Data Transfer Service). Define schedule, query_string, destination_table, and schedule in HCL. This enables version-controlled, reproducible scheduled query deployments via CI/CD.",
+    "concept": "Terraform BigQuery Data Transfer, IaC scheduled queries, version control"
+  },
+  {
+    "q": "A Dataproc Spark job produces incorrect results intermittently. You suspect a data race condition in the Spark accumulator. How do you investigate?",
+    "opts": [
+      "Spark accumulators are completely thread-safe by design through their internal synchronization primitives — race conditions in user accumulator code are impossible",
+      "Spark accumulators are write-only on workers (add-only semantics) — they cannot be read from worker tasks. However, accumulator values may be double-counted if tasks are re-executed (retries). Check spark.task.maxFailures and examine whether task retries are occurring by reviewing Spark history server logs",
+      "Increase the Spark worker count via --num-executors to reduce task contention on the shared accumulator state and eliminate accumulator race conditions across executors",
+      "Disable Spark shuffle by setting spark.shuffle.service.enabled=false to eliminate race conditions in accumulator updates that occur during shuffle write-side operations"
+    ],
+    "ans": 1,
+    "explain": "Spark accumulator semantics: accumulators are correctly updated when tasks complete successfully. However, if a task is retried (due to speculation or failure), the accumulator is incremented multiple times. Check Spark History Server for task retry counts. Fix: disable speculation (spark.speculation=false) or use idempotent accumulation logic.",
+    "concept": "Spark accumulators, task retries, speculation, Spark debugging"
+  },
+  {
+    "q": "Your organization has a Shared VPC setup. Dataflow jobs run in the service project but need to access Cloud Storage in the host project. What configuration is needed?",
+    "opts": [
+      "Dataflow cannot access resources in other projects in a Shared VPC architecture — all source and sink resources must reside in the same service project as the Dataflow job",
+      "The Dataflow service account in the service project needs Cloud Storage permissions on the host project bucket. The Shared VPC subnet used by Dataflow workers must be configured in the service project. Grant roles/compute.networkUser to the Dataflow service agent in the host project for VPC access",
+      "Move the Cloud Storage bucket from the host project into the service project so that the Dataflow workers can access it via the local VPC without crossing the project boundary",
+      "Use VPC Network Peering between the service project's VPC and the host project's VPC instead of Shared VPC, because peering provides simpler cross-project access for Dataflow workers"
+    ],
+    "ans": 1,
+    "explain": "Shared VPC Dataflow setup: (1) Dataflow workers use the Shared VPC subnet (configured via --subnetwork flag pointing to host project's subnet); (2) Dataflow service agent needs roles/compute.networkUser on the host project for network access; (3) Dataflow service account needs Storage permissions on the target bucket regardless of project.",
+    "concept": "Shared VPC, Dataflow networking, cross-project access, service agent permissions"
+  },
+  {
+    "q": "You need to implement a data catalog that automatically documents all BigQuery tables created by Dataform. How do you achieve this?",
+    "opts": [
+      "Manually document each BigQuery table in a Confluence wiki page after each Dataform deployment by copying the SQLX config block contents",
+      "Configure Dataform to publish table descriptions and column documentation from SQLX config blocks to BigQuery table descriptions via Dataform's built-in documentation publishing; set up Dataplex auto-discovery to catalog BigQuery assets automatically including published descriptions",
+      "Use Cloud Data Fusion for all data transformations instead of Dataform — Data Fusion includes built-in lineage and documentation publishing to a central catalog",
+      "BigQuery INFORMATION_SCHEMA provides full documentation automatically for every table including auto-generated column descriptions inferred from data values"
+    ],
+    "ans": 1,
+    "explain": "Dataform SQLX config blocks support table and column descriptions: config { type: 'table', description: 'Daily sales summary', columns: { revenue: 'Total net revenue' } }. Dataform publishes these to BigQuery table/column descriptions. Dataplex auto-discovery picks up these descriptions in the unified catalog.",
+    "concept": "Dataform documentation, BigQuery table descriptions, Dataplex auto-discovery, data catalog"
+  },
+  {
+    "q": "A Cloud Composer DAG has 50 tasks with complex dependencies. Some task failures should NOT fail the entire DAG (optional tasks). How do you implement this?",
+    "opts": [
+      "All tasks in an Airflow DAG must succeed for the DAG run to be marked as successful — optional or non-blocking tasks are not a supported pattern in any Airflow version",
+      "Set trigger_rule='all_done' on tasks downstream of optional tasks — they run whether the upstream task succeeded or failed. For the optional task itself, set on_failure_callback to log the failure and continue without marking the DAG as failed",
+      "Wrap the optional task's logic inside a try/except block at the operator level to prevent the failure from propagating up to the Airflow scheduler and downstream task states",
+      "Move all optional tasks into a separate DAG and use TriggerDagRunOperator to invoke it independently so its failure state does not affect the main DAG's run status"
+    ],
+    "ans": 1,
+    "explain": "Airflow trigger rules handle optional task chains: trigger_rule='all_done' means 'run when all upstream tasks are done, regardless of their state' — unlike the default 'all_success'. Combine with on_failure_callback for alerting without DAG failure. This enables optional task graphs within a single DAG.",
+    "concept": "Airflow trigger rules, all_done, optional tasks, DAG flow control"
+  },
+  {
+    "q": "You need to version-control and deploy Cloud Spanner database schemas alongside application code. What is the recommended approach?",
+    "opts": [
+      "Apply Spanner DDL changes manually via the Cloud Console schema editor before each application deployment, using a peer review checklist to track applied changes",
+      "Use Spanner's schema versioning via migration tool (Liquibase, Flyway with Spanner JDBC driver, or Wrench CLI); store DDL migration scripts in git; CI/CD pipeline applies pending migrations to Spanner before or after application deployment",
+      "Store the Spanner schema definition in BigQuery's INFORMATION_SCHEMA tables and sync it to Spanner periodically via a scheduled Cloud Function that detects diffs",
+      "Use Terraform's google_spanner_database resource for all Spanner schema changes including ALTER TABLE statements — Terraform handles online schema changes atomically"
+    ],
+    "ans": 1,
+    "explain": "Spanner schema migrations: use Wrench (Google's Spanner migration CLI) or Flyway/Liquibase with Spanner JDBC. Migration SQL scripts are versioned in git (V1__add_column.sql, V2__create_index.sql). CI/CD pipeline runs 'wrench migrate up' before application deployment. Online schema changes in Spanner ensure zero downtime.",
+    "concept": "Cloud Spanner schema migrations, Wrench, Flyway, version-controlled DDL"
+  },
+  {
+    "q": "What is the purpose of Dataflow's 'drain' operation and when would you use it instead of 'cancel'?",
+    "opts": [
+      "Drain and cancel are functionally identical operations — both immediately stop the Dataflow job by terminating all worker VMs and clearing in-flight state from memory",
+      "Drain gracefully stops a Dataflow job: it stops accepting new input from sources (Pub/Sub) but completes processing of all in-flight elements and finalizes all open windows before stopping. Cancel immediately terminates the job, potentially losing in-flight data. Use drain when data loss is unacceptable",
+      "Cancel is the safe production-grade option that preserves in-flight state, while drain is only intended for debugging and local testing of pipelines with the DirectRunner setup",
+      "Drain is only available for batch Dataflow jobs that need to checkpoint final outputs, while cancel is the only valid stop operation for streaming Dataflow jobs in production"
+    ],
+    "ans": 1,
+    "explain": "Dataflow drain vs cancel: Drain = graceful shutdown (stops reading new messages, processes in-flight data, commits all state, terminates cleanly). Cancel = immediate termination (in-flight data is lost, windows are not finalized). Always drain streaming jobs when possible; use cancel only for immediate shutdown when data loss is acceptable.",
+    "concept": "Dataflow drain vs cancel, graceful shutdown, in-flight data"
+  },
+  {
+    "q": "A data team needs to monitor the lag between when events occur and when they appear in BigQuery (end-to-end pipeline latency). Which approach provides this measurement?",
+    "opts": [
+      "Compare each BigQuery table's last_modified_time metadata field with the current wall clock time — this difference represents accurate end-to-end pipeline latency",
+      "Embed event_created_at in each event; compare event_created_at with bigquery_inserted_at (ingestion time) per event in BigQuery: SELECT AVG(TIMESTAMP_DIFF(ingquery_inserted_at, event_created_at, SECOND)) as avg_latency FROM events WHERE DATE = CURRENT_DATE",
+      "Use Cloud Monitoring's built-in Dataflow pipeline metrics — they automatically track and report end-to-end latency from event source to BigQuery sink with no instrumentation",
+      "Use the Pub/Sub subscription/oldest_unacked_message_age metric as a proxy for end-to-end latency since it measures how long messages sit before they reach BigQuery"
+    ],
+    "ans": 1,
+    "explain": "End-to-end latency measurement: include event_timestamp (when the event occurred) in each message. Record the BigQuery insertion time (CURRENT_TIMESTAMP() in a Dataflow transform or TIMESTAMP at insert). The difference is end-to-end pipeline latency. Query this in BigQuery daily to track latency SLA compliance.",
+    "concept": "End-to-end pipeline latency measurement, event timestamps, BigQuery monitoring"
+  },
+  {
+    "q": "You need to implement automated schema comparison between two BigQuery tables (source and destination) to detect drift. Which approach works?",
+    "opts": [
+      "Manually compare the schemas of both BigQuery tables in the Cloud Console UI after every deployment, with sign-off from the on-call data engineer",
+      "Query INFORMATION_SCHEMA.COLUMNS for both tables; JOIN on column_name and compare data_type, is_nullable, mode. Use a Cloud Function triggered by Pub/Sub schema change notifications or scheduled via Cloud Scheduler. Alert via Cloud Monitoring when drift is detected",
+      "Use BigQuery table clone operations and compare the resulting cloned tables — clones always have identical schemas to their source, so any diff indicates source drift",
+      "Use dbt source freshness checks configured with source_meta.schema_hash to automatically detect when a source table's column types or names drift from expectations"
+    ],
+    "ans": 1,
+    "explain": "Schema drift detection: SELECT s.column_name, s.data_type as src_type, d.data_type as dest_type FROM src.INFORMATION_SCHEMA.COLUMNS s FULL OUTER JOIN dest.INFORMATION_SCHEMA.COLUMNS d ON s.column_name = d.column_name WHERE s.data_type != d.data_type OR s.column_name IS NULL OR d.column_name IS NULL. Run this as a scheduled query with alerting.",
+    "concept": "Schema drift detection, INFORMATION_SCHEMA, automated schema comparison"
+  },
+  {
+    "q": "A Spark job on Dataproc uses broadcast joins for a 500 MB lookup table. After a schema change, the table grew to 2 GB. The job is now failing with broadcast timeout errors. What should you fix?",
+    "opts": [
+      "Increase spark.broadcast.timeout to 600 seconds and spark.network.timeout to 800 seconds to give the broadcast variable more time to serialize and ship",
+      "Increase spark.sql.autoBroadcastJoinThreshold from default (10 MB) to above 2 GB (2147483648 bytes); or increase spark.broadcast.timeout. Alternatively, if 2 GB is too large for worker memory, convert the broadcast join to a sort-merge join by setting threshold below 2 GB to force sort-merge",
+      "Reduce the lookup table back to 500 MB by archiving the rows added after the schema change, then re-run the job using the original broadcast join configuration",
+      "Migrate the lookup table from BigQuery into Cloud Spanner and read it via the Spanner connector inside the Spark job to avoid broadcast altogether for hot lookups"
+    ],
+    "ans": 1,
+    "explain": "Spark broadcast join threshold: the table must fit within spark.sql.autoBroadcastJoinThreshold (default 10 MB). For 2 GB, either: (1) increase threshold and ensure workers have sufficient memory (2+ GB available for broadcast); (2) if memory is insufficient, set threshold < 2 GB to force sort-merge join (slower but memory-safe).",
+    "concept": "Spark broadcast join, autoBroadcastJoinThreshold, sort-merge join, join strategy"
+  },
+  {
+    "q": "How do you implement a daily SLA report that shows which BigQuery pipelines completed on time vs. late over the past 30 days?",
+    "opts": [
+      "Manually check each pipeline's Composer task logs every morning and update a Google Sheet with on-time vs late status for the previous day's runs",
+      "Query INFORMATION_SCHEMA.JOBS_BY_PROJECT filtering on job_type='QUERY' and job_id patterns matching your pipelines; join with expected completion times from a configuration table; calculate on-time vs late rates. Schedule this as a BigQuery scheduled query writing to a reporting table; build a Looker Studio dashboard on top",
+      "Create a Cloud Function that polls each pipeline's status hourly via the Composer REST API and emails a rolled-up SLA status report to stakeholders each morning",
+      "Use Cloud Monitoring dashboards that natively show pipeline SLA compliance via the built-in dataflow.googleapis.com/sla_compliance and composer.googleapis.com/sla metrics"
+    ],
+    "ans": 1,
+    "explain": "SLA reporting from INFORMATION_SCHEMA.JOBS: SELECT job_id, creation_time, end_time, TIMESTAMP_DIFF(end_time, DATE_TRUNC(creation_time, DAY) + INTERVAL expected_hour HOUR, MINUTE) AS minutes_late FROM INFORMATION_SCHEMA.JOBS WHERE DATE(creation_time) >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY). Report shows on-time vs. late trends.",
+    "concept": "SLA reporting, INFORMATION_SCHEMA.JOBS, pipeline monitoring, compliance dashboard"
+  },
+  {
+    "q": "A Dataflow pipeline reads from a Cloud Storage bucket that is in a VPC Service Controls perimeter. The Dataflow workers are outside the perimeter. What error will they get and how do you fix it?",
+    "opts": [
+      "No error occurs because VPC Service Controls only restricts user-initiated API calls and does not affect Dataflow's service-to-service Cloud Storage reads",
+      "Workers get 'VPC Service Controls violation' error. Fix: add the Dataflow worker project/service account to the VPC Service Controls perimeter; or configure an ingress rule allowing the Dataflow service agent to access Cloud Storage from outside the perimeter",
+      "Switch the Dataflow workers to use Private Google Access via private.googleapis.com endpoints — this bypasses VPC Service Controls restrictions on internal traffic",
+      "Move the Cloud Storage bucket outside the VPC Service Controls perimeter into an unrestricted project so Dataflow workers can read from it without policy violations"
+    ],
+    "ans": 1,
+    "explain": "VPC Service Controls blocks API access from outside the perimeter. Dataflow workers outside the perimeter cannot access a Cloud Storage bucket inside. Solutions: (1) add the Dataflow project to the same perimeter; (2) configure an ingress policy allowing access from the Dataflow service agent identity; (3) deploy Dataflow workers inside the perimeter.",
+    "concept": "VPC Service Controls, Dataflow perimeter access, ingress rules, troubleshooting"
+  },
+  {
+    "q": "You need to ensure that a Cloud Composer DAG is paused automatically outside of business hours (8 AM - 6 PM UTC) to avoid triggering on stale data. How do you implement this?",
+    "opts": [
+      "Manually pause and unpause the DAG in the Airflow UI every morning at 8 AM and every evening at 6 PM as part of the on-call engineer's daily routine checklist",
+      "Use two additional DAGs: one scheduled at 8 AM to unpause the main DAG (using the Airflow API or DagTrigger), and one at 6 PM to pause it. Or use a BranchPythonOperator at the start of the main DAG to check the current time and skip all downstream tasks if outside business hours",
+      "Cloud Composer has a built-in business hours schedule configuration in the environment settings that lets you specify per-DAG active windows in the Composer console",
+      "Use Cloud Scheduler to trigger DAG pause/unpause via Airflow REST API at the correct times"
+    ],
+    "ans": 3,
+    "explain": "Cloud Scheduler → Airflow REST API: Cloud Scheduler at 8 AM UTC sends a POST request to Airflow REST API endpoint PATCH /api/v1/dags/{dag_id} with is_paused=false. Cloud Scheduler at 6 PM sends is_paused=true. This automates pause/unpause without additional DAGs or complex branching logic.",
+    "concept": "Airflow DAG scheduling, business hours automation, Cloud Scheduler + Airflow REST API"
+  },
+  {
+    "q": "A BigQuery pipeline that runs hourly needs to be rolled back to yesterday's state due to a data quality issue in today's runs. What is the most efficient rollback mechanism?",
+    "opts": [
+      "Manually re-insert yesterday's data from a previously taken bq extract backup export in Cloud Storage using a bq load with WRITE_TRUNCATE disposition",
+      "Use BigQuery time travel: SELECT * FROM table FOR SYSTEM_TIME AS OF TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR) to query yesterday's state; use CREATE OR REPLACE TABLE AS SELECT ... to restore yesterday's data in a single atomic operation",
+      "Open a Google Cloud support case asking the BigQuery team to restore the table to yesterday's snapshot from their internal point-in-time backup infrastructure",
+      "Re-run the entire pipeline from yesterday's raw data in Cloud Storage and overwrite the production table with the re-processed output after validating row counts"
+    ],
+    "ans": 1,
+    "explain": "BigQuery time travel rollback: SELECT * FROM table FOR SYSTEM_TIME AS OF '2024-01-14 23:59:59' queries the exact table state. CREATE TABLE restored_table AS SELECT ... writes it to a new table. Then CREATE OR REPLACE TABLE production_table AS SELECT * FROM restored_table performs the atomic rollback.",
+    "concept": "BigQuery time travel rollback, data recovery, FOR SYSTEM_TIME AS OF"
+  },
+  {
+    "q": "What is the purpose of Cloud Monitoring's 'Synthetic Monitor' (formerly Uptime Checks) for data pipelines?",
+    "opts": [
+      "Synthetic monitors are exclusively for monitoring web application front-ends and REST APIs and provide no useful capabilities for monitoring backend data pipeline workloads",
+      "Synthetic monitors make HTTP/TCP requests to check endpoint availability. For data pipelines, use them to check: (1) the Airflow webserver is accessible; (2) a health-check Cloud Function endpoint that validates key pipeline components; (3) BigQuery API availability. They complement log-based and metric-based monitoring",
+      "Synthetic monitors replace Cloud Logging as the primary observability layer for data pipelines by capturing structured logs from each step of the pipeline execution",
+      "Synthetic monitors automatically inspect pipeline output tables for data quality issues by running predefined SQL profiling queries against BigQuery on a schedule"
+    ],
+    "ans": 1,
+    "explain": "Synthetic monitors (uptime checks) verify external endpoint availability. For pipelines: (1) check Airflow/Composer webserver URL; (2) implement a health-check endpoint (Cloud Function returning 200 if data is fresh, 503 if stale) — the synthetic monitor calls this and alerts on 503. This provides user-experience-level monitoring beyond metric thresholds.",
+    "concept": "Cloud Monitoring Synthetic Monitor, uptime checks, pipeline health monitoring"
+  },
+  {
+    "q": "A data team wants to implement blue/green deployment for their dbt transformation pipeline in BigQuery. How should they structure this?",
+    "opts": [
+      "dbt does not support blue/green deployment patterns — all dbt models overwrite their target production tables directly via CREATE OR REPLACE on every dbt run",
+      "Use dbt's target configuration: maintain two dbt targets (blue and green) pointing to separate BigQuery datasets (prod_blue, prod_green). Run dbt against the inactive color; validate results; update a 'current' BigQuery view to point to the validated dataset atomically. The view swap is the cutover",
+      "Create two separate BigQuery projects for blue and green environments and use a load balancer in front of BigQuery to route consumer queries between the two project endpoints",
+      "Use BigQuery table clones to create the blue/green table pair — clones share storage and are free until modified, making them an ideal zero-cost blue/green primitive for dbt"
+    ],
+    "ans": 1,
+    "explain": "dbt blue/green: two target datasets (prod_blue, prod_green). Run dbt against the inactive one; run dbt tests; validate freshness. Cutover: UPDATE a BigQuery authorized view (prod_current) to SELECT from the now-validated dataset. The view swap is instant — no downtime, instant rollback by reverting the view.",
+    "concept": "dbt blue/green deployment, BigQuery view swap, zero-downtime promotion, authorized views"
+  },
+  {
+    "q": "You need to implement real-time alerting for Dataflow pipeline errors. A new exception type was added to the pipeline code that is not yet in Cloud Monitoring. How do you create an alert for it?",
+    "opts": [
+      "Wait for the GCP product team to add a metric for this new exception type to the Cloud Monitoring metric catalog before alerting on it becomes possible",
+      "Create a Cloud Logging log-based metric: define a filter that matches the exception message in Dataflow worker logs (resource.type='dataflow_step', textPayload=~'MyNewException'); create a Cloud Monitoring alert on this log-based metric",
+      "Use Cloud Debugger snapshot conditions on the Dataflow worker process to intercept the exception at the throw site and emit a snapshot event that triggers an alert",
+      "Modify the pipeline's exception handler code to write a row into a BigQuery error_log table and configure a BigQuery scheduled query to alert when new error rows appear"
+    ],
+    "ans": 1,
+    "explain": "Log-based metrics: define a metric in Cloud Logging that counts log entries matching a filter (Dataflow worker logs + exception string). Cloud Monitoring creates an alert on this metric. This is the standard pattern for alerting on custom application-level errors not tracked by built-in service metrics.",
+    "concept": "Cloud Logging log-based metrics, custom error alerting, Dataflow log monitoring"
+  },
+  {
+    "q": "A data engineering team uses feature flags to enable/disable new pipeline features without code deployment. How do you implement feature flags for BigQuery pipelines?",
+    "opts": [
+      "Hardcode all feature flag values directly into BigQuery SQL transformation code and ship a new dbt or Dataform deployment whenever any flag value needs to change",
+      "Store feature flags in a BigQuery config table or Cloud Firestore; read flags at pipeline startup via a BigQuery scalar function or Cloud Function; conditionally apply pipeline logic based on flag values. Update flags without pipeline redeployment",
+      "Use Airflow Variables in Cloud Composer — store feature flags in Airflow's variable store, accessible from tasks without code changes",
+      "Cloud Composer provides built-in feature flag management via the Airflow UI's Admin → Feature Flags section with audit logging and per-DAG flag scoping support"
+    ],
+    "ans": 2,
+    "explain": "Airflow Variables for pipeline feature flags: store flags in Airflow Variables (Airflow UI → Admin → Variables). In DAG code: flag = Variable.get('enable_new_feature', default_var='false'). The flag can be changed in the Airflow UI without any code deployment, and all subsequent DAG runs pick up the new value.",
+    "concept": "Feature flags for data pipelines, Airflow Variables, configuration management"
+  },
+  {
+    "q": "What are the key differences between Cloud Composer's sequential task execution and Airflow's parallel task execution, and how do you configure parallelism?",
+    "opts": [
+      "Airflow is fundamentally sequential — its scheduler executes one task at a time across the entire deployment regardless of how DAGs declare their task dependencies",
+      "Airflow executes independent tasks in parallel (tasks without dependencies on each other). Configure parallelism at three levels: (1) parallelism (global concurrent tasks, default 32); (2) dag_concurrency (concurrent tasks per DAG); (3) max_active_runs_per_dag (concurrent DAG runs). Cloud Composer sets these based on environment size",
+      "Airflow DAGs only run tasks in parallel when each individual task is explicitly configured with the parallel=True keyword argument and a shared parallel_group_id field",
+      "Cloud Composer requires an upgrade to a paid premium tier to unlock parallel task execution — the standard tier always executes tasks within a DAG strictly sequentially"
+    ],
+    "ans": 1,
+    "explain": "Airflow parallelism: tasks with no dependency relationships run simultaneously, limited by: parallelism (global), max_active_tasks_per_dag (per DAG), and worker count. In Cloud Composer 2, configure parallelism in Airflow's configuration section. More workers = more tasks run simultaneously.",
+    "concept": "Airflow parallelism, concurrent task execution, Cloud Composer configuration"
+  },
+  {
+    "q": "You need to implement automated BigQuery table documentation where column descriptions are automatically populated from a data dictionary spreadsheet. How do you automate this?",
+    "opts": [
+      "Manually copy each column description from the Google Sheets data dictionary into the corresponding BigQuery table's column description field via the Cloud Console UI",
+      "Write a Python script that reads the Google Sheets data dictionary (via Sheets API), then uses the BigQuery client library (bigquery.SchemaField.description or tableservice.patch() to update table schema with descriptions); run via Cloud Function or Cloud Build CI/CD on spreadsheet changes",
+      "Use dbt with the dbt-external-tables package to read from Google Sheets as a federated source and automatically populate BigQuery column descriptions via dbt docs generate",
+      "BigQuery automatically generates column descriptions from sampled data patterns using its built-in semantic inference engine that ships with the standard SQL dialect"
+    ],
+    "ans": 1,
+    "explain": "Automated documentation pipeline: Google Sheets (data dictionary) → Cloud Function (triggered by Google Sheets webhook or Cloud Scheduler) → BigQuery client library patches table schema with descriptions. This keeps BigQuery column documentation in sync with the business data dictionary without manual copy-paste.",
+    "concept": "BigQuery automated documentation, Google Sheets API, schema description management"
+  },
+  {
+    "q": "A Dataproc cluster is underperforming because the default configuration parameters are not optimized for the workload (large-scale SQL analytics). What Dataproc component helps configure Spark parameters automatically?",
+    "opts": [
+      "Dataproc Autoscaling automatically tunes all Spark configuration parameters (executor memory, shuffle partitions, broadcast threshold) based on the observed workload",
+      "Dataproc's optional component 'Spark Thrift Server' enables JDBC/ODBC SQL access to Spark but doesn't tune parameters. Use Dataproc's initialization actions to set custom Spark properties in spark-defaults.conf, or use the Dataproc properties parameter (spark:spark.executor.memory, spark:spark.sql.shuffle.partitions, etc.) at cluster creation time",
+      "Dataproc Automatic Tuning, an optional component, profiles each Spark application and rewrites spark-defaults.conf between runs to optimize for the previous workload's bottleneck",
+      "Use BigQuery as the SQL analytics engine instead of Dataproc — BigQuery's automatic query optimization eliminates the need for any manual configuration parameter tuning"
+    ],
+    "ans": 1,
+    "explain": "Dataproc Spark property configuration: at cluster creation, set spark-defaults.conf properties via gcloud dataproc clusters create --properties spark:spark.sql.shuffle.partitions=2000,spark:spark.executor.memory=8g. For analytics workloads: increase shuffle.partitions (default 200 is often too low); tune executor memory; set dynamic resource allocation.",
+    "concept": "Dataproc Spark configuration, spark-defaults.conf, performance tuning at cluster creation"
+  },
+  {
+    "q": "A pipeline writes to multiple Cloud Storage buckets across regions. How do you monitor the total data written per region for cost attribution and compliance?",
+    "opts": [
+      "Cloud Storage does not expose per-region write metrics — only global bucket-level metrics are available in the Cloud Monitoring metric catalog for compliance reporting",
+      "Use Cloud Logging data access logs for Cloud Storage (enabled at project level); create log-based metrics filtered by resource.location to count bytes written per region; export billing data to BigQuery and filter by location for cost attribution",
+      "Cloud Billing automatically provides a built-in per-region Cloud Storage write cost breakdown report directly in the Cloud Console under the Reports → Storage section",
+      "Use gsutil du periodically on each regional bucket via a Cloud Scheduler cron job and write the measured bucket sizes to a BigQuery monitoring table for analysis"
+    ],
+    "ans": 1,
+    "explain": "Cloud Storage audit logs capture all write operations with location. Log-based metrics on method_name=storage.objects.create filtered by resource.location provide per-region write counts. For cost attribution, export Cloud Billing to BigQuery and filter by sku.description containing the region name.",
+    "concept": "Cloud Storage audit logs, log-based metrics, regional cost attribution"
+  },
+  {
+    "q": "You have a BigQuery dataset with 500 tables. You need to identify which tables haven't been queried in the last 90 days for potential cleanup. Which query provides this?",
+    "opts": [
+      "There is no way to track per-table query history in BigQuery — query metadata is only retained at the project level for 30 days in INFORMATION_SCHEMA.JOBS history",
+      "Query INFORMATION_SCHEMA.TABLE_STORAGE for table sizes; tables with size > 0 that do not appear in INFORMATION_SCHEMA.JOBS in the last 90 days are unused candidates",
+      "SELECT table_id, last_modified_time FROM dataset.__TABLES__ — last_modified_time shows when the table was last written, not when it was last queried by users",
+      "Query INFORMATION_SCHEMA.JOBS_BY_PROJECT filtering on referenced_tables and aggregate to find tables with no queries in 90 days: SELECT table_id, MAX(creation_time) FROM INFORMATION_SCHEMA.JOBS_BY_PROJECT, UNNEST(referenced_tables) WHERE DATE(creation_time) >= DATE_SUB(CURRENT_DATE, INTERVAL 90 DAY) GROUP BY table_id — tables absent from results are unqueried"
+    ],
+    "ans": 3,
+    "explain": "INFORMATION_SCHEMA.JOBS_BY_PROJECT logs all queries with referenced_tables (the list of tables each job accessed). UNNEST(referenced_tables) expands them. Tables with no entries in the last 90 days have not been queried — candidates for archival or deletion.",
+    "concept": "BigQuery INFORMATION_SCHEMA.JOBS, table usage tracking, data cleanup"
+  },
+  {
+    "q": "What is Dataplex's role in automated data quality management and how do you define quality rules?",
+    "opts": [
+      "Dataplex only catalogs data assets via auto-discovery — it has no quality rule execution capability and requires a separate tool like Great Expectations for any DQ checks",
+      "Dataplex Data Quality provides: (1) auto data profiling (statistical analysis of columns); (2) data quality rules defined declaratively (not_null, value_in_set, min/max range, regex, SQL row conditions); (3) scheduled scans that evaluate rules and write results to BigQuery; (4) Cloud Monitoring metrics and alerts on quality scores",
+      "Dataplex Data Quality requires the user to author and submit Spark Java or PySpark code that defines and executes quality checks on a Dataproc cluster against each table",
+      "Dataplex Data Quality only operates on unstructured Cloud Storage files via inferred schemas and cannot evaluate quality rules against native BigQuery tables in datasets"
+    ],
+    "ans": 1,
+    "explain": "Dataplex Data Quality: define rules in the console or API (row_condition: 'amount > 0', non_null: 'customer_id', regex: 'email LIKE pattern'). Scheduled scans run these rules on BigQuery tables; results (pass/fail rate per rule) appear in a BigQuery results table and Cloud Monitoring. Alert when quality score drops below threshold.",
+    "concept": "Dataplex Data Quality, declarative quality rules, scheduled scans, quality monitoring"
+  },
+  {
+    "q": "A Cloud Composer environment fails to start DAG runs due to database saturation (too many metadata operations). How do you diagnose and fix this?",
+    "opts": [
+      "Increase the Cloud SQL storage allocation for the Airflow metadata database to a larger disk size — disk I/O scales with disk size on Cloud SQL for PostgreSQL",
+      "Check Airflow's metadata database (Cloud SQL for PostgreSQL) for slow queries and table bloat. Fix: (1) reduce dag_run_conf and xcom sizes; (2) increase xcom_backend to use cloud storage instead of DB; (3) set max_dagruns_per_loop_to_schedule to limit per-loop runs; (4) archive/delete old DagRun and TaskInstance records via db clean command",
+      "Restart the entire Cloud Composer environment via gcloud composer environments restart to clear the metadata database's connection pool and in-memory cache state",
+      "Reduce the total number of DAGs deployed in the Composer environment to fewer than 50 to reduce ongoing metadata write pressure from the scheduler heartbeat loop"
+    ],
+    "ans": 1,
+    "explain": "Airflow metadata DB saturation: symptoms include slow scheduling, high Cloud SQL CPU. Fix: (1) archival — airflow db clean command purges old run history; (2) XCom storage — move large XComs to GCS (use custom XCom backend); (3) reduce dag_run history retention; (4) increase Cloud SQL compute tier; (5) reduce parallelism to reduce concurrent DB connections.",
+    "concept": "Airflow metadata database, DB saturation, db clean, XCom optimization"
+  },
+  {
+    "q": "How should you implement cross-project BigQuery queries when each project has its own VPC Service Controls perimeter?",
+    "opts": [
+      "Cross-perimeter BigQuery queries are not supported by VPC Service Controls — all source and destination projects must reside in the same single perimeter for queries to succeed",
+      "Create a unified VPC Service Controls perimeter that includes all projects involved in the cross-project queries; or configure bridge perimeters with ingress/egress access policies between perimeters to allow specific service accounts to cross the perimeter boundary",
+      "Disable VPC Service Controls protection on the destination project's BigQuery API during the cross-project query window and re-enable it after the query completes",
+      "Use the BigQuery Data Transfer Service to copy data between the projects on a daily schedule instead of issuing cross-project queries directly across perimeter boundaries"
+    ],
+    "ans": 1,
+    "explain": "VPC Service Controls cross-perimeter access: option 1 is merging perimeters (simpler but broader scope). Option 2 uses ingress/egress rules: create an ingress rule on Project B's perimeter allowing access from Project A's service account via the BigQuery API. This is more fine-grained — only the specific cross-perimeter access is allowed.",
+    "concept": "VPC Service Controls cross-perimeter, bridge perimeters, ingress/egress rules"
+  },
+  {
+    "q": "You need to automate the rotation of Cloud SQL database credentials used by data pipelines. What is the recommended approach?",
+    "opts": [
+      "Manually update database credentials in all pipeline configurations (Airflow Connections, Dataflow templates, dbt profiles) when rotating quarterly via a runbook procedure",
+      "Store credentials in Secret Manager; configure automatic rotation (Cloud Functions triggered by Secret Manager rotation events); pipelines read credentials from Secret Manager at runtime (not hardcoded). On rotation, Secret Manager calls the rotation Cloud Function which updates Cloud SQL and creates a new secret version",
+      "Store database credentials in Airflow Connections through the Cloud Composer UI — Airflow Connections automatically rotate on a configurable cadence via the built-in rotation scheduler",
+      "Rotate Cloud SQL database credentials manually every quarter using gcloud sql users set-password and update every pipeline's hardcoded credential configuration file by hand"
+    ],
+    "ans": 1,
+    "explain": "Secret Manager automatic rotation: (1) store Cloud SQL password in Secret Manager; (2) configure rotation schedule (30/90 days); (3) rotation Pub/Sub notification triggers a Cloud Function that: creates new Cloud SQL password, stores it as new Secret Manager version, marks old version for destruction; (4) pipelines always call Secret Manager at startup to get current password.",
+    "concept": "Secret Manager, credential rotation, Cloud SQL, automated security"
+  },
+  {
+    "q": "A data pipeline uses a Cloud Function that runs for 9 minutes. You observe it's approaching the maximum timeout. How do you refactor for long-running operations?",
+    "opts": [
+      "Cloud Functions supports effectively unlimited execution time by changing the function's timeout parameter to 60 minutes in the gcloud functions deploy --timeout flag",
+      "Cloud Functions has a maximum timeout of 9 minutes (2nd gen: 60 minutes for HTTP functions). For operations > 60 minutes: trigger a Cloud Run job (no timeout limit) or a Dataflow job from the Cloud Function. The Cloud Function initiates the long-running operation and returns immediately; the job continues independently",
+      "Increase the Cloud Function memory allocation to 8GB — memory tier upgrades automatically extend the maximum allowable execution timeout proportionally to the new memory tier",
+      "Use Cloud Tasks to break the long-running work into multiple sub-9-minute chunks and orchestrate them via task queue retries with deterministic chunk boundary checkpoints"
+    ],
+    "ans": 1,
+    "explain": "Cloud Functions timeout limits: 1st gen max 9 minutes; 2nd gen HTTP max 60 minutes. For operations requiring more time: the Cloud Function starts a Cloud Run job, Dataflow job, or Dataproc job and returns immediately (async). The triggered job runs until completion independently. This is the standard pattern for long-running pipeline initiation.",
+    "concept": "Cloud Functions timeout, long-running operations, Cloud Run Jobs, async pipeline trigger"
+  },
+  {
+    "q": "You need to implement data masking for development environments so that developers can work with realistic data structures but no real PII. What is the comprehensive approach?",
+    "opts": [
+      "Share full production data with the developers — they have appropriate security clearance and signed NDAs which makes direct access compliant under most data governance policies",
+      "Use Cloud DLP to de-identify a copy of production data: apply tokenization (format-preserving encryption) to PII fields, generalize dates (year only), suppress rare values. Store the de-identified copy in a development BigQuery dataset; developers use this without accessing production",
+      "Create entirely synthetic fake data using a third-party data generation tool such as Faker or Mockaroo for all development environment needs — no production data should ever be used",
+      "Grant developers read-only access to the production BigQuery dataset and rely on mandatory peer code reviews to prevent any PII data from being misused or exfiltrated outside the org"
+    ],
+    "ans": 1,
+    "explain": "Dev environment data masking: Cloud DLP de-identification on a production snapshot — FPE (format-preserving encryption) for IDs and emails (maintains format, scrambles values), date shifting for dates, bucketing for ages. The result looks realistic for testing but contains no real PII. Store in dev BigQuery dataset; refresh monthly from new production snapshots.",
+    "concept": "Dev environment data masking, Cloud DLP de-identification, FPE, realistic test data"
+  },
+  {
+    "q": "What is Vertex AI Pipelines' caching mechanism and how does it reduce pipeline execution time?",
+    "opts": [
+      "Vertex AI Pipelines has no caching mechanism — every component step re-executes on every pipeline run from scratch, even when inputs and code are identical to a prior run",
+      "Vertex AI Pipelines caches component outputs: if a component's inputs (code, parameters, input artifacts) haven't changed since the last run, it returns the cached output instead of re-executing. This dramatically reduces re-run time for pipelines where early steps (data preprocessing) rarely change but later steps (model training) always change",
+      "Pipeline caching is only available for Python function-based components built via the @component decorator and is not supported for custom container-based components",
+      "Cached component results are stored in Vertex AI Metadata Store for exactly 24 hours after creation and are then automatically purged regardless of whether they are still referenced"
+    ],
+    "ans": 1,
+    "explain": "Vertex AI Pipelines caching: each component execution is fingerprinted (code hash + input hash). On re-run, if the fingerprint matches a recent execution, the cached output artifacts are reused. This allows rapid iteration on later pipeline stages without re-running expensive earlier stages (data preprocessing, feature engineering).",
+    "concept": "Vertex AI Pipelines caching, component fingerprinting, pipeline re-run optimization"
+  },
+  {
+    "q": "A production Cloud Composer environment experiences scheduler failures due to too many concurrent task instances. How do you tune this?",
+    "opts": [
+      "Add additional Cloud Composer environments to the project and partition DAGs across them to distribute the scheduling and task execution load across multiple schedulers",
+      "Reduce Airflow scheduler configuration: decrease parallelism (global concurrent tasks), max_active_tasks_per_dag, and max_active_runs_per_dag to match available worker capacity. Also increase worker count or worker concurrency to match demand. In Composer 2, set these in the Airflow configuration override section",
+      "Delete all historical DAG run records via airflow db clean to free up scheduler memory and reduce the per-loop work that the scheduler performs during heartbeats",
+      "Reduce the total number of DAGs deployed in the Composer environment to fewer than 10 to ensure that the scheduler is never overwhelmed by concurrent task scheduling work"
+    ],
+    "ans": 1,
+    "explain": "Composer scheduler tuning: parallelism (total concurrent tasks across all DAGs), max_active_tasks_per_dag (concurrent tasks within a DAG), worker_concurrency (tasks a single worker executes simultaneously). Balance these against worker count. In Composer 2 (GKE Autopilot), workers scale per task — set worker_concurrency appropriately.",
+    "concept": "Airflow scheduler tuning, parallelism configuration, worker concurrency, Composer 2"
+  },
+  {
+    "q": "You need to implement an end-to-end observability stack for your data platform covering pipelines, storage, and data quality. Which combination of GCP services provides comprehensive coverage?",
+    "opts": [
+      "Cloud Monitoring alone provides comprehensive coverage of all observability dimensions including data quality and lineage for GCP-native data services across the platform",
+      "Multi-layer observability: (1) Infrastructure metrics: Cloud Monitoring (Dataflow, Dataproc, Composer metrics); (2) Pipeline logs: Cloud Logging (Airflow task logs, Dataflow worker logs); (3) Data quality: Dataplex Data Quality scans with results in BigQuery; (4) Data freshness: custom Cloud Monitoring metrics from INFORMATION_SCHEMA queries; (5) Cost: Cloud Billing export to BigQuery with pipeline label filtering",
+      "Use a third-party observability platform such as Grafana, Datadog, or New Relic — GCP's native observability tools are insufficient to provide adequate coverage for modern data platforms",
+      "BigQuery's INFORMATION_SCHEMA views (JOBS, TABLES, PARTITIONS) provide all the observability data needed across pipelines, storage, lineage, freshness, and data quality dimensions"
+    ],
+    "ans": 1,
+    "explain": "Comprehensive data platform observability requires layering: infrastructure metrics (Cloud Monitoring), log analytics (Cloud Logging), data quality (Dataplex), lineage (Dataplex Lineage API), freshness (custom metrics), and cost attribution (Cloud Billing labels). No single service covers all dimensions — they complement each other.",
+    "concept": "Data platform observability, Cloud Monitoring, Cloud Logging, Dataplex, multi-layer monitoring"
+  },
+  {
+    "q": "A data pipeline produces results that need to be approved by a business user before being published to a production table. How do you implement a human-in-the-loop approval step in Cloud Composer?",
+    "opts": [
+      "Cloud Composer does not support any form of human approval step in a DAG — all DAG tasks must be fully automated and complete without external input from users",
+      "Use an Airflow ExternalTaskSensor that waits for a trigger from an external system, or use the Airflow API sensor that polls a BigQuery approval table. Business user approves in a UI that marks the record in BigQuery; sensor detects the approval and continues the DAG",
+      "Use Cloud Composer's built-in HumanApprovalOperator task type that natively pauses DAG execution and emails an approval link to the configured approver list and resumes on click",
+      "Pause the entire Cloud Composer environment via gcloud composer environments update during the manual approval window and resume it after the business user has approved"
+    ],
+    "ans": 1,
+    "explain": "Human-in-the-loop in Airflow: implement a custom sensor that polls an approval table in BigQuery or Firestore every N minutes. Business user reviews results in a dashboard and clicks Approve → writes a record to the approval table. The sensor detects the approval record and returns True, allowing downstream tasks to run.",
+    "concept": "Airflow human-in-the-loop, custom sensors, approval workflows, ExternalTaskSensor"
+  },
+  {
+    "q": "How do you ensure that sensitive BigQuery data is never written to Cloud Logging (Airflow logs may contain query results)?",
+    "opts": [
+      "Sensitive BigQuery data never appears in Airflow logs because Airflow's logging framework only captures task lifecycle metadata and not the underlying SQL query result rows",
+      "Configure Airflow to minimize log verbosity (log_level=WARNING); avoid logging query results in BigQuery operators (set log_output=False); use Cloud Logging exclusions to filter out log entries from Composer tasks that may contain sensitive data; apply DLP scan on Cloud Logging to detect and redact PII in logs",
+      "Disable Cloud Logging entirely for the Cloud Composer environment by toggling off the integration in the environment configuration — this prevents any task logs from being persisted",
+      "Use VPC Service Controls perimeters around Cloud Logging to prevent log data containing sensitive results from being exported or accessed outside the perimeter boundary at all"
+    ],
+    "ans": 1,
+    "explain": "Preventing sensitive data in logs: (1) set Airflow log level to WARNING or ERROR — INFO logs often include SQL results; (2) configure BigQueryExecuteQueryOperator with log_output=False; (3) add Cloud Logging exclusion filters for specific Composer namespaces; (4) implement a Cloud Logging sink with DLP inline inspection to redact PII before logs are stored.",
+    "concept": "Sensitive data in logs, Airflow log configuration, Cloud Logging DLP, log redaction"
+  },
+  {
+    "q": "What is the recommended approach for managing secrets (API keys, database passwords) used by Cloud Composer DAGs?",
+    "opts": [
+      "Store secrets directly in Airflow Variables via the Composer UI — they are stored encrypted in the Airflow metadata database and accessible to all DAGs via the Variable.get() API",
+      "Store secrets in Secret Manager; in Airflow DAGs, use the Secret Manager backend for Airflow Connections and Variables (configure airflow.cfg: [secrets] backend = airflow.providers.google.cloud.secrets.secret_manager.CloudSecretManagerBackend). Secrets are fetched from Secret Manager at runtime — never stored in the metadata DB or code",
+      "Hardcode secrets directly in DAG Python files committed to the source repository and uploaded to the Composer GCS bucket — access is restricted via IAM on the Composer bucket",
+      "Store secrets as environment variables on Dataproc clusters and access them from Airflow DAGs by submitting Spark jobs that read the environment and return values via XCom"
+    ],
+    "ans": 1,
+    "explain": "Cloud Composer + Secret Manager: configure Composer to use Secret Manager as the Airflow secrets backend. Airflow Connections and Variables prefixed with airflow-variables- and airflow-connections- in Secret Manager are automatically fetched at runtime. This keeps secrets out of the metadata DB, encrypted at rest, with full audit logging and rotation support.",
+    "concept": "Secret Manager, Airflow secrets backend, Cloud Composer secret management"
+  },
+  {
+    "q": "A data team needs to ensure that no Dataflow job in their organization can read from or write to resources outside of a specific GCP project list. How do you enforce this policy?",
+    "opts": [
+      "Add VPC Firewall rules to every Dataflow worker VPC subnet that block egress traffic to any GCP API endpoints outside the approved list of project network ranges",
+      "Configure an Organization Policy constraint (gcp.resourceLocations or a custom OPA/Forseti policy) restricting Dataflow job network configuration to specific VPCs within approved projects; combine with VPC Service Controls perimeters that include only the approved projects",
+      "Manually review every Dataflow job configuration as part of a change advisory board approval gate before any pipeline is allowed to be deployed to production environments",
+      "Use Workload Identity Federation to restrict the Dataflow service account's token exchange so it can only impersonate identities scoped to the approved set of project IDs"
+    ],
+    "ans": 1,
+    "explain": "Organization Policy + VPC Service Controls for Dataflow resource restriction: VPC SC perimeters define which projects can communicate via GCP APIs. Dataflow workers within the perimeter can only access services also in the perimeter. Organization Policies (constraints/compute.restrictVpnPeerIPs, etc.) further restrict network access.",
+    "concept": "Organization Policy, VPC Service Controls, Dataflow resource restrictions, enterprise governance"
+  },
+  {
+    "q": "You need to monitor the health of a Pub/Sub subscription to ensure messages are being consumed in a timely manner. Which metric indicates consumption health?",
+    "opts": [
+      "pubsub.googleapis.com/topic/send_message_operation_count — this counts published messages and reflects subscriber consumption health when compared against the publish baseline",
+      "pubsub.googleapis.com/subscription/num_undelivered_messages (backlog) and subscription/oldest_unacked_message_age — a growing backlog or increasing age indicates the subscriber is falling behind. Alert when oldest_unacked_message_age exceeds your processing SLA",
+      "pubsub.googleapis.com/subscription/pull_request_count — this counts subscriber pull API requests and indicates whether consumers are actively reading from the subscription",
+      "pubsub.googleapis.com/topic/byte_cost — total bytes consumed by all subscribers attached to the topic; rising bytes mean subscribers are keeping up with the publish rate"
+    ],
+    "ans": 1,
+    "explain": "Pub/Sub subscription health: num_undelivered_messages (backlog) shows unprocessed messages; oldest_unacked_message_age shows how old the oldest unprocessed message is. A growing backlog with increasing message age means the consumer is behind. Alert when message age > your max acceptable lag (e.g., 5 minutes).",
+    "concept": "Pub/Sub subscription monitoring, backlog metrics, oldest_unacked_message_age, consumer health"
+  },
+  {
+    "q": "A Dataflow pipeline needs to be tested before deployment. How do you run a subset of production data through the pipeline locally without incurring Dataflow costs?",
+    "opts": [
+      "Dataflow jobs must always run in the managed cloud service — Apache Beam pipelines cannot be executed locally on developer machines or CI/CD agents without the DataflowRunner",
+      "Use the Apache Beam DirectRunner: run the pipeline locally with a small sample of data from Cloud Storage or BigQuery. The DirectRunner executes all Beam transforms locally on your machine (or CI/CD agent) without Dataflow infrastructure. Use pytest with the DirectRunner for automated unit and integration tests",
+      "Use Dataflow's simulation mode by passing --simulate_shuffle=true and --dry_run flags to the pipeline runner — this validates the pipeline graph without incurring full execution costs",
+      "Test only individual DoFn classes in isolation using standard Python or Java unit testing frameworks — full end-to-end pipeline testing on real data is unnecessary in practice"
+    ],
+    "ans": 1,
+    "explain": "DirectRunner for local testing: PipelineOptions.fromArgs(['--runner=DirectRunner']). The pipeline runs locally on JVM/Python interpreter. Use a sample BigQuery table (TABLESAMPLE or LIMIT 1000) or small Cloud Storage files as test input. DirectRunner supports all Beam features and produces identical logical results to DataflowRunner.",
+    "concept": "Apache Beam DirectRunner, local pipeline testing, CI/CD pipeline validation"
+  },
+  {
+    "q": "You need to implement automatic remediation when a Dataplex data quality check fails (e.g., rows with NULL customer_id should be moved to a quarantine table). How do you automate this?",
+    "opts": [
+      "Manually review Dataplex scan results in the Cloud Console each time a scan fails and use bq query to move bad rows to the quarantine table after a manual investigation",
+      "Configure Dataplex Data Quality scan to write results to a BigQuery table; create a Cloud Monitoring alert on the Dataplex data quality metric; alert triggers a Pub/Sub notification → Cloud Function that queries the failed rows (using the scan result partition info) from the source table → inserts them into the quarantine table → optionally deletes from source",
+      "Dataplex automatically moves rows that fail any configured data quality rule to a system-managed quarantine table in the same dataset — no additional configuration is needed",
+      "Use a Cloud Composer DAG with a DataplexRunQualityScanOperator to schedule scans and an inline PythonOperator branch to handle the remediation logic after each scan completes"
+    ],
+    "ans": 1,
+    "explain": "Automated DQ remediation: Dataplex scan → writes results to BigQuery → Cloud Monitoring alert on failing rules → Pub/Sub → Cloud Function reads the scan result row filter (which rows failed which rules) → queries source BigQuery table for those rows → writes to quarantine_table → optionally DELETEs from source. Full automation from scan to remediation.",
+    "concept": "Dataplex data quality remediation, automated quarantine, Cloud Monitoring alerts, Cloud Functions"
+  },
+  {
+    "q": "A data team runs 500 BigQuery jobs per day. They want to identify the top 10 most expensive jobs by slot consumption in the last 7 days. Which query achieves this?",
+    "opts": [
+      "Query the Cloud Billing export dataset in BigQuery, which includes a per-job cost breakdown column with job_id linkage for direct per-job cost ranking and analysis",
+      "SELECT job_id, total_slot_ms, total_bytes_processed, user_email FROM `project`.`region-us`.INFORMATION_SCHEMA.JOBS WHERE DATE(creation_time) >= DATE_SUB(CURRENT_DATE, INTERVAL 7 DAY) AND state = 'DONE' ORDER BY total_slot_ms DESC LIMIT 10",
+      "Query Cloud Monitoring's BigQuery slot metrics filtered by job_id label to find the 10 jobs with the highest total slot consumption over a rolling 7-day window via MQL",
+      "Use the BigQuery Cloud Console's Recent Jobs view, sort the table by duration column descending, and visually pick the top 10 longest-running jobs from the past week"
+    ],
+    "ans": 1,
+    "explain": "INFORMATION_SCHEMA.JOBS contains per-job statistics: total_slot_ms (slot time = cost proxy for on-demand), total_bytes_processed, user_email, creation_time, job_id. Sort by total_slot_ms DESC LIMIT 10 gives the 10 most resource-intensive jobs. Use this for cost attribution, optimization targeting, and identifying runaway queries.",
+    "concept": "BigQuery INFORMATION_SCHEMA.JOBS, job cost analysis, top expensive queries"
+  },
+  {
+    "q": "How do you implement a rolling deployment for a Dataform project — deploying to 10% of users first, then 100% — in a BigQuery context?",
+    "opts": [
+      "Dataform does not support partial deployment or progressive rollout patterns — every Dataform release tag is applied atomically to all downstream consumers at the same time",
+      "Use feature flags: maintain a user_cohort field; deploy Dataform models that JOIN to a feature_flags table to apply new logic only for cohort 1 (10% of users). After validation, expand the cohort to 100%. This is a SQL-level A/B deployment without infrastructure changes",
+      "Deploy the new Dataform release to a separate sibling BigQuery project containing the data of the canary 10% of users, and route those users' queries to the new project via DNS",
+      "Use BigQuery TABLESAMPLE SYSTEM(10 PERCENT) in the consumer view to randomly route exactly 10% of incoming queries to the newly deployed Dataform model output table for canary"
+    ],
+    "ans": 1,
+    "explain": "SQL-level rolling deployment: add a user_cohort or ab_test_flag to your user dimension. Deploy new Dataform models with: CASE WHEN user_cohort = 'experiment' THEN new_logic ELSE old_logic END. Only users in the experiment cohort see new results. Gradually expand cohort size from 10% to 100% via a config table update — no new deployment needed.",
+    "concept": "Dataform rolling deployment, A/B testing in SQL, feature flags, progressive rollout"
+  }
+]
