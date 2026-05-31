@@ -1402,5 +1402,605 @@
     "ans": 0,
     "explain": "Correct answer is A as the controlled access can be provided using Authorized views created in a separate project.\n\nBigQuery is a petabyte-scale analytics data warehouse that you can use to run SQL queries over vast amounts of data in near realtime.\n\nGiving a view access to a dataset is also known as creating an authorized view in BigQuery. An authorized view allows you to share query results with particular users and groups without giving them access to the underlying tables. You can also use the view's SQL query to restrict the columns (fields) the users are able to query.\n\nWhen you create the view, it must be created in a dataset separate from the source data queried by the view. Because you can assign access controls only at the dataset level, if the view is created in the same dataset as the source data, your data analysts would have access to both the view and the data.\n\nOption B is wrong as Authorized views should be created in a separate project. If they are created in the same project, the users would have access to the underlying tables as well.\n\nOptions C & D are wrong as only logical views can be created and not materialized.",
     "concept": "BigQuery"
+  },
+  {
+    "q": "An Internet of Things (IoT) application sends two fields to be logged in data storage: a log timestamp and collected data as an integer. It sends this information over 100 times every minute. Which service is optimised to handle this type of data?",
+    "opts": [
+      "BigQuery",
+      "Bigtable",
+      "Cloud Storage",
+      "Cloud SQL"
+    ],
+    "ans": 1,
+    "explain": "Bigtable is optimised for high-throughput, low-latency reads and writes of time-series and IoT data. It handles millions of rows per second, making it ideal for data that arrives at very high frequency. BigQuery is an OLAP analytical warehouse not suited for high-frequency write workloads. Cloud Storage is object storage with no row-level writes. Cloud SQL is a relational OLTP database that cannot scale to IoT-level write throughput.",
+    "concept": "Bigtable, IoT, time-series, high-throughput writes"
+  },
+  {
+    "q": "A video game has an inventory system where JSON objects are placed inside other JSON objects. These objects do not follow a fully set structure and can have their structure change according to player action. What database can best maintain this type of system?",
+    "opts": [
+      "Cloud SQL",
+      "Cloud Storage",
+      "Firestore",
+      "Bigtable"
+    ],
+    "ans": 2,
+    "explain": "Firestore is a document store that natively supports nested JSON documents with flexible, schema-less structure. It handles nested objects and variable document shapes well, which is ideal for game inventory systems. Cloud SQL is a relational database requiring a fixed schema. Cloud Storage is object storage, not a database. Bigtable uses a wide-column NoSQL model optimised for key-based access, not nested JSON documents.",
+    "concept": "Firestore, semi-structured data, nested JSON, document store"
+  },
+  {
+    "q": "Legal documents consisting of several terabytes of data need to be stored for legal reasons in a manner in which they cannot be deleted or tampered with, but these documents will likely not be accessed for several years. What is the best storage option?",
+    "opts": [
+      "Maintain a hold in Cloud Storage for a number of years and keep it in the Standard tier",
+      "Keep the documents in a Google Drive with no additional security measures",
+      "Place the documents in the Archive tier",
+      "Place the documents in the Archive tier and add a hold on the documents to ensure they cannot be deleted"
+    ],
+    "ans": 3,
+    "explain": "The Archive storage class is the most cost-effective for data that is rarely accessed over years. Adding a retention hold (Object Hold) ensures the data cannot be deleted or overwritten, satisfying legal immutability requirements. Standard tier is unnecessarily expensive for infrequently accessed data. Google Drive lacks enterprise-grade immutability controls. Archive tier alone without a hold does not prevent deletion.",
+    "concept": "Cloud Storage, Archive tier, retention hold, data immutability, compliance"
+  },
+  {
+    "q": "Bigtable and Cloud Spanner are both massively scalable databases with low latency. What is the key difference between the data stored in them?",
+    "opts": [
+      "Bigtable data is non-relational; Cloud Spanner data is relational",
+      "Bigtable data is relational; Cloud Spanner data is non-relational",
+      "Bigtable data is multidimensional; Cloud Spanner data is not multidimensional",
+      "There is no meaningful difference between the two"
+    ],
+    "ans": 0,
+    "explain": "Bigtable is a NoSQL wide-column store — data is non-relational and accessed via a single composite row key. Cloud Spanner is a globally distributed, strongly consistent relational database that supports full SQL and ACID transactions across regions. The distinction is critical for service selection: use Bigtable for key-value/time-series at scale; use Spanner for relational data requiring global consistency.",
+    "concept": "Bigtable, Cloud Spanner, NoSQL vs relational, storage selection"
+  },
+  {
+    "q": "Which of the following is NOT considered metadata in the context of a data warehouse?",
+    "opts": [
+      "Data field descriptions",
+      "Data types of columns",
+      "Data lineage information",
+      "The actual values stored in the data warehouse tables"
+    ],
+    "ans": 3,
+    "explain": "Metadata is 'data about data' — it describes the characteristics and context of the data stored in the warehouse. Data field descriptions, column types, and lineage information all describe the data itself. The actual values stored in the tables constitute the data, not metadata.",
+    "concept": "Data warehouse metadata, data governance, data catalog"
+  },
+  {
+    "q": "What is the primary purpose of data normalization in a data warehouse?",
+    "opts": [
+      "To improve data security and access control",
+      "To reduce storage costs by eliminating redundant data",
+      "To transform data into a consistent format for analysis",
+      "To enhance the speed of data retrieval for real-time applications"
+    ],
+    "ans": 2,
+    "explain": "Data normalization in a data warehouse context aims to bring data from diverse sources into a unified, consistent format, ensuring meaningful cross-source analysis. It is not primarily about security, storage cost reduction (that is a benefit of normalization in OLTP), or real-time retrieval speed.",
+    "concept": "Data normalization, data warehouse design, data consistency"
+  },
+  {
+    "q": "Which of the following is a key benefit of denormalizing data in a data warehouse?",
+    "opts": [
+      "It simplifies the data model and improves readability for business users",
+      "It optimizes data storage and reduces the need for complex queries",
+      "It enhances the performance of certain machine learning algorithms",
+      "It enforces data integrity and prevents inconsistencies"
+    ],
+    "ans": 2,
+    "explain": "Denormalization can improve the performance of machine learning algorithms by restructuring data to better suit their requirements, such as flattening nested fields or one-hot encoding categorical variables into a single wide table. Denormalization typically increases storage use, not reduces it. Normalization (not denormalization) enforces data integrity. Readability is a minor secondary benefit, not the primary driver.",
+    "concept": "Denormalization, data warehouse, machine learning, BigQuery"
+  },
+  {
+    "q": "When designing a data warehouse, what is the most important factor to consider when deciding the degree of data normalization?",
+    "opts": [
+      "The desired level of data security",
+      "The specific data access patterns and analytical requirements",
+      "The total volume of data to be stored",
+      "The available budget for data storage and processing"
+    ],
+    "ans": 1,
+    "explain": "The degree of normalization should align with how the data will be accessed and analyzed. Read-heavy analytical workloads often benefit from denormalized (wide) tables that avoid expensive JOINs, while write-heavy or consistency-sensitive workloads may require more normalized schemas. Security, volume, and budget are secondary considerations.",
+    "concept": "Data normalization, data warehouse design, access patterns, BigQuery schema"
+  },
+  {
+    "q": "What is the role of metadata in a data warehouse?",
+    "opts": [
+      "To improve data security and prevent unauthorized access",
+      "To provide context and descriptions for the data, aiding in understanding and analysis",
+      "To define the physical storage layout of the data on disk",
+      "To control the flow of data between the data warehouse and operational systems"
+    ],
+    "ans": 1,
+    "explain": "Metadata acts as a guide to the data, explaining its meaning, origin, and relationships. This is crucial for effective data discovery, governance, and analysis — allowing users to understand what data exists and how to use it. Metadata does not control access (that is IAM), define physical storage layout, or manage data flow between systems.",
+    "concept": "Data warehouse metadata, data governance, data catalog, data discovery"
+  },
+  {
+    "q": "Which component of Dataplex Catalog allows you to apply structured metadata fields to data assets for governance and discovery?",
+    "opts": [
+      "Entry groups",
+      "Aspects",
+      "Dataplex tasks",
+      "IAM policies"
+    ],
+    "ans": 1,
+    "explain": "Aspects in Dataplex Catalog allow you to apply structured metadata fields to data assets. They capture both technical and business metadata, such as schema details, data quality scores, and compliance information, ensuring consistency and governance across datasets. Entry groups organize related entries under a common namespace but do not store metadata fields. Dataplex tasks automate metadata processing but do not structure metadata. IAM policies control access to data assets, not metadata attributes.",
+    "concept": "Dataplex Catalog, Aspects, metadata governance, data discovery"
+  },
+  {
+    "q": "Your company is migrating a large amount of archive data to Google Cloud Storage. You need to choose the most cost-effective storage class for data that will be accessed infrequently — likely less than once per year. Which GCS storage class should you use?",
+    "opts": [
+      "Standard",
+      "Nearline",
+      "Coldline",
+      "Archive"
+    ],
+    "ans": 3,
+    "explain": "The Archive storage class is the most cost-effective option for data that is rarely accessed, like long-term archives. Standard is for frequently accessed data and has the highest storage cost. Nearline is suitable for data accessed less frequently, such as once a month. Coldline is designed for data accessed infrequently, such as once a quarter. Archive is the correct choice for data accessed less than once per year.",
+    "concept": "Cloud Storage classes, Archive, cost optimization, data retention"
+  },
+  {
+    "q": "A developer is planning a mobile application for company customers to track information about their accounts. The developer wants to write messages each time a significant event occurs (opening, viewing, or deleting an account) for compliance reasons and wants to minimize administrative overhead. What system would you recommend for storing this data?",
+    "opts": [
+      "Cloud SQL using MySQL",
+      "Cloud SQL using PostgreSQL",
+      "Cloud Datastore",
+      "Stackdriver Logging"
+    ],
+    "ans": 3,
+    "explain": "Stackdriver Logging is the best option because it is a managed service designed for storing logging data. Using relational databases (Options A and B) would require designing and maintaining a data model and user interface. Cloud Datastore would not require a fixed data model but would still need a custom UI to manage log events.",
+    "concept": "Stackdriver Logging, compliance, managed logging"
+  },
+  {
+    "q": "A team of analysts has collected several CSV datasets with a total size of 50 GB. They plan to store the datasets in GCP and use Compute Engine instances to run RStudio, an interactive statistical application. Data will be loaded into RStudio using an RStudio data loading tool. Which GCP storage service is most appropriate?",
+    "opts": [
+      "Cloud Storage",
+      "Cloud Datastore",
+      "MongoDB",
+      "Bigtable"
+    ],
+    "ans": 0,
+    "explain": "Cloud Storage is the best option because the data in the files is treated as an atomic unit loaded into RStudio. Cloud Datastore and MongoDB are document databases. Bigtable is a managed wide-column NoSQL database not suited for simple file storage at 50 GB.",
+    "concept": "Cloud Storage, batch data, unstructured file storage"
+  },
+  {
+    "q": "A team of analysts has collected several terabytes of telemetry data in CSV datasets. They plan to store the datasets in GCP and query and analyze the data using SQL. Which GCP storage service is most appropriate?",
+    "opts": [
+      "Cloud SQL",
+      "Cloud Spanner",
+      "BigQuery",
+      "Bigtable"
+    ],
+    "ans": 2,
+    "explain": "BigQuery is a managed analytical database service that supports SQL and scales to petabyte volumes. Cloud SQL and Cloud Spanner are for OLTP transaction processing, not analytics. Bigtable does not support SQL.",
+    "concept": "BigQuery, analytical storage, SQL, large scale"
+  },
+  {
+    "q": "A startup developing self-driving vehicle software currently stores IoT data from 20 vehicles in a MySQL database on Compute Engine (n2-standard-8). They want to scale to tens of thousands of vehicles transmitting IoT data every second across North America and Europe (~4 KB per transmission). What storage architecture change would you recommend?",
+    "opts": [
+      "No change; the current architecture is well suited.",
+      "Replace Cloud SQL with Cloud Spanner.",
+      "Replace Cloud SQL with Bigtable.",
+      "Replace Cloud SQL with Cloud Datastore."
+    ],
+    "ans": 2,
+    "explain": "Bigtable is the best storage service for IoT data, especially when large numbers of devices send data at short intervals. Cloud SQL is designed for regional OLTP and cannot scale to this level. Cloud Spanner is for globally scalable OLTP, not IoT time-series. Cloud Datastore is a document database not optimized for this pattern.",
+    "concept": "Bigtable, IoT, global scale, time-series"
+  },
+  {
+    "q": "A team of game developers wants to track players' possessions (purchased, traded, or awarded). Possessions include clothing, tools, books, and coins. Players can search for others by possession type to trade. New possession types and acquisition methods are expected in the future. What kind of data store would you recommend?",
+    "opts": [
+      "Transactional database",
+      "Wide-column database",
+      "Document database",
+      "Analytic database"
+    ],
+    "ans": 2,
+    "explain": "A document database supports semi-structured schemas. Players' possessions need to be searchable by content, not just a single key. Transactional databases have fixed schemas. Wide-column databases don't support indexed lookups across non-key attributes. Analytical databases are for structured analytics.",
+    "concept": "Firestore, document database, flexible schema, semi-structured"
+  },
+  {
+    "q": "The CTO wants to reduce costs of running an HBase and Hadoop cluster on-premises. Only one HBase application runs on the cluster, currently supporting 10 TB of data expected to double soon. Which managed service minimizes migration and ongoing operational costs?",
+    "opts": [
+      "Cloud Bigtable using the HBase API",
+      "Cloud Dataflow using the HBase API",
+      "Cloud Spanner",
+      "Cloud Datastore"
+    ],
+    "ans": 0,
+    "explain": "Cloud Bigtable using the HBase API minimizes migration effort since existing HBase code can be reused. Cloud Dataflow is a stream/batch processing service, not a database. Cloud Spanner and Cloud Datastore are not appropriate replacements for HBase workloads.",
+    "concept": "Bigtable, HBase API, migration, managed service"
+  },
+  {
+    "q": "A genomics research institute stores FASTQ format data (nucleotide sequences and quality scores). Files may be up to 400 GB and are uploaded in batches. Once uploaded, an analysis pipeline reads the FASTQ file and outputs data to a database. What storage system is best for storing the uploaded FASTQ data?",
+    "opts": [
+      "Cloud Bigtable",
+      "Cloud Datastore",
+      "Cloud Storage",
+      "Cloud Spanner"
+    ],
+    "ans": 2,
+    "explain": "Cloud Storage is correct because FASTQ files are unstructured and up to 400 GB in size. Storing large unstructured files in a NoSQL or relational database is inefficient. Cloud Storage is designed for large-scale object storage.",
+    "concept": "Cloud Storage, genomics, large file batch, unstructured data"
+  },
+  {
+    "q": "A genomics research institute's pipeline reads FASTQ files and outputs tabular structured data. The output is queried using SQL, and queries typically retrieve only a small number of columns but many rows. What database would you recommend for storing the pipeline output?",
+    "opts": [
+      "Cloud Bigtable",
+      "Cloud Datastore",
+      "Cloud Storage",
+      "BigQuery"
+    ],
+    "ans": 3,
+    "explain": "BigQuery is correct because the output is structured, queried with SQL, and reads many rows but few columns—ideal for columnar storage. Bigtable and Datastore don't support SQL. Cloud Storage is for unstructured data and doesn't support SQL querying.",
+    "concept": "BigQuery, columnar storage, SQL analytics"
+  },
+  {
+    "q": "You are developing a new application that will store semi-structured data accessed only by a single key. The total volume of data will be at least 40 TB. What GCP database service would you use?",
+    "opts": [
+      "BigQuery",
+      "Bigtable",
+      "Cloud Spanner",
+      "Cloud SQL"
+    ],
+    "ans": 1,
+    "explain": "Bigtable is a wide-column NoSQL database that supports semi-structured data and works well with datasets over 1 TB. BigQuery, Cloud Spanner, and Cloud SQL are for structured data. Cloud SQL doesn't scale to 40 TB in a single database.",
+    "concept": "Bigtable, wide-column NoSQL, large scale, key-value"
+  },
+  {
+    "q": "A software developer has hundreds of thousands of 1 KB JSON objects that need to be accessed in sub-millisecond times. All objects are referenced by a key, and there is no need to look up values by the contents of the JSON structure. What kind of NoSQL database would you recommend?",
+    "opts": [
+      "Key-value database",
+      "Analytical database",
+      "Wide-column database",
+      "Graph database"
+    ],
+    "ans": 0,
+    "explain": "A key-value database is appropriate because values are looked up by key only, and the value is a JSON structure. Analytical databases are not a type of NoSQL database. Wide-column databases work better for larger datasets in the terabyte range. Graph databases model nodes and relationships.",
+    "concept": "NoSQL key-value store, JSON objects, single-key lookup, sub-millisecond"
+  },
+  {
+    "q": "A software developer has hundreds of thousands of 10 KB JSON objects that need to be searchable by most attributes in the JSON structure. What kind of NoSQL database would you recommend?",
+    "opts": [
+      "Key-value database",
+      "Analytical database",
+      "Wide-column database",
+      "Document database"
+    ],
+    "ans": 3,
+    "explain": "A document database provides indexing on columns other than a single key, enabling search by content. Key-value and wide-column databases do not support indexing on non-key attributes. Analytical is not a type of NoSQL database.",
+    "concept": "Firestore, document database, semi-structured, full indexing"
+  },
+  {
+    "q": "A data modeler is designing a database to support ad hoc querying, including drilling down and slicing and dicing queries. What kind of data model is the data modeler likely to use?",
+    "opts": [
+      "OLTP",
+      "OLAP",
+      "Normalized",
+      "Graph"
+    ],
+    "ans": 1,
+    "explain": "OLAP data models are designed to support drilling down and slicing and dicing queries. OLTP models facilitate storing, searching, and retrieving individual records. Normalized data models are used in OLTP. Graph data models model nodes and relationships.",
+    "concept": "OLAP, data warehouse modeling, dimensional modeling"
+  },
+  {
+    "q": "A multinational corporation is building a global inventory database that will support OLTP type transactions at a global scale. Which of the following would you consider as possible databases for the system?",
+    "opts": [
+      "Cloud SQL and Cloud Spanner",
+      "Cloud SQL and Cloud Datastore",
+      "Cloud Spanner only",
+      "Cloud Datastore only"
+    ],
+    "ans": 2,
+    "explain": "Cloud Spanner is the only globally scalable relational database for OLTP applications. Cloud SQL does not meet global scaling requirements. Cloud Datastore is a document database, not a relational database suitable for global OLTP.",
+    "concept": "Cloud Spanner, global OLTP, horizontal scaling"
+  },
+  {
+    "q": "A DBA new to Google Cloud wants to configure network access to a Cloud SQL PostgreSQL database. The DBA wants to ensure that traffic is encrypted while minimizing administrative tasks such as managing SSL certificates. What would you recommend?",
+    "opts": [
+      "Use the TLS protocol",
+      "Use Cloud SQL Proxy",
+      "Use a private IP address",
+      "Configure the database instance to use auto-encryption"
+    ],
+    "ans": 1,
+    "explain": "Cloud SQL Proxy provides secure access to Second Generation instances without creating allowlists or configuring SSL. The proxy manages authentication and automatically encrypts data. TLS can encrypt traffic but requires certificate management. A private IP does not ensure encryption by itself.",
+    "concept": "Cloud SQL Proxy, secure access, TLS, certificates"
+  },
+  {
+    "q": "You created a Cloud SQL database that uses replication to improve read performance. Occasionally, the read replica is unavailable once or twice a month with no pattern, and no DBA operations are occurring. What might be the cause?",
+    "opts": [
+      "The read replica is being promoted to a standalone Cloud SQL instance.",
+      "Maintenance is occurring on the read replica.",
+      "A backup is being performed on the read replica.",
+      "The primary Cloud SQL instance is failing over to the read replica."
+    ],
+    "ans": 1,
+    "explain": "Maintenance on read replicas is not restricted to maintenance windows and can occur at any time, disrupting operations. A DBA would need to manually promote a replica. Backups cannot be performed on read replicas. Cloud SQL does not fail over to a read replica.",
+    "concept": "Cloud SQL replication, maintenance window, read replica"
+  },
+  {
+    "q": "You are running a Cloud Spanner regional instance pilot and want to follow Google's recommendations for maximum sustained CPU utilization. What is the maximum CPU utilization you would target?",
+    "opts": [
+      "50%",
+      "65%",
+      "75%",
+      "45%"
+    ],
+    "ans": 1,
+    "explain": "Google recommends keeping CPU utilization below 65 percent for regional Cloud Spanner instances and below 45 percent for multi-regional instances to ensure adequate headroom for spikes.",
+    "concept": "Cloud Spanner, CPU utilization, performance tuning, regional"
+  },
+  {
+    "q": "A Cloud Spanner database is being deployed in us-west1 and will need to store up to 20 TB of data. What is the minimum number of nodes required?",
+    "opts": [
+      "10",
+      "20",
+      "5",
+      "40"
+    ],
+    "ans": 0,
+    "explain": "Each Cloud Spanner node can store up to 2 TB. To store 20 TB, at least 10 nodes are required (20 TB / 2 TB per node = 10). Five nodes would support only 10 TB.",
+    "concept": "Cloud Spanner, node capacity, 2TB per node, sizing"
+  },
+  {
+    "q": "A SaaS company stores streaming IoT time-series data from tens of thousands of vehicles owned by 40 companies. Data includes a globally unique sensor ID, timestamp, and efficiency metrics. Each customer queries only their own data. Which would you use as a Bigtable row-key?",
+    "opts": [
+      "Customer ID, timestamp, sensor ID",
+      "Customer ID, sensor ID, timestamp",
+      "Sensor ID, timestamp, customer ID",
+      "Sensor ID, customer ID, timestamp"
+    ],
+    "ans": 1,
+    "explain": "The database is multitenant so customer data should be close together—customer ID first. Sensor ID is globally unique, distributing data evenly when sorted next. Putting timestamp early in the key could cause hotspots as new data arrives sequentially.",
+    "concept": "Bigtable row-key design, multitenant, hotspot avoidance"
+  },
+  {
+    "q": "A game team uses Cloud Firestore to store player data: character description (60-char string, set at creation), character state (health, active time, passive time—updated together), and possessions (complex nested objects). How would you model this in Cloud Firestore?",
+    "opts": [
+      "Store description and character state as strings and possessions as entities",
+      "Store description, character state, and possessions as strings",
+      "Store description, character state, and possessions as entities",
+      "Store description as a string; character state as an entity with health/active/passive properties; and possessions as an entity that may have embedded entities"
+    ],
+    "ans": 3,
+    "explain": "Description is atomic and can be a string. Character state has multiple properties updated together, so it should be an entity. Possessions require recursive representation since a possession can contain other possessions. Options A and B incorrectly model character state as a string. Option C over-models the description.",
+    "concept": "Firestore, data modeling, nested entities, entity structure"
+  },
+  {
+    "q": "You are querying a Cloud Firestore collection of order entities for all orders created today with a total sales amount greater than $100. You have not excluded any indexes and have not created additional composite indexes using index.yaml. What results do you expect?",
+    "opts": [
+      "A set of all orders created today with a total sales amount greater than $100",
+      "A set of orders created today with any total sales amount",
+      "A set with total sales amount greater than $100 and any sales date",
+      "No entities returned"
+    ],
+    "ans": 3,
+    "explain": "No entities are returned because the query requires a composite index (filtering by both date AND amount), but no composite index was created. Built-in single-property indexes cannot satisfy multi-property filter queries.",
+    "concept": "Firestore, composite indexes, query limitations"
+  },
+  {
+    "q": "You are running a Redis cache using Cloud Memorystore. You receive an alert that memory usage is exceeding 80 percent. You do not want to scale up the instance but need to reduce memory usage. What could you try?",
+    "opts": [
+      "Setting shorter TTLs and trying a different eviction policy.",
+      "Switching from Basic Tier to Standard Tier.",
+      "Exporting the cache.",
+      "There is no other option—you must scale the instance."
+    ],
+    "ans": 0,
+    "explain": "Setting shorter TTLs makes keys eligible for eviction sooner. Switching to an eviction policy that targets all keys (not just TTL-keyed ones) may also reduce memory pressure. Switching tiers or exporting the cache does not reduce memory usage.",
+    "concept": "Cloud Memorystore, Redis, eviction policy, TTL, memory pressure"
+  },
+  {
+    "q": "A team of ML engineers is creating a repository of data for training and testing ML models. All engineers work in the same city, contribute datasets at least weekly, and want to minimize storage costs. They plan to use Cloud Storage. What storage class would you recommend?",
+    "opts": [
+      "Regional",
+      "Multi-regional",
+      "Nearline",
+      "Coldline"
+    ],
+    "ans": 0,
+    "explain": "Regional storage is sufficient for users in the same geographic location and costs less than multi-regional. Multi-regional is more expensive and unnecessary for a single-city team. Nearline and Coldline have lower per-GB costs but higher retrieval costs, making them unsuitable for weekly access.",
+    "concept": "Cloud Storage classes, Regional, cost optimization"
+  },
+  {
+    "q": "Auditors inform your company CFO that financial reporting data must be kept for at least three years to comply with a new regulation. The CFO wants to comply with the least administrative overhead. What would you recommend?",
+    "opts": [
+      "Store the data on Coldline storage",
+      "Store the data on multi-regional storage",
+      "Define a data retention policy",
+      "Define a lifecycle policy"
+    ],
+    "ans": 2,
+    "explain": "A data retention policy (Bucket Lock) ensures files cannot be deleted from a Cloud Storage bucket until they reach a specified age. Files can be deleted from Coldline or multi-regional storage unless a retention policy is in place. A lifecycle policy changes storage class but does not prevent deletion.",
+    "concept": "Cloud Storage, retention policy, compliance, Bucket Lock"
+  },
+  {
+    "q": "As a DBA migrating a MongoDB instance to Google Cloud, you want to collect metrics at both the instance level and the database server level. What should you do in addition to creating an instance and installing MongoDB?",
+    "opts": [
+      "Install Stackdriver Logging agent.",
+      "Install Stackdriver Monitoring agent.",
+      "Install Stackdriver Debug agent.",
+      "Nothing. By default, the database instance will send metrics to Stackdriver."
+    ],
+    "ans": 1,
+    "explain": "Installing the Stackdriver Monitoring agent collects application-level metrics (including database server metrics) and sends them to Stackdriver. The Logging agent collects logs, not metrics. The Debug agent is for analyzing running programs. By default, only instance-level metrics and audit logs are sent.",
+    "concept": "Stackdriver Monitoring, database metrics, agent, unmanaged database"
+  },
+  {
+    "q": "Data scientists uploaded multiple time-series datasets to BigQuery. Their queries (selecting 6 columns, applying 4 SQL functions, grouping by day of timestamp) are getting slower and more expensive as data grows, even though they only work with the most recent data. What would you recommend to reduce latency and cost?",
+    "opts": [
+      "Sort the data by time order before loading",
+      "Stop using Legacy SQL and use Standard SQL dialect",
+      "Partition the table and use clustering",
+      "Add more columns to the SELECT statement to use fetched data more efficiently"
+    ],
+    "ans": 2,
+    "explain": "Partitioning by time enables BigQuery to scan only data in relevant partitions. Clustering on the grouping column improves how data is stored. Sorting before load and changing SQL dialect does not reduce data scanned. Adding more columns increases data scanned.",
+    "concept": "BigQuery, partitioning, clustering, query optimization"
+  },
+  {
+    "q": "You are querying a BigQuery table partitioned by time. Using --dry_run, the amount of data scanned is far more than expected. What is a possible cause?",
+    "opts": [
+      "You did not include _PARTITIONTIME in the WHERE clause to limit the amount of data that needs to be scanned.",
+      "You used CSV instead of AVRO file format when loading the data.",
+      "Both active and long-term data are included in the query results.",
+      "You used JSON instead of the Parquet file format when loading the data."
+    ],
+    "ans": 0,
+    "explain": "If _PARTITIONTIME is not included in the WHERE clause, BigQuery scans all partitions, not just the relevant ones. File format affects load performance, not query scan volume. The active/long-term distinction affects storage cost, not query execution.",
+    "concept": "BigQuery, partition pruning, _PARTITIONTIME, query optimization"
+  },
+  {
+    "q": "Your department is expanding use of BigQuery, and the CFO wants to investigate flat-rate billing. What tools and data would you use to help answer that question?",
+    "opts": [
+      "Stackdriver Logging and audit log data",
+      "Stackdriver Logging and CPU utilization metrics",
+      "Stackdriver Monitoring and CPU utilization metrics",
+      "Stackdriver Monitoring and slot utilization metrics"
+    ],
+    "ans": 3,
+    "explain": "Stackdriver Monitoring collects slot utilization metrics that show BigQuery resource consumption. Logging captures events but not performance metrics. CPU utilization is not a BigQuery metric (it is serverless). Slot utilization data tells you whether flat-rate billing would be cost-effective.",
+    "concept": "BigQuery, slots, Stackdriver Monitoring, flat-rate billing"
+  },
+  {
+    "q": "You are migrating terabytes of historical sensor data to Cloud Storage. Files are named with the date followed by the sensor ID. After loading 10 percent, you notice uploads are slower than expected. What might be the cause?",
+    "opts": [
+      "The filenaming convention uses dates as the first part of the file name. If files are loaded in date order, they may be creating hotspots when writing to Cloud Storage.",
+      "The data is in text instead of Avro or Parquet format.",
+      "You are using a gcloud command-line utility instead of the REST API.",
+      "The data is being written to regional instead of multi-regional storage."
+    ],
+    "ans": 0,
+    "explain": "Files named with sequential date prefixes loaded in order will likely go to the same Cloud Storage server, creating hotspots. File format affects load speed minimally at this scale. The API used (gcloud vs REST) does not cause this issue. Storage class does not affect upload throughput significantly.",
+    "concept": "Cloud Storage, hotspots, sequential naming, upload performance"
+  },
+  {
+    "q": "You are investigating long latencies in Cloud Bigtable. Most queries finish in under 20 ms but the 99th percentile can take up to 400 ms. You examine a Key Visualizer heatmap and see two areas with bright colors indicating hotspots. What could be causing those hotspots?",
+    "opts": [
+      "Improperly used secondary index",
+      "Less than optimal partition key",
+      "Improperly designed row-key",
+      "Failure to use a read replica"
+    ],
+    "ans": 2,
+    "explain": "Hotspots occur when a row-key design doesn't adequately distribute read/write load. Cloud Bigtable does not have secondary indexes or partition keys. Hotspots are not caused by absence of a read replica.",
+    "concept": "Bigtable, row-key design, hotspot, Key Visualizer"
+  },
+  {
+    "q": "An IoT startup's Bigtable database stores data from 100,000 sensors. Each row contains all sensor data for one hour; the row-key is sensor ID + hour of day + date. What change would you recommend to this design?",
+    "opts": [
+      "Use one row per sensor per 60-second dataset instead of storing multiple datasets in a single row.",
+      "Start the row-key with the day and hour instead of the sensor ID.",
+      "Allow hours to start at any arbitrary time to accommodate sensor clock differences.",
+      "No change is recommended."
+    ],
+    "ans": 0,
+    "explain": "This table should be designed tall and narrow with one dataset per row. Starting the row-key with day and hour would lead to hotspotting since sequential timestamps create hotspots. Arbitrary hour starts would not fix the wide-table problem.",
+    "concept": "Bigtable, tall and narrow table, row-key design, hotspot avoidance"
+  },
+  {
+    "q": "A Cloud Bigtable database requires strong consistency and high availability. You implemented replication with single-cluster routing. Some users occasionally receive query results inconsistent with what they expected, which self-corrects within a minute. What could be the cause?",
+    "opts": [
+      "Secondary indexes are being updated during queries and return incorrect results.",
+      "The app profile lacks single-cluster routing and replica-only-for-failover configuration.",
+      "Tablets are being moved between nodes, which can cause inconsistent query results.",
+      "The row-key is not properly designed."
+    ],
+    "ans": 2,
+    "explain": "Tablets being moved between nodes during a rebalancing operation can temporarily cause inconsistent results—even in databases configured for strong consistency. This is a known limitation during tablet movement. Secondary indexes don't exist in Bigtable. The app profile issue would cause routing problems, not temporary inconsistency.",
+    "concept": "Bigtable, strong consistency, tablet movement, replication"
+  },
+  {
+    "q": "You are migrating a MongoDB (document) database to Cloud Spanner and want to maintain document-like structures for some columns. What Cloud Spanner data type would you use to define a column that can hold a document-like structure?",
+    "opts": [
+      "Array",
+      "String",
+      "STRUCT",
+      "JSON"
+    ],
+    "ans": 2,
+    "explain": "STRUCT in Cloud Spanner allows for defining a column that holds a structured, document-like object with named fields. Arrays store lists of values of the same type. Strings don't provide structure. Cloud Spanner does not natively support a JSON type (unlike some other databases).",
+    "concept": "Cloud Spanner, STRUCT, document migration, data types"
+  },
+  {
+    "q": "An application using Cloud Spanner has queries that are slow due to joining three or more hierarchically related tables. What Cloud Spanner feature would you try to improve performance?",
+    "opts": [
+      "Replicated clusters",
+      "Interleaved tables",
+      "STORING clause",
+      "Execution plans"
+    ],
+    "ans": 1,
+    "explain": "Interleaved tables store child rows physically co-located with their parent rows, reducing I/O for hierarchical joins. Replicated clusters improve availability, not join performance. The STORING clause is used with secondary indexes to store additional columns. Execution plans are for analysis, not optimization.",
+    "concept": "Cloud Spanner, interleaved tables, hierarchical joins, performance"
+  },
+  {
+    "q": "A Cloud Spanner database uses a natural key as primary key for a large table. DBAs notice these keys are causing hotspots on Cloud Spanner nodes. What would you recommend to improve performance?",
+    "opts": [
+      "Keep the natural key in the table but use a hash of the natural key as the primary key",
+      "Keep the natural key and let Cloud Spanner create more splits to improve performance",
+      "Use interleaved tables",
+      "Use more secondary indexes"
+    ],
+    "ans": 0,
+    "explain": "A hash of the natural key produces apparently random values, distributing writes evenly across nodes and avoiding hotspots. Natural keys like sequential IDs or timestamps concentrate writes to the same node. Interleaved tables and secondary indexes address different issues.",
+    "concept": "Cloud Spanner, primary key design, hash key, hotspot avoidance"
+  },
+  {
+    "q": "You are using a UUID as the primary key in a Cloud Spanner database and notice unexpected hotspotting. What could be the cause?",
+    "opts": [
+      "You have too many secondary indexes.",
+      "You have too few secondary indexes.",
+      "You are using a type of UUID that has sequentially ordered strings at the beginning of the UUID.",
+      "The maximum length of the primary key needs to be increased."
+    ],
+    "ans": 2,
+    "explain": "Some UUID types (e.g., UUIDv1) embed timestamps at the beginning, causing newly generated UUIDs to be sequential. Sequential primary keys create hotspots in Cloud Spanner. The number of secondary indexes is unrelated to hotspotting.",
+    "concept": "Cloud Spanner, UUID, sequential keys, hotspot"
+  },
+  {
+    "q": "A large enterprise is building a repository for all customer-related data, including sales, finance, inventory, and logistics. It has not yet been determined how the data will be used. What Google Cloud storage system would you recommend to store that data?",
+    "opts": [
+      "Cloud Bigtable",
+      "BigQuery",
+      "Cloud Spanner",
+      "Cloud Storage"
+    ],
+    "ans": 3,
+    "explain": "Cloud Storage is recommended for a data lake where the structure and use of data is not yet determined. It can store unstructured, semi-structured, and structured data. BigQuery is for analytics. Bigtable is for time-series/IoT. Cloud Spanner is for global OLTP.",
+    "concept": "Cloud Storage, data lake, undetermined schema, repository"
+  },
+  {
+    "q": "Data is streaming into a BigQuery table. It is added to a partition automatically created for that day. Data arriving the next day is written to a different partition. The data modeler did not specify a column to use as a partition key. What kind of partition is being used?",
+    "opts": [
+      "Ingestion time partitioned tables",
+      "Timestamp partitioned tables",
+      "Integer range partitioned tables",
+      "Clustered tables"
+    ],
+    "ans": 0,
+    "explain": "Ingestion time partitioned tables automatically partition data by the time BigQuery ingests the data, without requiring a partition column. Timestamp partitioned tables use a specific timestamp column. Integer range uses an integer column. Clustered tables organize data by column values but are not partitioned.",
+    "concept": "BigQuery, ingestion time partitioning, streaming inserts"
+  },
+  {
+    "q": "You want to cluster a BigQuery timestamped partitioned table on a measurement column of type FLOAT64, but you receive an error when defining the table. What could the error be?",
+    "opts": [
+      "You cannot use clustering on an external table.",
+      "You cannot use clustering with a FLOAT64 column as the clustering key.",
+      "The table is not the FLOAT64 partition type.",
+      "The clustering key must be an integer or timestamp."
+    ],
+    "ans": 1,
+    "explain": "BigQuery clustering only supports STRING, INT64, NUMERIC, DATE, DATETIME, TIMESTAMP, and BOOL types as clustering keys. FLOAT64 is not a supported clustering key type.",
+    "concept": "BigQuery, clustering, FLOAT64, supported types"
+  },
+  {
+    "q": "What data formats are supported for external tables in Cloud Storage and Google Drive in BigQuery?",
+    "opts": [
+      "Comma-separated values only",
+      "Comma-separated values and Avro",
+      "Comma-separated values, Avro, and newline-delimited JSON",
+      "Comma-separated values, Avro, newline-delimited JSON, and Parquet"
+    ],
+    "ans": 2,
+    "explain": "BigQuery external tables support CSV, Avro, and newline-delimited JSON for both Cloud Storage and Google Drive. Parquet and ORC are supported for Cloud Storage only, not Google Drive.",
+    "concept": "BigQuery, external tables, Google Drive, supported formats"
   }
 ]

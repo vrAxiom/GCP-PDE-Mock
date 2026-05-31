@@ -994,5 +994,353 @@
     "ans": 2,
     "explain": "Correct answer is C as Cloud Composer can help create workflows that connect data, processing, and services across clouds, giving you a unified data environment.\n\nRefer GCP documentation - Cloud Composer: - https://cloud.google.com/composer/;\n\nCloud Composer is a fully managed workflow orchestration service that empowers you to author, schedule, and monitor pipelines that span across clouds and on-premises data centers. Built on the popular Apache Airflow open source project and operated using the Python programming language, Cloud Composer is free from lock-in and easy to use.\n\nCloud Composer gives you the ability to connect your pipeline through a single orchestration tool whether your workflow lives on-premises, in multiple clouds, or fully within GCP. The ability to author, schedule, and monitor your workflows in a unified manner means you can break down the silos in your environment and focus less on infrastructure.\n\nOption A is wrong as Cloud Scheduler is a fully managed enterprise-grade cron job scheduler. It is not an multi-cloud orchestration tool.\n\nOption B is wrong as Google Cloud Dataflow is a fully managed service for strongly consistent, parallel data-processing pipelines. It does not support multi-cloud handling.\n\nOption D is wrong as Google Cloud Dataproc is a fast, easy to use, managed Spark and Hadoop service for distributed data processing.",
     "concept": "Dataflow, Dataproc, Cloud Composer"
+  },
+  {
+    "q": "What methods can a data engineer use to assess and optimize the cost of a workload relative to other options and itself?",
+    "opts": [
+      "Use a TCO calculator to calculate the savings of using cloud services for data analysis",
+      "Use billing alerts to monitor the budget",
+      "Calculate and negotiate better rates based on discounts offered by Google Cloud",
+      "All of the above"
+    ],
+    "ans": 3,
+    "explain": "All three methods are recognised best practices for cost management in Google Cloud. A TCO (Total Cost of Ownership) calculator helps compare on-premises vs cloud costs. Billing alerts provide budget guardrails and early warnings of unexpected spend. Evaluating committed use discounts and negotiated rates reduces unit cost. A thorough cost optimization strategy combines all three approaches.",
+    "concept": "GCP cost optimization, TCO, billing alerts, committed use discounts"
+  },
+  {
+    "q": "You have a batch data pipeline running on Dataproc. To optimize costs, you want to use a cluster that is only active while the job runs. Which cluster type is most suitable?",
+    "opts": [
+      "Autoscaling clusters",
+      "Ephemeral clusters",
+      "Persistent clusters",
+      "Serverless clusters"
+    ],
+    "ans": 1,
+    "explain": "Ephemeral clusters are created for the duration of a job and then deleted, providing cost efficiency by eliminating idle cluster costs. Autoscaling clusters scale resources based on workload but the cluster itself remains persistent, incurring idle costs between jobs. Persistent clusters are always running, which is not optimal for batch jobs with infrequent execution. Dataproc Serverless removes infrastructure management but is not a cluster type.",
+    "concept": "Dataproc, ephemeral clusters, cost optimization, batch processing"
+  },
+  {
+    "q": "Data scientists want to process a batch dataset quickly using Compute Engine. They want to run up to 10 instances when data arrives (unscheduled) and reduce to 1 instance when finished. What is the recommended way to provision?",
+    "opts": [
+      "Use a Cloud Function to monitor metrics and scale",
+      "Use a script on a dedicated instance to monitor and scale",
+      "Use managed instance groups with a minimum of 1 instance and a maximum of 10",
+      "Use Cloud Dataproc with an autoscaling policy"
+    ],
+    "ans": 2,
+    "explain": "A managed instance group (MIG) with autoscaling automatically provisions instances based on load metrics and scales down when load drops.",
+    "concept": "Managed instance groups, autoscaling, Compute Engine"
+  },
+  {
+    "q": "A Compute Engine instance in a MIG is running, but the hosted application crashes. The instance group automatically terminates the instance and replaces it. What feature is at work here?",
+    "opts": [
+      "Autoscaling",
+      "Autohealing",
+      "Redundancy",
+      "Eventual consistency"
+    ],
+    "ans": 1,
+    "explain": "Autohealing relies on health checks to determine if an application is functioning. If the health check fails, the instance is automatically recreated.",
+    "concept": "Managed instance groups, autohealing, health checks"
+  },
+  {
+    "q": "You are creating a managed instance group. You know the configuration and min/max instances. What is the next step to create the MIG?",
+    "opts": [
+      "Create each instance using gcloud compute instance create",
+      "Create instances via Cloud Console individually",
+      "Create an instance template using gcloud compute instance-templates create",
+      "Create an instance template using cbt create"
+    ],
+    "ans": 2,
+    "explain": "MIGs require an instance template to define the uniform configuration of all instances in the group.",
+    "concept": "Managed instance groups, instance templates, gcloud"
+  },
+  {
+    "q": "Why is there no 'deploy container' command in Kubernetes?",
+    "opts": [
+      "Kubernetes uses pods as the smallest deployable unit, which can contain one or more containers.",
+      "Kubernetes uses deployments as the smallest deployable unit.",
+      "Kubernetes uses replicas as the smallest deployable unit.",
+      "Kubernetes calls containers pods, and the command is kubectl deploy pod."
+    ],
+    "ans": 0,
+    "explain": "In Kubernetes, the pod is the smallest deployable abstraction, encapsulating one or more tightly coupled containers.",
+    "concept": "Kubernetes, pods, containers"
+  },
+  {
+    "q": "A Kubernetes admin wants to increase replicas of a deployment named my-app-123 to six. What command should they use?",
+    "opts": [
+      "kubectl scale deployment my-app-123 --replicas 6",
+      "kubectl scale deployment my-app-123 --replicas 2",
+      "gcloud containers scale deployment my-app-123 --replicas 6",
+      "gcloud containers scale deployment my-app-123 --replicas 2"
+    ],
+    "ans": 0,
+    "explain": "kubectl scale deployment <name> --replicas <number> is the standard command for manually scaling a Kubernetes deployment.",
+    "concept": "Kubernetes, kubectl scale, replicas"
+  },
+  {
+    "q": "A Cloud Bigtable instance used for both real-time streaming writes and continuous batch analytics is performing poorly. What would you recommend to improve performance?",
+    "opts": [
+      "Use a write-optimized operating system",
+      "Use a read-optimized operating system",
+      "Add a cluster, run batch processing on one cluster, and route writes to the other cluster",
+      "Add another node pool to the cluster in each zone"
+    ],
+    "ans": 2,
+    "explain": "Bigtable replication allows you to separate workloads by routing real-time traffic to one cluster and heavy batch analytics to a second replicated cluster.",
+    "concept": "Bigtable replication, multi-cluster, read/write separation"
+  },
+  {
+    "q": "A Cloud Dataproc cluster is running with a single master node. You want to increase it to 3 for high availability. What should you do?",
+    "opts": [
+      "Use gcloud dataproc clusters update --num-masters 3",
+      "Use gcloud dataproc clusters update --add-masters 2",
+      "Use cbt dataproc clusters update --add-masters 2",
+      "The number of master nodes cannot be changed. Deploy a new cluster."
+    ],
+    "ans": 3,
+    "explain": "Cloud Dataproc master nodes cannot be changed after cluster creation. You must recreate the cluster using High Availability mode (3 masters).",
+    "concept": "Cloud Dataproc, master nodes, cluster configuration"
+  },
+  {
+    "q": "You configured a Kubernetes HPA to scale based on CPU utilization above 60%. How is that CPU utilization calculated?",
+    "opts": [
+      "Based on all CPUs used by the deployment",
+      "Based on all CPUs in the cluster",
+      "Based on CPU utilization of the most CPU-intensive pod",
+      "Based on CPU utilization of the least CPU-intensive pod"
+    ],
+    "ans": 0,
+    "explain": "Horizontal Pod Autoscaler calculates scaling based on the average CPU utilization across all pods targeted by the deployment.",
+    "concept": "Kubernetes, HPA, CPU utilization, autoscaling"
+  },
+  {
+    "q": "You are running a Python 3.4 app in a Docker container on App Engine to minimize operational overhead. Which file specifies the runtime?",
+    "opts": [
+      "app.yaml",
+      "queue.yaml",
+      "dispatch.yaml",
+      "cron.yaml"
+    ],
+    "ans": 0,
+    "explain": "app.yaml is the primary configuration file for App Engine services, where runtime, instance class, and scaling are specified.",
+    "concept": "App Engine, app.yaml, runtime configuration"
+  },
+  {
+    "q": "You are developing a Cloud Function and want to avoid massive usage spikes caused by test code errors. How can you limit concurrent executions?",
+    "opts": [
+      "Use the --limit parameter",
+      "Use the --max-instances parameter when deploying",
+      "Set a label max-instances",
+      "Set a language-specific limit parameter"
+    ],
+    "ans": 1,
+    "explain": "The --max-instances flag on deployment restricts the maximum number of concurrent function instances that Cloud Functions will scale to.",
+    "concept": "Cloud Functions, max-instances, concurrency control"
+  },
+  {
+    "q": "Company audit rules require keeping logs for 365 days. Which of these Stackdriver logs has a default retention period of less than a year, requiring an export to Cloud Storage?",
+    "opts": [
+      "Admin activity audit logs",
+      "System event audit logs",
+      "Access transparency logs",
+      "Data access audit logs"
+    ],
+    "ans": 3,
+    "explain": "Data access logs are retained for 30 days by default. Admin, system event, and access transparency logs are retained for 400 days.",
+    "concept": "Stackdriver Logging, data access logs, retention"
+  },
+  {
+    "q": "You want to collect memory utilization data for instances in a managed instance group. Which Stackdriver service do you use?",
+    "opts": [
+      "Stackdriver Debugger",
+      "Stackdriver Logging",
+      "Stackdriver Monitoring",
+      "Stackdriver Trace"
+    ],
+    "ans": 2,
+    "explain": "Stackdriver Monitoring collects system and application performance metrics like CPU, memory, and disk utilization.",
+    "concept": "Stackdriver Monitoring, performance metrics"
+  },
+  {
+    "q": "You want to view event information recorded by an application just prior to it crashing. What Stackdriver service would you use?",
+    "opts": [
+      "Stackdriver Debugger",
+      "Stackdriver Logging",
+      "Stackdriver Monitoring",
+      "Stackdriver Trace"
+    ],
+    "ans": 1,
+    "explain": "Stackdriver Logging collects application and system logs, capturing semi-structured event messages written by the application.",
+    "concept": "Stackdriver Logging, event logs"
+  },
+  {
+    "q": "Customers complain of long waits. You want to view the time each microservice takes to run during order processing. What Stackdriver service would you use?",
+    "opts": [
+      "Stackdriver Debugger",
+      "Stackdriver Logging",
+      "Stackdriver Monitoring",
+      "Stackdriver Trace"
+    ],
+    "ans": 3,
+    "explain": "Stackdriver Trace collects latency data from your applications and displays it in call graphs to find performance bottlenecks.",
+    "concept": "Stackdriver Trace, distributed tracing, latency"
+  },
+  {
+    "q": "You have a test environment for Dataflow pipelines and want to limit the maximum processing resources any pipeline can consume. What parameter should you use?",
+    "opts": [
+      "numWorkers",
+      "maxNumWorkers",
+      "streaming",
+      "maxResources"
+    ],
+    "ans": 1,
+    "explain": "maxNumWorkers caps the maximum number of Compute Engine instances that the Dataflow autoscaler will allocate.",
+    "concept": "Cloud Dataflow, maxNumWorkers, scaling limits"
+  },
+  {
+    "q": "You are setting up a non-production pilot project to migrate Hadoop to Dataproc. It contains no sensitive data and you want to minimize admin overhead. What roles would you use?",
+    "opts": [
+      "Predefined roles",
+      "Custom roles",
+      "Primitive roles",
+      "Access control lists"
+    ],
+    "ans": 2,
+    "explain": "Primitive roles (Viewer, Editor, Owner) provide broad, coarse-grained access and minimize administrative overhead for low-risk, non-production environments.",
+    "concept": "IAM, primitive roles, development environments"
+  },
+  {
+    "q": "Auditors found that employees have excessive permissions. You want to create custom roles to implement least privilege. What permission is needed to create a custom role?",
+    "opts": [
+      "iam.roles.create",
+      "iam.custom.roles",
+      "roles/iam.custom.create",
+      "roles/iam.create.custom"
+    ],
+    "ans": 0,
+    "explain": "The iam.roles.create permission allows an identity to create new custom roles in a project or organization.",
+    "concept": "IAM, custom roles, iam.roles.create"
+  },
+  {
+    "q": "An application in a MIG reads from one Cloud Storage bucket and writes to another when triggered by a Cloud Function. To what identity would you assign roles/storage.objectCreator?",
+    "opts": [
+      "User",
+      "Group",
+      "Service account",
+      "The bucket itself"
+    ],
+    "ans": 2,
+    "explain": "Service accounts represent non-human identities (applications, VMs) that need to authenticate and authorize API calls securely.",
+    "concept": "Service accounts, IAM, application identity"
+  },
+  {
+    "q": "Policy A applies to all departments. Policies B, C, D, and E are specific to individual departments. At what level of the resource hierarchy would you assign each policy?",
+    "opts": [
+      "Assign all to each folder",
+      "Assign Policy A to the organization, and B, C, D, E to each department's folder",
+      "Assign Policy A to the organization, and B, C, D, E to each department's projects",
+      "Assign Policy A to each department's folder and the rest to projects"
+    ],
+    "ans": 1,
+    "explain": "Policies are inherited downward. Policy A at the org level applies to all folders. Specific policies should be applied to the folder of the specific department to cover its projects.",
+    "concept": "IAM, resource hierarchy, policy inheritance"
+  },
+  {
+    "q": "A mobile app uploads an image to Cloud Storage. A server-side application retrieves it, performing no other operations on the bucket. What role should the server application's service account have?",
+    "opts": [
+      "roles/storage.objectViewer",
+      "roles/storage.objectAdmin",
+      "roles/storage.objectCreator",
+      "roles/storage.objectViewer and roles/storage.objectCreator"
+    ],
+    "ans": 0,
+    "explain": "Following the principle of least privilege, roles/storage.objectViewer gives exactly enough permission to read object data without allowing modification or deletion.",
+    "concept": "IAM, least privilege, objectViewer"
+  },
+  {
+    "q": "A data analyst has permission to read tables in a BigQuery dataset, but receives an error when trying to run a query. What role is likely missing?",
+    "opts": [
+      "roles/BigQuery.admin",
+      "roles/BigQuery.jobUser",
+      "roles/BigQuery.metadataViewer",
+      "roles/BigQuery.queryRunner"
+    ],
+    "ans": 1,
+    "explain": "roles/bigquery.jobUser is required to execute jobs (like running queries) in a GCP project, even if the user has read access to the dataset.",
+    "concept": "BigQuery IAM, jobUser, query execution"
+  },
+  {
+    "q": "Your company is subject to financial regulations requiring all customer data to be encrypted at rest. What must you do to ensure persistent disks encrypt this data?",
+    "opts": [
+      "Configure database encryption",
+      "Configure persistent disk encryption",
+      "Configure application encryption",
+      "Nothing. Data is encrypted at rest by default."
+    ],
+    "ans": 3,
+    "explain": "Google Cloud Platform transparently encrypts all customer data at rest by default without requiring configuration.",
+    "concept": "GCP encryption at rest, default encryption"
+  },
+  {
+    "q": "Data can be encrypted at platform, infrastructure, and device levels. At the device level, how is data encrypted in GCP?",
+    "opts": [
+      "AES256 or AES128 encryption",
+      "Elliptic curve cryptography",
+      "Data Encryption Standard (DES)",
+      "Blowfish"
+    ],
+    "ans": 0,
+    "explain": "Storage devices in GCP automatically encrypt blocks using either AES-128 or AES-256.",
+    "concept": "GCP encryption, AES, device level"
+  },
+  {
+    "q": "Each data chunk written to storage is encrypted with a Data Encryption Key (DEK). How does GCP protect the DEK?",
+    "opts": [
+      "Writes the DEK to a hidden disk location",
+      "Encrypts the DEK with a Key Encryption Key (KEK)",
+      "Stores the DEK in a secure Cloud SQL database",
+      "Applies an elliptic curve encryption algorithm"
+    ],
+    "ans": 1,
+    "explain": "Envelope encryption is used: the Data Encryption Key is itself encrypted using a Key Encryption Key managed by Google's centralized KMS.",
+    "concept": "Key management, envelope encryption, DEK, KEK"
+  },
+  {
+    "q": "The CTO asks you to run a Cloud DLP risk analysis job on a text file that has been inspected. What is the CTO interested in knowing?",
+    "opts": [
+      "The number of times sensitive information is redacted",
+      "The percentage of text that is redacted",
+      "The likelihood that the data can be re-identified",
+      "What InfoType patterns were detected"
+    ],
+    "ans": 2,
+    "explain": "Risk analysis jobs in Cloud DLP calculate statistical metrics like k-anonymity to determine the likelihood that an individual can be re-identified from the dataset.",
+    "concept": "DLP API, risk analysis, re-identification"
+  },
+  {
+    "q": "Your company is starting a huge project to scan large volumes of documents to redact sensitive information using Cloud DLP. Following best practices, what should you do first?",
+    "opts": [
+      "Identify InfoTypes to use",
+      "Prioritize the order of scanning, starting with the most at-risk data",
+      "Run a risk analysis job first",
+      "Extract a sample and apply all InfoTypes"
+    ],
+    "ans": 1,
+    "explain": "Inventorying and prioritizing data based on risk exposure is the foundational first step for large-scale DLP scanning.",
+    "concept": "DLP API, scanning best practices, risk prioritization"
+  },
+  {
+    "q": "You are building a children's educational platform and need to comply with U.S. regulations regarding data collected from children under 13. Which regulation applies?",
+    "opts": [
+      "HIPAA",
+      "GDPR",
+      "COPPA",
+      "FedRAMP"
+    ],
+    "ans": 2,
+    "explain": "The Children's Online Privacy Protection Act (COPPA) strictly regulates how data from children under 13 is collected and handled.",
+    "concept": "COPPA, compliance, children's privacy"
   }
 ]
