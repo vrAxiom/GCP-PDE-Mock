@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+node_modules
+venv/
+__pycache__/
+*.egg-info/
+.eggs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build outputs
+build/
+dist/
+*.pyc
+*.pyo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Cloud
+.gcloud/
+*.json
+service-account-key.json
+
+#Unknown
+*.bak
+*.tmp
+*.backup
+Unknown/
+.work/

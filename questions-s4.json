@@ -1078,5 +1078,510 @@
     "ans": 2,
     "explain": "Correct answer is C as Association rules help identify the association from past events to define relations with the new ones.\n\nAssociation rule learning is a rule-based machine learning method for discovering interesting relations between variables in large databases. It is intended to identify strong rules discovered in databases using some measures of interestingness.[1]This rule-based approach also generates new rules as it analyzes more data. The ultimate goal, assuming a large enough dataset, is to help a machine mimic the human brain’s feature extraction and abstract association capabilities from new uncategorized data.",
     "concept": "GCP Data Engineering"
+  },
+  {
+    "q": "Data engineers want a way to search and discover what data is available across multiple data repositories, understand what the data means, and determine how it can be used. What GCP service would you recommend?",
+    "opts": [
+      "Cloud Composer",
+      "Data Catalog",
+      "Cloud Dataprep",
+      "Data Studio"
+    ],
+    "ans": 1,
+    "explain": "Data Catalog is a fully managed and highly scalable data discovery and metadata management service.",
+    "concept": "Data Catalog, metadata management, data discovery"
+  },
+  {
+    "q": "A data science team wants to automate the workflow for building machine learning models, including data extraction, preprocessing, training, and evaluation. What GCP service would you recommend?",
+    "opts": [
+      "Cloud Composer",
+      "Data Catalog",
+      "Cloud Dataprep",
+      "Data Studio"
+    ],
+    "ans": 0,
+    "explain": "Cloud Composer is a managed workflow orchestration service based on Apache Airflow, suitable for automating multi-step ML pipelines.",
+    "concept": "Cloud Composer, ML workflow automation, Apache Airflow"
+  },
+  {
+    "q": "A business intelligence analyst has acquired new datasets and wants to interactively understand the distribution of data in each column and the extent of missing/misconfigured data. What GCP service would you recommend?",
+    "opts": [
+      "Cloud Composer",
+      "Data Catalog",
+      "Cloud Dataprep",
+      "Data Studio"
+    ],
+    "ans": 2,
+    "explain": "Cloud Dataprep is designed to interactively explore, clean, and prepare data for analysis and automatically profiles data distributions.",
+    "concept": "Cloud Dataprep, data exploration, data profiling"
+  },
+  {
+    "q": "Line-of-business managers want a single dashboard that shows key metrics using tabular data as well as charts from a data warehouse. What GCP service would you recommend?",
+    "opts": [
+      "Cloud Composer",
+      "Data Catalog",
+      "Cloud Dataprep",
+      "Data Studio"
+    ],
+    "ans": 3,
+    "explain": "Data Studio is GCP's reporting and data visualization tool used for building interactive dashboards.",
+    "concept": "Data Studio, visualization, dashboarding"
+  },
+  {
+    "q": "You are using Cloud Dataprep to prepare datasets for ML and another team asks you to export data compressed using GZIP to save space. What export formats support compression in Dataprep?",
+    "opts": [
+      "CSV only",
+      "CSV and JSON only",
+      "CSV and AVRO only",
+      "JSON and AVRO only"
+    ],
+    "ans": 1,
+    "explain": "CSV and JSON are the only formats supported for exporting compressed data from Cloud Dataprep.",
+    "concept": "Cloud Dataprep, export formats, compression"
+  },
+  {
+    "q": "The finance department is using Data Studio for reporting. Existing reports have the needed info, but the time required to update charts is longer than expected. What kind of data source would you try to improve query performance?",
+    "opts": [
+      "Live data source",
+      "Extracted data source",
+      "Compound data source",
+      "Blended data source"
+    ],
+    "ans": 1,
+    "explain": "Extracted data sources take a static snapshot of the dataset resulting in faster load times compared to live queries against the underlying database.",
+    "concept": "Data Studio, extracted data source, performance"
+  },
+  {
+    "q": "A DevOps team uses Data Studio to display application performance data. Their top priority is timely data. What kind of connection would you recommend they use to have data updated automatically?",
+    "opts": [
+      "Live data source",
+      "Extracted data source",
+      "Compound or blended data source",
+      "Extracted or live data source"
+    ],
+    "ans": 0,
+    "explain": "Live data sources directly query the underlying dataset in real-time, ensuring timely data reporting.",
+    "concept": "Data Studio, live data source, real-time reporting"
+  },
+  {
+    "q": "An ML engineer is using Cloud Datalab/Jupyter to build models in Python and needs to use a statistics library not installed by default. How should they install the missing library?",
+    "opts": [
+      "Using conda install or pip install from a Cloud shell",
+      "Using conda install or pip install from within a Jupyter Notebook",
+      "Use the Linux package manager from within a Cloud shell",
+      "Download the source from GitHub and compile locally"
+    ],
+    "ans": 1,
+    "explain": "Python packages can be installed directly from within a Jupyter notebook using pip or conda.",
+    "concept": "Cloud Datalab, Jupyter, Python library installation"
+  },
+  {
+    "q": "A DevOps engineer is building a workflow to load data from an on-prem DB to Cloud Storage, run preprocessing, load output to BigQuery, send an email, and delete temp files. What GCP service should be used?",
+    "opts": [
+      "Cloud Dataprep",
+      "Cloud Dataproc",
+      "Cloud Composer",
+      "Data Studio"
+    ],
+    "ans": 2,
+    "explain": "Cloud Composer is designed to orchestrate complex, multi-step workflows like this.",
+    "concept": "Cloud Composer, workflow orchestration"
+  },
+  {
+    "q": "You received a large dataset with documentation and want to visualize, filter, and run custom Python functions interactively. What GCP service would you use?",
+    "opts": [
+      "Cloud Dataproc",
+      "Cloud Datalab",
+      "Cloud Composer",
+      "Data Studio"
+    ],
+    "ans": 1,
+    "explain": "Cloud Datalab (Jupyter notebooks) allows for interactive analysis, visualization, and custom Python code execution.",
+    "concept": "Cloud Datalab, interactive analysis, Python"
+  },
+  {
+    "q": "An ML engineer is building an e-commerce recommendation engine using data from multiple services (products, customers, inventory). The data is in a data lake in its raw form. What is the first thing they should do?",
+    "opts": [
+      "Ingest the data into Cloud Storage",
+      "Explore the data with Cloud Dataprep",
+      "Transform the data with Cloud Dataflow",
+      "Transform the data with BigQuery"
+    ],
+    "ans": 1,
+    "explain": "Data exploration is the first step in working with raw data to understand distributions and data quality before transformation and modeling.",
+    "concept": "ML pipeline, data exploration, Cloud Dataprep"
+  },
+  {
+    "q": "An ML engineer is building a neural network and needs to decide how many nodes and layers to use. They are experimenting with combinations. What data should they use to evaluate the quality of models for each combination?",
+    "opts": [
+      "Training data",
+      "Validation data",
+      "Test data",
+      "Hyperparameter data"
+    ],
+    "ans": 1,
+    "explain": "Validation data is used to tune hyperparameters (like nodes and layers) to find the best configuration without touching the final test data.",
+    "concept": "Validation data, hyperparameter tuning"
+  },
+  {
+    "q": "A developer built an ML model using raw data from a data lake with minimal prep. Performance is poor. They want to reduce training time and increase quality. What should you do first with the developer?",
+    "opts": [
+      "Explore the data with the goal of feature engineering",
+      "Create visualizations of accuracy, precision, recall",
+      "Use tenfold cross-validation",
+      "Tune hyperparameters"
+    ],
+    "ans": 0,
+    "explain": "Feature engineering transforms raw data into a structure more amenable to ML algorithms, directly improving model quality and potentially training time.",
+    "concept": "Feature engineering, data preparation"
+  },
+  {
+    "q": "A developer built a model to predict news categories. The model accuracy is poor even when evaluating using the training data. This is an example of what kind of potential problem?",
+    "opts": [
+      "Overfitting",
+      "Underfitting",
+      "Too much training data",
+      "Using tenfold cross-validation for evaluation"
+    ],
+    "ans": 1,
+    "explain": "Underfitting occurs when a model is too simple to capture the underlying patterns in the training data, leading to poor performance on training data.",
+    "concept": "Underfitting, ML evaluation"
+  },
+  {
+    "q": "A developer built a model predicting news categories. Accuracy is quite high on training data but quite low on test data. What would you recommend to correct this problem?",
+    "opts": [
+      "Use confusion matrices for evaluation",
+      "Use L1 or L2 regularization when evaluating",
+      "Use L1 or L2 regularization when training",
+      "Tune the hyperparameters more"
+    ],
+    "ans": 2,
+    "explain": "High training accuracy but low test accuracy indicates overfitting. L1/L2 regularization during training penalizes complex models to prevent overfitting.",
+    "concept": "Overfitting, L1/L2 regularization"
+  },
+  {
+    "q": "A deployed product recommendation model initially increased average sale value by 14%, but over the past month, it only increased it by 2%. The model hasn't changed in six months. What could be the cause and recommendation?",
+    "opts": [
+      "The model is overfitting—use regularization.",
+      "The data used to train the model is no longer representative of current sales data, and the model should be retrained.",
+      "The model should be monitored to collect performance metrics to identity root cause.",
+      "The model is underfitting—train with more data."
+    ],
+    "ans": 1,
+    "explain": "Models often decay in performance over time as real-world data patterns change (data drift). Retraining with current data resolves this.",
+    "concept": "Model decay, data drift, retraining"
+  },
+  {
+    "q": "A startup is building software to analyze traffic images (identifying cars, trucks, pedestrians, buildings) and track moving vehicles to detect daily patterns. What GCP service should they use?",
+    "opts": [
+      "AutoML Vision Object Detection",
+      "AutoML Vision Edge - Object Detection",
+      "AutoML Video Intelligence Classification",
+      "Auto ML Video Intelligence Object Tracking"
+    ],
+    "ans": 3,
+    "explain": "AutoML Video Intelligence Object Tracking is designed to identify and track objects as they move across frames in a video.",
+    "concept": "AutoML Video Intelligence, Object Tracking"
+  },
+  {
+    "q": "An analyst wants to classify 1 million rows of data with 32 features into Type A or Type B. They don't know which features are important but want the most accurate model with the least effort. What would you recommend?",
+    "opts": [
+      "Kubeflow",
+      "Spark MLib",
+      "AutoML Tables",
+      "AutoML Natural Language"
+    ],
+    "ans": 2,
+    "explain": "AutoML Tables automates feature engineering, model selection, and hyperparameter tuning for tabular data, requiring minimal effort for high accuracy.",
+    "concept": "AutoML Tables, structured data, classification"
+  },
+  {
+    "q": "The CFO wants to predict late bill payments using the BigQuery enterprise data warehouse. Analysts know SQL, Python, and Java, but lack ML experience. They prefer fast model building. What service would you recommend?",
+    "opts": [
+      "Kubeflow",
+      "Spark MLib",
+      "BigQuery ML",
+      "AutoML Tables"
+    ],
+    "ans": 2,
+    "explain": "BigQuery ML allows analysts to build and train ML models using standard SQL directly within BigQuery, leveraging existing skills and eliminating data movement.",
+    "concept": "BigQuery ML, SQL-based ML"
+  },
+  {
+    "q": "Researchers are analyzing grocery buying patterns to find products frequently bought together using association rules. What ML option in GCP would you recommend?",
+    "opts": [
+      "Cloud Dataflow",
+      "Spark MLib",
+      "BigQuery ML",
+      "AutoML Tables"
+    ],
+    "ans": 2,
+    "explain": "BigQuery ML supports building association rule models (like Apriori) for frequent pattern mining directly where the data resides.",
+    "concept": "BigQuery ML, association rules, frequent pattern mining"
+  },
+  {
+    "q": "You are building an ML model to predict house sales prices based on 7 years of data with 18 features. What type of machine learning algorithm would you use?",
+    "opts": [
+      "Classifier",
+      "Regression",
+      "Decision trees",
+      "Reinforcement learning"
+    ],
+    "ans": 1,
+    "explain": "Sales price is a continuous numeric value, which requires a regression algorithm. Classifiers predict discrete categories.",
+    "concept": "Regression, continuous prediction"
+  },
+  {
+    "q": "You have been asked to build an ML model to predict if a news article is a story about technology or another topic. Which algorithm would you use?",
+    "opts": [
+      "Logistic regression",
+      "K-means clustering",
+      "Simple linear regression",
+      "Multiple linear regression"
+    ],
+    "ans": 0,
+    "explain": "Logistic regression is used for binary classification (e.g., technology vs. not technology). Linear regression is for continuous values. K-means is for unsupervised clustering.",
+    "concept": "Logistic regression, binary classification"
+  },
+  {
+    "q": "An IoT startup collects manufacturing sensor data every five seconds and wants to identify unusual readings. What type of unsupervised learning technique would they use?",
+    "opts": [
+      "Clustering",
+      "K-means",
+      "Anomaly detection",
+      "Reinforcement learning"
+    ],
+    "ans": 2,
+    "explain": "Anomaly detection identifies outliers or unusual patterns in data without requiring labeled examples.",
+    "concept": "Anomaly detection, unsupervised learning, IoT"
+  },
+  {
+    "q": "You build a binary classifier using a basic artificial neuron to study deep learning. What algorithm would you use to train it?",
+    "opts": [
+      "Perceptron",
+      "SVM",
+      "Decision tree",
+      "Linear regression"
+    ],
+    "ans": 0,
+    "explain": "The perceptron algorithm is a fundamental algorithm for training a binary classifier based on an artificial neuron model.",
+    "concept": "Perceptron, neural networks, binary classifier"
+  },
+  {
+    "q": "Engineers predicting gold prices want to establish the minimum predictive value from their data to ensure their complex models are better than the simplest possible approach. What would they build?",
+    "opts": [
+      "Multiclass classifier",
+      "K clusters",
+      "Baseline model",
+      "Binary classifier"
+    ],
+    "ans": 2,
+    "explain": "A baseline model provides a simple reference point (like predicting the mean) to evaluate whether more complex models actually add value.",
+    "concept": "Baseline model, ML evaluation"
+  },
+  {
+    "q": "You are preparing a dataset and want to convert several continuous values (0.00 to 100.00) into discrete categorical features. What feature engineering technique would you use?",
+    "opts": [
+      "Bucketing",
+      "Dimension reduction",
+      "Principal component analysis",
+      "Gradient descent"
+    ],
+    "ans": 0,
+    "explain": "Bucketing (or binning) maps continuous numeric values into discrete ranges or categories.",
+    "concept": "Bucketing, feature engineering, continuous to discrete"
+  },
+  {
+    "q": "You are developing a classification model and notice outliers in the training data that might lead to overfitting. What technique would you use to reduce their impact?",
+    "opts": [
+      "Gradient descent",
+      "Large number of epochs",
+      "L2 regularization",
+      "Backpropagation"
+    ],
+    "ans": 2,
+    "explain": "L2 regularization penalizes large weights, reducing the model's sensitivity to individual outliers and helping prevent overfitting.",
+    "concept": "L2 regularization, outliers, overfitting"
+  },
+  {
+    "q": "You built an 8-layer deep neural network. It fits training data well (F1 98) but performs poorly on test data (F1 62). What technique would you use to improve performance?",
+    "opts": [
+      "User more epochs",
+      "Dropout",
+      "Add more layers",
+      "ReLU"
+    ],
+    "ans": 1,
+    "explain": "The model is overfitting. Dropout is a regularization technique specific to neural networks that randomly disables nodes during training to prevent overfitting.",
+    "concept": "Dropout, neural networks, overfitting, regularization"
+  },
+  {
+    "q": "You are building a counterfeit product classifier where only 3% of products are counterfeit. To prevent the model from simply predicting 'legitimate' every time, what technique could you use?",
+    "opts": [
+      "Undersampling",
+      "Dropout",
+      "L1 regularization",
+      "AUC"
+    ],
+    "ans": 0,
+    "explain": "Undersampling the majority class (legitimate products) balances the dataset so the model can learn patterns from both classes.",
+    "concept": "Undersampling, class imbalance"
+  },
+  {
+    "q": "A model performs well on training and test data but poorly in production. The training/test data was high quality (no missing values, few outliers). What might cause this?",
+    "opts": [
+      "Applying L1 regularization",
+      "Applying dropout",
+      "Reporting bias",
+      "Automation bias"
+    ],
+    "ans": 2,
+    "explain": "Reporting bias occurs when the training dataset does not accurately reflect the real-world population (e.g., missing certain demographics), leading to poor production performance.",
+    "concept": "Reporting bias, production ML"
+  },
+  {
+    "q": "You are building a model to analyze unusual events in urban traffic, requiring the ability to distinguish cars, bikes, pedestrians, and track moving vehicles across frames. What GCP service would you use?",
+    "opts": [
+      "Cloud Video Intelligence API",
+      "Cloud Vision API",
+      "Cloud Inference API",
+      "Cloud Dataflow"
+    ],
+    "ans": 0,
+    "explain": "Cloud Video Intelligence API can identify objects and track their movement across frames in a video.",
+    "concept": "Cloud Video Intelligence API, object tracking"
+  },
+  {
+    "q": "An educational platform allows students to upload text and images. To automatically detect and prevent the upload of explicit images, what GCP service would you use?",
+    "opts": [
+      "Cloud Video Intelligence API",
+      "Cloud Vision API",
+      "Cloud Inference API",
+      "Cloud Dataprep"
+    ],
+    "ans": 1,
+    "explain": "Cloud Vision API includes a Safe Search feature specifically designed to detect explicit, violent, or inappropriate content in images.",
+    "concept": "Cloud Vision API, Safe Search, content moderation"
+  },
+  {
+    "q": "You are using the Cloud Vision API for batch processing asynchronous requests. Images are stored in Cloud Storage buckets. Some batches succeed, others fail. What could be the cause?",
+    "opts": [
+      "Cloud Video Intelligence API",
+      "Some buckets have more than 2,000 images.",
+      "There is an issue with IAM settings.",
+      "Images have to be uploaded directly from a device, not a Cloud Storage bucket."
+    ],
+    "ans": 1,
+    "explain": "The Cloud Vision API limits batch requests to a maximum of 2,000 images per request.",
+    "concept": "Cloud Vision API, batch limits"
+  },
+  {
+    "q": "You are building a customer support chatbot using Dialogflow to handle returns, tech help, and product recommendations. What component categorizes these user intentions?",
+    "opts": [
+      "Entities",
+      "Fulfillments",
+      "Integrations",
+      "Intents"
+    ],
+    "ans": 3,
+    "explain": "Intents map a user's statement or question (their intention) to the appropriate conversational response or action.",
+    "concept": "Dialogflow, Intents, chatbots"
+  },
+  {
+    "q": "A developer wants to improve the sound quality of a text-to-speech service used on a wearable health app. What would you suggest?",
+    "opts": [
+      "Change the device specification to optimize for a wearable device",
+      "Change from standard to WaveNet-quality voice",
+      "Encode the text in Base64",
+      "Options A and B",
+      "Options A, B, and C"
+    ],
+    "ans": 3,
+    "explain": "Both setting the device profile to optimize for wearables and using higher-quality WaveNet voices will improve the audio output.",
+    "concept": "Cloud Text-to-Speech, WaveNet, device profiles"
+  },
+  {
+    "q": "A speech-to-text service transcribing mobile audio (LINEAR16, 12,000 Hz) has poor quality. What would you suggest to improve it?",
+    "opts": [
+      "Use WaveNet option",
+      "Increase the sampling rate to at least 16,000 Hz",
+      "Use Speech Synthesis Markup Language to configure conversion parameters",
+      "Options A and B"
+    ],
+    "ans": 1,
+    "explain": "Google recommends a minimum sampling rate of 16,000 Hz for high-quality Speech-to-Text transcription. WaveNet and SSML apply to Text-to-Speech.",
+    "concept": "Cloud Speech-to-Text, sampling rate"
+  },
+  {
+    "q": "A mobile app using the Translation API via REST is migrating to use gRPC for higher performance. What change must be made to how the Translation service is used?",
+    "opts": [
+      "Use the WaveNet option",
+      "Use Translation API Basic",
+      "Use Translation API Advanced",
+      "Option A or B"
+    ],
+    "ans": 2,
+    "explain": "The gRPC interface is only supported by the Translation API Advanced, not the Basic edition.",
+    "concept": "Translation API Advanced, gRPC"
+  },
+  {
+    "q": "You are creating a Jupyter Notebook to test the Translation API using Python 3. What are the first two operations you must execute?",
+    "opts": [
+      "Import Translation libraries and create a translation client",
+      "Create a translation client and encode text in UTF-8",
+      "Create a translation client, and set a variable to TRANSLATE",
+      "Import Translation libraries, and set a variable to TRANSLATE"
+    ],
+    "ans": 0,
+    "explain": "Before calling any translation functions, you must import the necessary Google Cloud client libraries and instantiate the client object.",
+    "concept": "Translation API, Python client, Jupyter"
+  },
+  {
+    "q": "A law firm wants to analyze 10,000 documents to identify which individuals are mentioned in each document. What functionality of the Natural Language API would you use?",
+    "opts": [
+      "Identifying entities",
+      "Analyzing sentiment associated with each entity",
+      "Analyzing sentiment of the overall text",
+      "Generating syntactic analysis"
+    ],
+    "ans": 0,
+    "explain": "Entity extraction identifies proper nouns (people, organizations, locations) within text.",
+    "concept": "Natural Language API, entity extraction"
+  },
+  {
+    "q": "An e-commerce startup uses the Recommendations AI 'others you may like' type and wants to maximize the likelihood that users engage with recommendations. What optimization objective should they choose?",
+    "opts": [
+      "Click-through rate (CTR)",
+      "Revenue per order",
+      "Conversation rate",
+      "Total revenue"
+    ],
+    "ans": 0,
+    "explain": "Click-through rate (CTR) is the objective that optimizes for maximizing user engagement (clicks) with recommended items.",
+    "concept": "Recommendations AI, click-through rate, optimization"
+  },
+  {
+    "q": "An e-commerce site wants to personalize the customer experience by showing users products they are likely to interact with next. What recommendation type should they use?",
+    "opts": [
+      "Others you may like",
+      "Frequently bought together",
+      "Recommended for you",
+      "Recently viewed"
+    ],
+    "ans": 2,
+    "explain": "'Recommended for you' is specifically designed to predict the next product a customer is likely to engage with based on their history.",
+    "concept": "Recommendations AI, personalization, Recommended for you"
+  },
+  {
+    "q": "An enterprise fleet wants to build a predictive maintenance app by detecting anomalies in time-series sensor data from vehicles. To build a fast prototype using an ML service, what would you recommend?",
+    "opts": [
+      "Cloud Inference API",
+      "AutoML Tables",
+      "AutoML Vision",
+      "Cloud Anomaly Detection API"
+    ],
+    "ans": 0,
+    "explain": "Cloud Inference API is designed specifically to analyze time-series data and detect anomalies in real-time.",
+    "concept": "Cloud Inference API, time-series, anomaly detection"
   }
 ]

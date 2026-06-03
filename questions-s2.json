@@ -1510,5 +1510,113 @@
     "ans": 1,
     "explain": "Correct answer is B as Cloud Dataproc allows running of Apache Spark and Hadoop jobs.\n\nRefer GCP documentation - Cloud Dataproc: - https://cloud.google.com/dataproc/;\n\nCloud Dataproc is a fast, easy-to-use, fully-managed cloud service for running Apache Spark and Apache Hadoop clusters in a simpler, more cost-efficient way. Operations that used to take hours or days take seconds or minutes instead, and you pay only for the resources you use (with per-second billing). Cloud Dataproc also easily integrates with other Google Cloud Platform (GCP) services, giving you a powerful and complete platform for data processing, analytics and machine learning;\n\nOption A is wrong as Cloud Dataflow is a fully-managed service for transforming and enriching data in stream (real time) and batch (historical) modes with equal reliability and expressiveness -- no more complex workarounds or compromises needed.\n\nOptions C & D are wrong as they are not suited for big data processing.",
     "concept": "Dataflow, Dataproc"
+  },
+  {
+    "q": "You need to transfer 500 TB of data from your on-premises file system to Google Cloud Storage. You have limited network bandwidth and need to complete the migration within a month. Which method should you use?",
+    "opts": [
+      "gcloud storage CLI",
+      "Storage Transfer Service",
+      "Transfer Appliance",
+      "APIs and client libraries"
+    ],
+    "ans": 2,
+    "explain": "Transfer Appliance is the recommended solution for large-scale data migrations when network bandwidth is limited. Google ships a ruggedized NAS device to your data center; you load data locally, then ship it back to Google who uploads directly to Cloud Storage. The gcloud storage CLI is suitable for small to medium data transfers and is not practical for 500 TB with limited bandwidth. Storage Transfer Service is used for migrations from other cloud providers or scheduled transfers, not for large volumes with network constraints. APIs and client libraries rely on network connectivity, which is a limitation here.",
+    "concept": "Transfer Appliance, data migration, large-scale ingestion, bandwidth constraints"
+  },
+  {
+    "q": "Your company is migrating 200 TB of data from an on-premises data center to Google Cloud Storage. The data is not time-sensitive, and the available internet bandwidth is limited to 3 Gbps. The team prefers a secure solution that can be deployed quickly without setting up physical infrastructure. Which network connectivity option is most appropriate?",
+    "opts": [
+      "Cloud VPN",
+      "Dedicated Interconnect",
+      "Partner Interconnect",
+      "VPC Network Peering"
+    ],
+    "ans": 0,
+    "explain": "Cloud VPN provides secure, encrypted tunnels over the public internet and supports data transfers up to around 3 Gbps. It balances security, flexibility, and ease of deployment without physical provisioning — ideal when the migration is not urgent. Dedicated Interconnect is suitable for large-scale, high-throughput migrations but requires physical connectivity at a Google Point of Presence, adding setup time and cost. Partner Interconnect is better suited when VPN bandwidth is insufficient or the migration is time-critical. VPC Peering is used for private connectivity between Google Cloud VPCs, not for connecting on-premises environments to Google Cloud.",
+    "concept": "Cloud VPN, data migration, network connectivity, on-premises to GCP"
+  },
+  {
+    "q": "A data analyst needs to load data from a SaaS application into BigQuery for analysis. The data should be automatically updated on a recurring schedule with no custom code. Which service should be used?",
+    "opts": [
+      "Storage Transfer Service for data transfer from an object store",
+      "Datastream for database replication",
+      "BigQuery Data Transfer Service",
+      "gcloud storage command to upload data"
+    ],
+    "ans": 2,
+    "explain": "BigQuery Data Transfer Service is designed to load data from various sources, including SaaS applications, on a recurring schedule with a no-code solution. Storage Transfer Service is suited for transferring large datasets from object stores to Cloud Storage, not directly to BigQuery from a SaaS application. Datastream is for replicating databases, not loading data from SaaS applications. The gcloud storage command moves data to Cloud Storage, not directly to BigQuery, and is not suitable for ongoing scheduled transfers.",
+    "concept": "BigQuery Data Transfer Service, SaaS ingestion, scheduled data loading"
+  },
+  {
+    "q": "An e-commerce company has a large PostgreSQL database and requires continuous replication to BigQuery for analytics. They need a solution that captures changes and lands data in BigQuery in a structured format. Which is most appropriate?",
+    "opts": [
+      "Use Datastream for continuous data replication to BigQuery",
+      "Use Database Migration Service for ongoing replication",
+      "Use Storage Transfer Service for scheduled transfers",
+      "Use the bq command-line tool for a one-time transfer"
+    ],
+    "ans": 0,
+    "explain": "Datastream is designed for continuous replication of relational databases to Google Cloud services like BigQuery, including change data capture (CDC) and structured output. Database Migration Service is designed for migrating databases with a goal to turn down source systems — not for ongoing replication. Storage Transfer Service is designed for moving large datasets to Cloud Storage, not for replicating a database to BigQuery. The bq command is used for loading data into BigQuery in batch mode, not continuous replication.",
+    "concept": "Datastream, CDC, PostgreSQL replication, continuous ingestion, BigQuery"
+  },
+  {
+    "q": "A group of climate scientists is collecting weather data from 10,000 sensors every minute. Data often arrives in bursts at the start of each minute. The ingestion process is losing some data because servers cannot keep up. Scaling up the managed instance group has not eliminated the problem. What else can the scientists do to prevent data loss?",
+    "opts": [
+      "Write data to a Cloud Dataflow stream",
+      "Write data to a Cloud Pub/Sub topic",
+      "Write data to a Cloud SQL table",
+      "Write data to Cloud Dataprep"
+    ],
+    "ans": 1,
+    "explain": "Cloud Pub/Sub is a managed messaging queue that scales automatically to handle bursts of data, buffering messages until the ingestion process can catch up.",
+    "concept": "Cloud Pub/Sub burst buffering"
+  },
+  {
+    "q": "You are establishing ML pipelines ingesting batch data from enterprise systems and third-party providers. You expect the structure of the data to change without advance notice. You want to store data in whatever structure it arrives in. What storage system would you use for batch ingestion?",
+    "opts": [
+      "Cloud Storage",
+      "Cloud Spanner",
+      "Cloud Dataprep",
+      "Cloud Pub/Sub"
+    ],
+    "ans": 0,
+    "explain": "Cloud Storage is an object storage system that makes no assumptions about the internal structure of objects, making it ideal for batch ingestion of data with variable structure.",
+    "concept": "Cloud Storage batch ingestion variable schema"
+  },
+  {
+    "q": "A startup is building an anomaly detection service for manufacturing equipment. IoT sensors transmit data every 30 seconds, starting with 5,000 sensors but eventually growing to millions. The data will be stored in Bigtable after preprocessing by Cloud Dataflow. What service should be used to ingest the IoT data?",
+    "opts": [
+      "Cloud Storage",
+      "Cloud Bigtable",
+      "BigQuery Streaming Insert",
+      "Cloud Pub/Sub"
+    ],
+    "ans": 3,
+    "explain": "Cloud Pub/Sub is designed for streaming ingestion and can scale to meet the growth in number of sensors, buffering data before consumption by Cloud Dataflow.",
+    "concept": "Cloud Pub/Sub IoT streaming scale"
+  },
+  {
+    "q": "In the Google Cloud Platform IoT reference model, which GCP service is used for ingestion?",
+    "opts": [
+      "Cloud Storage",
+      "BigQuery streaming inserts",
+      "Cloud Pub/Sub",
+      "Cloud Bigtable"
+    ],
+    "ans": 2,
+    "explain": "Cloud Pub/Sub is a globally scalable messaging queue that can ingest large volumes of IoT data and buffer it for other services. Cloud Storage is for batch uploads.",
+    "concept": "GCP IoT reference model ingestion"
+  },
+  {
+    "q": "A large enterprise using GCP has recently acquired a startup that has an IoT platform. The acquiring company wants to migrate the IoT platform from an on-premises data center to GCP and wants to use Google Cloud managed services whenever possible. What GCP service would you recommend for ingesting IoT data?",
+    "opts": [
+      "Cloud Storage",
+      "Cloud SQL",
+      "Cloud Pub/Sub",
+      "BigQuery streaming inserts"
+    ],
+    "ans": 2,
+    "explain": "Cloud Pub/Sub is a scalable, managed messaging queue typically used for ingesting high-volume streaming data like IoT telemtry. Cloud Storage doesn't support streaming inserts, Cloud SQL doesn't scale for high-volume IoT writes, and BigQuery streaming inserts shouldn't be the primary ingestion point in the standard reference model.",
+    "concept": "Cloud Pub/Sub, IoT ingestion, managed messaging"
   }
 ]

@@ -1246,5 +1246,833 @@
     "ans": 0,
     "explain": "Correct answer is A as Cloud Vision can be used for image analysis to detect offensive or inappropriate content.\n\nRefer GCP documentation - Cloud Vision: - https://cloud.google.com/vision/;\n\nCloud Vision API enables developers to understand the content of an image by encapsulating powerful machine learning models in an easy-to-use REST API. It quickly classifies images into thousands of categories (such as, “sailboat”), detects individual objects and faces within images, and reads printed words contained within images. You can build metadata on your image catalog, moderate offensive content, or enable new marketing scenarios through image sentiment analysis.\n\nOption B is wrong as Cloud Natural Language is for text analysis.\n\nOption C is wrong as the Cloud Image Intelligence does not exist.\n\nOption D is wrong as Video Intelligence is for videos.",
     "concept": "GCP Data Engineering"
+  },
+  {
+    "q": "You have a large dataset stored in Cloud Storage that needs to be processed using Dataproc. You want to ensure that the storage option is flexible enough to serve multiple worker nodes in different clusters. Which storage option is most suitable for this scenario?",
+    "opts": [
+      "Cloud SQL",
+      "Zonal persistent disks",
+      "Local SSD",
+      "Cloud Storage"
+    ],
+    "ans": 3,
+    "explain": "Cloud Storage is a Hadoop Compatible File System (HCFS) that is well-suited for serving multiple worker nodes in a Dataproc cluster. It provides flexible and scalable storage for processing large datasets. Cloud SQL is a relational database service, not suited for scalable file storage needed for Dataproc jobs. Zonal persistent disks are tied to specific zones and are not as easily accessible by multiple worker nodes. Local SSDs are attached to individual VMs, making them less suitable for serving multiple worker nodes.",
+    "concept": "Dataproc, Cloud Storage, HCFS, distributed processing"
+  },
+  {
+    "q": "You need to ensure that your data processing system is designed for portability, allowing you to easily move data and applications between different environments, including multi-cloud scenarios. Which technology supports writing data pipeline code that can run on various processing systems?",
+    "opts": [
+      "Cloud Data Fusion",
+      "Apache Beam",
+      "BigQuery",
+      "Cloud Spanner"
+    ],
+    "ans": 1,
+    "explain": "Apache Beam is an open-source unified programming model that allows you to write data pipeline code that can run on various processing systems, including Dataflow, Apache Flink, and Apache Spark — promoting data portability. Cloud Data Fusion is a managed service with a visual interface but does not offer easy portability across processing systems. BigQuery is a data warehousing service, not intended for portable pipelines. Cloud Spanner is a relational database service, not used for pipeline portability.",
+    "concept": "Apache Beam, data portability, multi-cloud, pipeline design"
+  },
+  {
+    "q": "You want to visualize the transformations applied to data at each step of your data pipeline, providing transparency and accountability. Which Google Cloud tool offers a graphical interface for building and monitoring data pipelines?",
+    "opts": [
+      "Dataflow",
+      "Dataproc",
+      "Dataplex",
+      "Cloud Data Fusion"
+    ],
+    "ans": 3,
+    "explain": "Cloud Data Fusion allows you to build and monitor data pipelines using a graphical interface, visually representing data transformations as nodes in the pipeline. It also provides a preview mode to inspect data at each stage. Dataflow and Dataproc require building pipeline transformations using code and do not provide a graphical user interface. Dataplex is a data management service focusing on governance and discovery, not visual pipeline monitoring.",
+    "concept": "Cloud Data Fusion, pipeline visualization, graphical interface"
+  },
+  {
+    "q": "You are tasked with designing a data processing system that can adapt to future growth and scalability demands. Which technology can automatically adjust resources based on data volume fluctuations, providing a serverless approach?",
+    "opts": [
+      "Dataproc",
+      "Dataflow",
+      "Cloud Data Fusion",
+      "Bigtable"
+    ],
+    "ans": 1,
+    "explain": "Dataflow is a fully managed, serverless data processing service that automatically scales resources based on workload demands, making it well-suited for handling fluctuating data volumes. Dataproc is a managed Hadoop and Spark service that requires manual configurations of autoscaling policies and does not scale dynamically in the same way. Cloud Data Fusion enables pipeline creation and management but is not serverless in the same way as Dataflow. Bigtable is a NoSQL database, not a data processing service.",
+    "concept": "Dataflow, serverless, auto-scaling, data processing"
+  },
+  {
+    "q": "A data engineering team needs to ensure that sensitive data in a pipeline is protected. Which of the following is a key measure to protect data at rest?",
+    "opts": [
+      "Using TLS for data transmission",
+      "Implementing role-based access control using IAM",
+      "Using customer-managed encryption keys (CMEK)",
+      "Implementing autoscaling to handle high traffic"
+    ],
+    "ans": 2,
+    "explain": "Using customer-managed encryption keys (CMEK) allows organizations to control the encryption of their data at rest. TLS is used for securing data in transit, not at rest. IAM is for access control and not specifically for encryption. Autoscaling is a performance and cost-optimization measure, not a security measure.",
+    "concept": "CMEK, data security, encryption at rest, pipeline security"
+  },
+  {
+    "q": "Your organization needs to process a large volume of financial transactions daily, requiring complex transformations before being loaded into a data warehouse. Which data pipeline pattern is most suitable?",
+    "opts": [
+      "Extract and Load (EL)",
+      "Extract, Load, and Transform (ELT)",
+      "Extract, Transform, and Load (ETL)",
+      "Load and Transform (LT)"
+    ],
+    "ans": 2,
+    "explain": "Extract, Transform, and Load (ETL) is appropriate when complex transformations must happen during transit before loading into the target data warehouse. EL is suitable when raw data needs to be preserved or transformations can be postponed. ELT emphasizes loading raw data first and then performing transformations inside the warehouse — not ideal for complex pre-load transformations. There is no standard 'Load and Transform' pattern.",
+    "concept": "ETL, ELT, data pipeline patterns, pipeline design"
+  },
+  {
+    "q": "You are planning a data pipeline using Dataflow for processing both batch and streaming data. What programming model does Dataflow leverage for this?",
+    "opts": [
+      "Apache Beam",
+      "Spark",
+      "Hadoop",
+      "TensorFlow"
+    ],
+    "ans": 0,
+    "explain": "Apache Beam provides a unified programming model for both batch and stream processing in Dataflow. Spark is a data processing engine, not a programming model used by Dataflow. Hadoop is a framework for distributed storage and processing but not a programming model for Dataflow. TensorFlow is a machine learning framework, not a programming model for data pipelines.",
+    "concept": "Dataflow, Apache Beam, unified programming model, batch and streaming"
+  },
+  {
+    "q": "Your data pipeline needs to process data from various sources, including structured data from Cloud SQL and unstructured data from Cloud Storage. Which of the following is a common step in a typical data warehouse pipeline?",
+    "opts": [
+      "Storing data directly into Bigtable",
+      "Loading raw data into a staging area",
+      "Transforming data using only Cloud Data Fusion",
+      "Bypassing data cleansing and loading data directly to the warehouse"
+    ],
+    "ans": 1,
+    "explain": "Loading raw data into a staging area (such as Cloud Storage or directly into BigQuery) is a common step in data warehouse pipelines before transformation and final loading. Bigtable is not typically used in data warehouse pipelines. Cloud Data Fusion is one of many transformation tools, not the only one. Data cleansing is an important step that should not be bypassed in a typical data warehouse pipeline.",
+    "concept": "Data warehouse pipeline, staging area, ETL, data loading"
+  },
+  {
+    "q": "You are developing an ingestion mechanism for a large number of IoT sensors. The service should accept data up to 10 minutes late and perform transformations before writing to a database. Which managed service best handles late-arriving data and performs transformations?",
+    "opts": [
+      "Cloud Dataproc",
+      "Cloud Dataflow",
+      "Cloud Dataprep",
+      "Cloud SQL"
+    ],
+    "ans": 1,
+    "explain": "Cloud Dataflow is a stream and batch processing service that handles late-arriving data (windowing) and performs transformations. Cloud Dataproc requires cluster management; Cloud Dataprep is interactive; Cloud SQL is a relational database.",
+    "concept": "Cloud Dataflow late data"
+  },
+  {
+    "q": "A large enterprise wants to migrate an IoT platform from on-premises to GCP and use managed services wherever possible. What GCP service would you recommend for ingesting IoT data?",
+    "opts": [
+      "Cloud Storage",
+      "Cloud SQL",
+      "Cloud Pub/Sub",
+      "BigQuery streaming inserts"
+    ],
+    "ans": 2,
+    "explain": "Cloud Pub/Sub is a scalable, managed messaging queue typically used for ingesting high-volume streaming data. BigQuery streaming inserts are not used for ingestion; Cloud Storage and Cloud SQL are not designed for streaming writes.",
+    "concept": "Cloud Pub/Sub IoT ingestion"
+  },
+  {
+    "q": "You are designing a data pipeline to populate a sales data mart. Quality control rules must filter out bad data before it enters the data mart. At what stage of the data pipeline would you implement those rules?",
+    "opts": [
+      "Ingestion",
+      "Transformation",
+      "Storage",
+      "Analysis"
+    ],
+    "ans": 1,
+    "explain": "The transformation stage is where business logic and filters are applied. Data should be cleaned before being stored, not after.",
+    "concept": "Data pipeline transformation stage"
+  },
+  {
+    "q": "A team is migrating legacy Python ETL scripts used to transform data. They want a service supporting Python with minimal administration and operations support. Which GCP service would you recommend?",
+    "opts": [
+      "Cloud Dataproc",
+      "Cloud Dataflow",
+      "Cloud Spanner",
+      "Cloud Dataprep"
+    ],
+    "ans": 1,
+    "explain": "Cloud Dataflow supports Python and is a serverless platform. Cloud Dataproc requires cluster management; Cloud Dataprep is for interactive data preparation.",
+    "concept": "Cloud Dataflow Python ETL"
+  },
+  {
+    "q": "You are using Cloud Pub/Sub to buffer records from a stream application. After a developer released new code, messages are now sent repeatedly at 10-minute intervals. What might be the cause?",
+    "opts": [
+      "The new code changed the subscription ID",
+      "The new code changed the topic ID",
+      "The new code disabled acknowledgments from the consumer",
+      "The new code changed the subscription from pull to push"
+    ],
+    "ans": 2,
+    "explain": "Disabling acknowledgments causes Cloud Pub/Sub to consider messages outstanding and resend them after the acknowledgment wait time expires.",
+    "concept": "Pub/Sub message acknowledgment"
+  },
+  {
+    "q": "IoT sensors send to Cloud Pub/Sub and Dataflow reorders messages by event time. A message is expected from each sensor every minute. If a message is not received, the app should use the average of the last four messages. What kind of window would you use?",
+    "opts": [
+      "Sliding window",
+      "Tumbling window",
+      "Extrapolation window",
+      "Crossover window"
+    ],
+    "ans": 0,
+    "explain": "A sliding window captures the data for the past four messages/minutes as it slides. Tumbling windows don't overlap and cannot provide the last four messages.",
+    "concept": "Dataflow sliding window"
+  },
+  {
+    "q": "Your department is keeping some stream processing on-premises using Kafka and migrating some to GCP using Cloud Pub/Sub. How would you share data between the two?",
+    "opts": [
+      "Use CloudPubSubConnector and Kafka Connect",
+      "Stream data to a Cloud Storage bucket and read from there",
+      "Write a custom service to read from Kafka and write to Cloud Pub/Sub",
+      "Use Cloud Pub/Sub Import Service"
+    ],
+    "ans": 0,
+    "explain": "CloudPubSubConnector and Kafka Connect is the recommended approach, developed and maintained by the Cloud Pub/Sub team for this purpose.",
+    "concept": "Kafka Cloud Pub/Sub integration"
+  },
+  {
+    "q": "A team wants to create standardized patterns for processing IoT data that multiple teams can use to build streaming data pipelines collaboratively. What component should they use?",
+    "opts": [
+      "Cloud Dataflow Python scripts",
+      "Cloud Dataproc PySpark jobs",
+      "Cloud Dataflow templates",
+      "Cloud Dataproc templates"
+    ],
+    "ans": 2,
+    "explain": "Cloud Dataflow templates allow specifying patterns and providing parameters for users to customize them, enabling collaboration across teams.",
+    "concept": "Cloud Dataflow templates"
+  },
+  {
+    "q": "You are working with genetics researchers running a series of six programs where each outputs data used by the next. The final result is loaded into BigQuery from Cloud Storage. What tool would you recommend for orchestrating this workflow?",
+    "opts": [
+      "Cloud Composer",
+      "Cloud Dataflow",
+      "Apache Flink",
+      "Cloud Dataproc"
+    ],
+    "ans": 0,
+    "explain": "Cloud Composer is designed to support workflow orchestration. Cloud Dataflow and Apache Flink are for stream/batch processing; Cloud Dataproc is for Hadoop/Spark.",
+    "concept": "Cloud Composer workflow orchestration"
+  },
+  {
+    "q": "Data warehouse owners need to know about all changes to data between points in time, not just the state at certain snapshots. What kind of data warehousing pipeline should be used?",
+    "opts": [
+      "ETL",
+      "ELT",
+      "Extraction and load",
+      "Change data capture"
+    ],
+    "ans": 3,
+    "explain": "Change data capture records each change in a source system. ETL, ELT, and extraction only capture the state of source systems at a point in time.",
+    "concept": "Change data capture CDC"
+  },
+  {
+    "q": "A startup's IoT pipeline streams sensor data into GCP. As soon as data arrives, a Python validation process runs to verify data integrity. Passing data is ingested; invalid data is discarded. What services would you use for validation and ingestion?",
+    "opts": [
+      "Cloud Storage and Cloud Pub/Sub",
+      "Cloud Functions and Cloud Pub/Sub",
+      "Cloud Functions and BigQuery",
+      "Cloud Storage and BigQuery"
+    ],
+    "ans": 1,
+    "explain": "IoT sensors write to Cloud Pub/Sub. Each message triggers a Cloud Function that runs the Python validation. Cloud Storage is not for streaming ingestion; BigQuery is not for ingest validation.",
+    "concept": "Cloud Functions Pub/Sub IoT validation"
+  },
+  {
+    "q": "A finance department is migrating a third-party application from an on-premises server. Only the C executable binary is available and it must run on Ubuntu 14.04 with specific packages. Which compute platform would you use?",
+    "opts": [
+      "Compute Engine",
+      "Kubernetes Engine",
+      "App Engine Standard",
+      "Cloud Functions"
+    ],
+    "ans": 0,
+    "explain": "Compute Engine can run applications in a VM configured with any operating system. The app is not containerized, cannot run in App Engine's language runtimes, and Cloud Functions is for event-driven short-lived code.",
+    "concept": "Compute Engine legacy application"
+  },
+  {
+    "q": "A team is rewriting ETL using a microservices architecture where each microservice runs in its own Docker container. ETL must always finish within one hour. You want to minimize DevOps overhead without sacrificing efficient resource utilization. What GCP compute service would you recommend?",
+    "opts": [
+      "Compute Engine",
+      "Kubernetes Engine",
+      "App Engine Standard",
+      "Cloud Functions"
+    ],
+    "ans": 1,
+    "explain": "Kubernetes Engine runs containerized microservices with minimal DevOps overhead. Compute Engine requires more DevOps work; App Engine Standard and Cloud Functions do not run containers.",
+    "concept": "Kubernetes Engine microservices"
+  },
+  {
+    "q": "Your consulting company is negotiating a SaaS contract for a client who needs reliable service access. What metric would you use when negotiating to ensure the client's reliability requirements are met?",
+    "opts": [
+      "Average CPU utilization",
+      "A combination of CPU and memory utilization",
+      "Mean time between failure",
+      "Mean time to recovery"
+    ],
+    "ans": 2,
+    "explain": "Mean time between failure (MTBF) is used for measuring reliability. MTTR measures recovery time after an outage. CPU/memory metrics are about utilization, not reliability.",
+    "concept": "Reliability metrics MTBF"
+  },
+  {
+    "q": "To ensure high availability, your team needs a mission-critical application to run in multiple regions, routing traffic to another region if one becomes unavailable. What would you include in this design?",
+    "opts": [
+      "Cloud Storage bucket",
+      "Cloud Pub/Sub topic",
+      "Global load balancer",
+      "HA VPN"
+    ],
+    "ans": 2,
+    "explain": "A global load balancer is needed to distribute workload across multiple regions. Cloud Storage and Pub/Sub are not load balancers; HA VPN is for hybrid cloud connectivity.",
+    "concept": "Global load balancer multi-region HA"
+  },
+  {
+    "q": "Sensors on manufacturing machines send metrics including machine type. ML engineers determined each machine type needs its own model for highest accuracy. How should messages be routed from a message broker to ML service instances?",
+    "opts": [
+      "Route randomly to any available instance",
+      "Route based on sensor identifier so close identifiers use the same model",
+      "Route based on machine type so only one machine type's data goes to each model",
+      "Route based on timestamp so temporally close metrics use the same model"
+    ],
+    "ans": 2,
+    "explain": "Routing by machine type ensures data from each machine type goes to its dedicated model. Random routing and sensor ID routing would mix machine types.",
+    "concept": "Message routing by machine type"
+  },
+  {
+    "q": "An application used by finance is written in Java, deployed on VMs, has several distinct services, and uses SOAP for message exchange. How would you categorize this architecture?",
+    "opts": [
+      "Monolithic",
+      "Service-oriented architecture (SOA)",
+      "Microservice",
+      "Serverless functions"
+    ],
+    "ans": 1,
+    "explain": "Multiple independent services using SOAP deployed on VMs fits the definition of a service-oriented architecture. Microservices typically use lightweight protocols.",
+    "concept": "SOA service-oriented architecture"
+  },
+  {
+    "q": "A distributed app runs services on VMs where each service implements several functions and it's hard to update one without disrupting others. Your company standardizes on Docker containers. What architecture would you recommend?",
+    "opts": [
+      "Monolithic",
+      "Hub-and-spoke",
+      "Microservices",
+      "Pipeline architecture"
+    ],
+    "ans": 2,
+    "explain": "Microservices allow each function to be deployed independently in its own container. Monolithic architecture would worsen the update problem.",
+    "concept": "Microservices Docker"
+  },
+  {
+    "q": "The CTO wants to migrate an enterprise data warehouse to a cloud-based data warehouse like BigQuery. What is the first step in this migration?",
+    "opts": [
+      "Assessing the current state of the data warehouse",
+      "Designing the future state of the data warehouse",
+      "Migrating data, jobs, and access controls to the cloud",
+      "Validating the cloud data warehouse"
+    ],
+    "ans": 0,
+    "explain": "Assessment should be done first. Designing, migrating, and validating all come after the assessment phase.",
+    "concept": "Data warehouse migration first step"
+  },
+  {
+    "q": "When gathering requirements for a data warehouse migration, which of the following would you include in technical requirements?",
+    "opts": [
+      "Data sources, data model, and ETL scripts",
+      "Data sources, data model, and business sponsor roles",
+      "Data sources only",
+      "Data model, data catalog, ETL scripts, and business sponsor roles"
+    ],
+    "ans": 0,
+    "explain": "Technical requirements include data sources, the data model, and ETL scripts. Business sponsor roles are organizational, not technical requirements.",
+    "concept": "DW migration technical requirements"
+  },
+  {
+    "q": "Your company cannot quickly roll out new BI reports because of the overhead of maintaining an on-premises data warehouse. A lack of BI has been blamed for a drop in sales last quarter. What kind of cost is the company incurring?",
+    "opts": [
+      "Capital",
+      "Operating",
+      "Opportunity",
+      "Fiscal"
+    ],
+    "ans": 2,
+    "explain": "An opportunity cost is incurred when a missed opportunity has economic consequences. Capital and operating costs require actual expenditure of funds.",
+    "concept": "Opportunity cost data warehouse"
+  },
+  {
+    "q": "Data modelers migrating a data warehouse to BigQuery find their reports require many expensive SQL joins. What BigQuery feature would you suggest to reduce the number of joins required?",
+    "opts": [
+      "Colossus filesystem",
+      "Columnar data storage",
+      "Nested and repeated fields",
+      "Federated storage"
+    ],
+    "ans": 2,
+    "explain": "Nested and repeated fields can store related data in a single row, eliminating the need for many joins. Colossus and columnar storage don't change join requirements.",
+    "concept": "BigQuery nested repeated fields"
+  },
+  {
+    "q": "Your CTO wants a data warehouse migrated quickly but is risk-averse due to past reporting errors. Which prioritization strategy would you recommend for migrating workloads?",
+    "opts": [
+      "Exploiting current opportunities first",
+      "Migrating analytical workloads first",
+      "Focusing on user experience first",
+      "Prioritizing low-risk use cases first"
+    ],
+    "ans": 3,
+    "explain": "Prioritizing low-risk use cases allows the team to make progress while minimizing impact if something goes wrong.",
+    "concept": "DW migration risk prioritization"
+  },
+  {
+    "q": "After migrating a data warehouse to BigQuery, the CTO wants to verify correctness before shutting down the on-premises system. What should you include in the verification process?",
+    "opts": [
+      "Verify schemas are correct and data is loaded",
+      "Verify schemas, data loads, transformations, and queries",
+      "Verify schemas and data loads, and prioritize backlog of feature requests",
+      "Verify schemas, data loads, transformations, queries, and feature request backlog"
+    ],
+    "ans": 1,
+    "explain": "Verifying schemas, data loads, transformations, and queries are all required. The backlog of feature requests is important but not relevant to correctness verification.",
+    "concept": "DW migration verification"
+  },
+  {
+    "q": "You have created a test environment for business analysts to run Cloud Dataflow pipelines. You want to limit the processing resources any pipeline can consume. What execution parameter would you specify?",
+    "opts": [
+      "numWorkers",
+      "maxNumWorkers",
+      "streaming",
+      "maxResources"
+    ],
+    "ans": 1,
+    "explain": "maxNumWorkers specifies the maximum number of instances that can be run for a Cloud Dataflow pipeline. numWorkers is the initial count; streaming is a mode flag.",
+    "concept": "Cloud Dataflow maxNumWorkers"
+  },
+  {
+    "q": "Your DevOps team is deploying an IoT system using a standard IoT architecture. Which of the following components would NOT be used?",
+    "opts": [
+      "Edge devices",
+      "Gateways",
+      "Repeater",
+      "Cloud platform services"
+    ],
+    "ans": 2,
+    "explain": "Repeaters are used in networks to boost signal strength but are not part of the standard IoT architecture components. Edge devices, gateways, and cloud platform services are all standard IoT components.",
+    "concept": "IoT architecture components"
+  },
+  {
+    "q": "In the Google Cloud Platform IoT reference model, which GCP service is used for stream processing?",
+    "opts": [
+      "Cloud Storage",
+      "BigQuery streaming inserts",
+      "Cloud Pub/Sub",
+      "Cloud Dataflow"
+    ],
+    "ans": 3,
+    "explain": "Cloud Dataflow is a stream and batch processing service based on Apache Beam and is used for stream processing in the GCP IoT reference model. Cloud Pub/Sub is for ingestion.",
+    "concept": "GCP IoT reference model stream processing"
+  },
+  {
+    "q": "You are responsible for developing an ingestion mechanism for a large number of IoT sensors. The ingestion service should accept data up to 10 minutes late and perform transformations before writing to a database. Which managed service is best for late-arriving data and transformations?",
+    "opts": [
+      "Cloud Dataproc",
+      "Cloud Dataflow",
+      "Cloud Dataprep",
+      "Cloud SQL"
+    ],
+    "ans": 1,
+    "explain": "Cloud Dataflow is a stream and batch processing service that supports late-arriving data and transformations. Cloud Dataproc is managed Hadoop/Spark, Cloud Dataprep is for interactive preparation, and Cloud SQL is a relational database.",
+    "concept": "Cloud Dataflow, stream processing, late-arriving data, IoT ingestion"
+  },
+  {
+    "q": "You are designing a data pipeline to populate a sales data mart. The sponsor defined rules for filtering bad data before it gets into the data mart. At what stage of the pipeline would you implement those rules?",
+    "opts": [
+      "Ingestion",
+      "Transformation",
+      "Storage",
+      "Analysis"
+    ],
+    "ans": 1,
+    "explain": "Transformation is where business logic and data quality filtering are applied. Ingestion brings data in, storage persists transformed data, and analysis is downstream of cleaned data.",
+    "concept": "Data pipeline stages, transformation, data quality"
+  },
+  {
+    "q": "A team is migrating legacy Python ETL scripts and wants a service that supports Python with minimal admin and operations overhead. Which GCP service would you recommend?",
+    "opts": [
+      "Cloud Dataproc",
+      "Cloud Dataflow",
+      "Cloud Spanner",
+      "Cloud Dataprep"
+    ],
+    "ans": 1,
+    "explain": "Cloud Dataflow supports Python and is serverless, requiring minimal administration. Dataproc requires cluster management. Spanner is a database. Dataprep is an interactive tool.",
+    "concept": "Cloud Dataflow, serverless, Python ETL"
+  },
+  {
+    "q": "You are using Cloud Pub/Sub to buffer user interaction events. After a new code release, messages are repeatedly sent at 10-minute intervals. What might be the cause?",
+    "opts": [
+      "The release changed the subscription ID.",
+      "The release changed the topic ID.",
+      "The release disabled acknowledgments from the consumer.",
+      "The release changed the subscription from pull to push."
+    ],
+    "ans": 2,
+    "explain": "If acknowledgments are disabled, messages remain outstanding until the ack deadline expires and are redelivered, causing repeated delivery.",
+    "concept": "Cloud Pub/Sub, acknowledgments, duplicate delivery"
+  },
+  {
+    "q": "Why is idempotent processing logic a best practice when consuming Cloud Pub/Sub messages?",
+    "opts": [
+      "Messages may be delivered multiple times.",
+      "Messages may be received out of order.",
+      "Messages may be delivered out of order.",
+      "Consumers may wait long periods between messages."
+    ],
+    "ans": 0,
+    "explain": "Cloud Pub/Sub provides at-least-once delivery, so duplicates can occur. Idempotent logic ensures repeated processing does not corrupt state.",
+    "concept": "Cloud Pub/Sub, idempotency, at-least-once delivery"
+  },
+  {
+    "q": "IoT sensors send one message per minute. If one message is missing, processing should use the average of the last four messages. What window type should you use?",
+    "opts": [
+      "Sliding window",
+      "Tumbling window",
+      "Extrapolation window",
+      "Crossover window"
+    ],
+    "ans": 0,
+    "explain": "A sliding window preserves the last N events and moves forward as new events arrive, which matches averaging the last four messages.",
+    "concept": "Cloud Dataflow, sliding windows, stream processing"
+  },
+  {
+    "q": "Your team is integrating on-prem Kafka pipelines with GCP pipelines using Cloud Pub/Sub. How should you bridge them?",
+    "opts": [
+      "Use CloudPubSubConnector and Kafka Connect",
+      "Stream to Cloud Storage and read from there",
+      "Write a custom service to read Kafka and write Pub/Sub",
+      "Use Cloud Pub/Sub Import Service"
+    ],
+    "ans": 0,
+    "explain": "CloudPubSubConnector with Kafka Connect is the maintained integration path. Custom bridges add maintenance overhead, and Cloud Pub/Sub Import Service does not exist.",
+    "concept": "Kafka Connect, CloudPubSubConnector, hybrid pipelines"
+  },
+  {
+    "q": "A team wants reusable standardized patterns for IoT streaming pipelines across multiple teams. What component should they use?",
+    "opts": [
+      "Cloud Dataflow Python scripts",
+      "Cloud Dataproc PySpark jobs",
+      "Cloud Dataflow templates",
+      "Cloud Dataproc templates"
+    ],
+    "ans": 2,
+    "explain": "Cloud Dataflow templates encapsulate pipeline patterns with parameters for reuse, enabling collaboration without modifying code each time.",
+    "concept": "Cloud Dataflow templates, reusable patterns"
+  },
+  {
+    "q": "You must run several Hadoop map-reduce jobs, one Pig job, and four PySpark jobs in GCP. What configuration is recommended?",
+    "opts": [
+      "Use one cluster for all jobs.",
+      "Use three persistent clusters by job type.",
+      "Use one cluster per job and keep them running.",
+      "Use one cluster per job and shut it down when complete."
+    ],
+    "ans": 3,
+    "explain": "Ephemeral per-job clusters minimize cost and simplify operations. Persistent clusters increase idle cost and complexity.",
+    "concept": "Cloud Dataproc, ephemeral clusters, cost optimization"
+  },
+  {
+    "q": "Genetics researchers run six sequential programs on data in Cloud Storage, with final output loaded to BigQuery. What tool should orchestrate this workflow?",
+    "opts": [
+      "Cloud Composer",
+      "Cloud Dataflow",
+      "Apache Flink",
+      "Cloud Dataproc"
+    ],
+    "ans": 0,
+    "explain": "Cloud Composer (managed Airflow) is designed for orchestrating multi-step workflows with dependencies.",
+    "concept": "Cloud Composer, workflow orchestration"
+  },
+  {
+    "q": "Business owners need data warehouse history of every change between snapshots, not just point-in-time states. What pipeline approach should be used?",
+    "opts": [
+      "ETL",
+      "ELT",
+      "Extraction and load",
+      "Change data capture"
+    ],
+    "ans": 3,
+    "explain": "Change data capture records each data change event over time, whereas ETL/ELT/extract-load capture state at extraction time.",
+    "concept": "CDC, change data capture"
+  },
+  {
+    "q": "You need to ingest IoT sensor data and run a Python validation check before continuing pipeline processing. What approach would you use?",
+    "opts": [
+      "Store in Cloud Storage first, then process.",
+      "IoT sensors write to Cloud Pub/Sub; a Cloud Function runs Python validation.",
+      "IoT sensors write to BigQuery, then Cloud Functions validates.",
+      "IoT sensors write to Cloud Storage, and Cloud Dataflow validates."
+    ],
+    "ans": 1,
+    "explain": "Cloud Pub/Sub supports streaming ingestion and can trigger Cloud Functions for lightweight event-driven validation in Python.",
+    "concept": "Cloud Functions, Cloud Pub/Sub, ingestion validation"
+  },
+  {
+    "q": "You are migrating a C binary app that must run on Ubuntu 14.04 with specific packages. It is not containerized. What GCP compute service is best?",
+    "opts": [
+      "Compute Engine",
+      "Kubernetes Engine",
+      "App Engine Standard",
+      "Cloud Functions"
+    ],
+    "ans": 0,
+    "explain": "Compute Engine gives full OS control, allowing required Ubuntu version and package installation. The app is not containerized and not suitable for App Engine Standard or Functions.",
+    "concept": "Compute Engine, legacy migration, custom OS"
+  },
+  {
+    "q": "You are building Docker-based microservices for an ETL process and want minimal DevOps overhead. Which service should you use?",
+    "opts": [
+      "Compute Engine",
+      "Kubernetes Engine",
+      "App Engine Standard",
+      "Cloud Functions"
+    ],
+    "ans": 1,
+    "explain": "Kubernetes Engine is the managed platform for containerized microservices and balances operational simplicity with container orchestration.",
+    "concept": "GKE, Docker, microservices"
+  },
+  {
+    "q": "You need a reliability metric for an SLA to measure service reliability. Which metric should you use?",
+    "opts": [
+      "CPU utilization",
+      "Throughput utilization",
+      "Mean time between failure",
+      "Mean time to recovery"
+    ],
+    "ans": 2,
+    "explain": "MTBF measures reliability directly. CPU and throughput are utilization metrics; MTTR measures restoration speed, not reliability probability.",
+    "concept": "SLA, reliability, MTBF"
+  },
+  {
+    "q": "A system must remain available across regions and route traffic away from failed regions. What component is required?",
+    "opts": [
+      "Cloud Storage bucket",
+      "Cloud Pub/Sub topic",
+      "Global load balancer",
+      "HA VPN"
+    ],
+    "ans": 2,
+    "explain": "Global load balancers distribute traffic across regions and can reroute around regional failures.",
+    "concept": "Global load balancing, multi-region availability"
+  },
+  {
+    "q": "Machine sensors send metrics to a message broker. Different machine types require separate ML models due to different failure characteristics. How should messages be routed?",
+    "opts": [
+      "Random routing",
+      "Route by sensor ID proximity",
+      "Route by machine type",
+      "Route by timestamp"
+    ],
+    "ans": 2,
+    "explain": "Routing by machine type ensures each model is trained/inferred on homogeneous data representing the same failure behavior class.",
+    "concept": "Message routing, ML specialization, machine type"
+  },
+  {
+    "q": "An application has independent services using SOAP deployed on VMs. What architecture type is this?",
+    "opts": [
+      "Monolithic",
+      "Service-oriented architecture (SOA)",
+      "Microservice",
+      "Serverless"
+    ],
+    "ans": 1,
+    "explain": "SOAP-based independent services on VMs are characteristic of SOA.",
+    "concept": "SOA, distributed architecture, SOAP"
+  },
+  {
+    "q": "You want independent functions that can be deployed in separate containers and updated independently. Which architecture pattern should you use?",
+    "opts": [
+      "Monolithic",
+      "Hub-and-spoke",
+      "Microservices",
+      "Pipeline architecture"
+    ],
+    "ans": 2,
+    "explain": "Microservices allow independent deployment and lifecycle of components, often in separate containers.",
+    "concept": "Microservices, independent deployment"
+  },
+  {
+    "q": "What is the first step in migrating an on-premises data warehouse to GCP?",
+    "opts": [
+      "Assessment",
+      "Design future state",
+      "Migrate data and jobs",
+      "Validate migration"
+    ],
+    "ans": 0,
+    "explain": "Assessment of current state and requirements must come first before architecture design and migration execution.",
+    "concept": "Data warehouse migration, assessment"
+  },
+  {
+    "q": "A data warehouse migration plan should include which items?",
+    "opts": [
+      "Data sources, data model, ETL scripts",
+      "Business sponsor names, data sources, data loads",
+      "Data sources, ETL scripts, business sponsor names",
+      "Only data sources and schemas"
+    ],
+    "ans": 0,
+    "explain": "Technical migration planning must include source systems, data model, and ETL logic. Sponsor names are not core technical migration artifacts.",
+    "concept": "Migration planning, technical requirements"
+  },
+  {
+    "q": "A reporting backlog exists because the current on-prem warehouse is too limited, preventing valuable new reports. What kind of cost is this?",
+    "opts": [
+      "Capital cost",
+      "Operating cost",
+      "Opportunity cost",
+      "Sunk cost"
+    ],
+    "ans": 2,
+    "explain": "The organization loses potential value due to delayed insight generation, which is opportunity cost.",
+    "concept": "Opportunity cost, analytics backlog"
+  },
+  {
+    "q": "When migrating normalized on-prem schemas with many joins to BigQuery, what feature should you use to optimize design?",
+    "opts": [
+      "Colossus filesystem",
+      "Columnar storage",
+      "Denormalization with nested and repeated fields",
+      "Federated storage"
+    ],
+    "ans": 2,
+    "explain": "Nested and repeated fields reduce joins by storing related data together, improving performance in BigQuery.",
+    "concept": "BigQuery, denormalization, nested/repeated fields"
+  },
+  {
+    "q": "For a risk-averse migration strategy, how should workloads be prioritized first?",
+    "opts": [
+      "Highest value opportunities",
+      "Analytical workloads first",
+      "User experience first",
+      "Low-risk use cases first"
+    ],
+    "ans": 3,
+    "explain": "Starting with low-risk use cases helps teams learn cloud migration patterns while minimizing potential impact.",
+    "concept": "Migration prioritization, risk management"
+  },
+  {
+    "q": "After migrating a data warehouse to BigQuery, which tasks should be performed to verify success?",
+    "opts": [
+      "Verify schemas and loads only",
+      "Verify schemas, loads, transformations, and queries",
+      "Verify schemas and feature backlog",
+      "Verify schemas and user-request backlog"
+    ],
+    "ans": 1,
+    "explain": "Validation requires end-to-end checks: schema correctness, complete data loading, correct transformations, and expected query/report results.",
+    "concept": "Migration validation, data quality, query verification"
+  },
+  {
+    "q": "You are in early stages of an ML model requiring high-precision arithmetic and benefiting from massive parallelization. Dataset fits in 32 GB and you want interactive Jupyter work. What infrastructure is most appropriate?",
+    "opts": [
+      "A TPU pod",
+      "A single TPU",
+      "A single server with a GPU",
+      "A managed instance group of GPU VMs"
+    ],
+    "ans": 2,
+    "explain": "GPUs are suitable for high-precision arithmetic and interactive iterative development on moderate dataset sizes. TPUs are optimized for low-precision tensor operations.",
+    "concept": "GPU vs TPU, high-precision arithmetic, interactive ML"
+  },
+  {
+    "q": "You are training a TensorFlow model with synchronous distributed training on TPUs. Which distribution strategy should you use?",
+    "opts": [
+      "MirroredStrategy",
+      "CentralStorageStrategy",
+      "MultiWorkerMirroredStrategy",
+      "TPUStrategy"
+    ],
+    "ans": 3,
+    "explain": "TPUStrategy is designed for synchronous distributed training on TPU devices.",
+    "concept": "TensorFlow TPUStrategy, distributed training"
+  },
+  {
+    "q": "A model service runs in us-west1, but users in London and New York report prediction response times are too slow. What type of issue is this?",
+    "opts": [
+      "Overfitting",
+      "Underfitting",
+      "Latency",
+      "Scalability"
+    ],
+    "ans": 2,
+    "explain": "Geographic distance adds network round-trip delay, causing latency issues in inference serving.",
+    "concept": "ML serving latency, geographic distance"
+  },
+  {
+    "q": "A global climate project has limited/unreliable bandwidth from gateways to GCP. Sensors send one reading per second, but scientists only need one-minute averages for temperature/pressure/humidity. Which strategy should you implement?",
+    "opts": [
+      "Send all raw data to Pub/Sub and average in Dataflow",
+      "Average at gateway, send averages to Pub/Sub, then Dataflow and BigQuery",
+      "Send all raw data to BigQuery streaming inserts",
+      "Average at gateway, send averages to Pub/Sub, then Dataflow and BigQuery"
+    ],
+    "ans": 1,
+    "explain": "Compute one-minute aggregates at the gateway to reduce bandwidth, then send compact summaries upstream for further processing and storage.",
+    "concept": "Edge aggregation, bandwidth optimization, IoT"
+  },
+  {
+    "q": "In a standard IoT architecture, which component would you not use?",
+    "opts": [
+      "Edge devices",
+      "Gateways",
+      "Repeater",
+      "Cloud platform services"
+    ],
+    "ans": 2,
+    "explain": "Repeaters are networking tools, not core components of the IoT reference architecture.",
+    "concept": "IoT reference architecture"
+  },
+  {
+    "q": "A startup product for autonomous vehicles needs low-latency object detection inference from a TensorFlow model. Where should the model be served?",
+    "opts": [
+      "On GKE with TFJob",
+      "On Compute Engine MIGs",
+      "On Edge TPU devices in vehicles",
+      "On GPUs in vehicles"
+    ],
+    "ans": 2,
+    "explain": "Edge TPUs provide low-latency inferencing near sensors, which is critical for autonomous vehicle response times.",
+    "concept": "Edge TPU, edge inference, low latency"
+  },
+  {
+    "q": "In the Google Cloud IoT reference model, which service is used for stream processing?",
+    "opts": [
+      "Cloud Storage",
+      "BigQuery streaming inserts",
+      "Cloud Pub/Sub",
+      "Cloud Dataflow"
+    ],
+    "ans": 3,
+    "explain": "Cloud Dataflow performs stream and batch processing. Pub/Sub is for ingestion.",
+    "concept": "IoT reference model, stream processing"
+  },
+  {
+    "q": "You have a TensorFlow model using basic ops (no custom ops). Training on CPU would take weeks. What should you try to dramatically reduce training time?",
+    "opts": [
+      "Larger CPU VM",
+      "TPU pod",
+      "GKE CPU cluster",
+      "App Engine"
+    ],
+    "ans": 1,
+    "explain": "TPU pods are optimized for large-scale TensorFlow training with supported ops and can significantly reduce training time.",
+    "concept": "TPU pod, training acceleration"
+  },
+  {
+    "q": "Your model depends on a compiled Fortran library optimized for highly parallel, high-precision arithmetic and cannot be recompiled. What infrastructure should you try first?",
+    "opts": [
+      "Compute Engine with GPUs",
+      "TPU pod",
+      "Compute Engine with CPUs",
+      "Cloud Functions"
+    ],
+    "ans": 0,
+    "explain": "A precompiled high-precision Fortran GPU library is best matched with GPU-enabled Compute Engine. TPUs are not general-purpose and focus on low-precision tensor ops.",
+    "concept": "GPU, legacy compiled library, training infrastructure"
   }
 ]
