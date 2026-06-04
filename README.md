@@ -11,13 +11,13 @@ The app fetches question JSON files at runtime and **must be served over HTTP** 
 
 ```bash
 # Python (built-in, any Python 3)
-python3 -m http.server 8080
+python3 -m http.server 8000
 
 # Node.js
 npx serve .
 ```
 
-Open `http://localhost:8080`.
+Open `http://localhost:8000`.
 
 ---
 

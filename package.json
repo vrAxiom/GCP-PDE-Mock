@@ -6,6 +6,7 @@
     "@playwright/test": "^1.44.0"
   },
   "scripts": {
+    "start": "./run.sh",
     "test": "playwright test",
     "test:report": "playwright show-report"
   }
