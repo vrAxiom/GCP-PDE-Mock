@@ -27,12 +27,12 @@ Questions live in five JSON files — one per exam section:
 
 | File | Section | Exam Weight | Pool Size |
 |------|---------|-------------|-----------|
-| `questions-s1.json` | Designing Data Processing Systems | 22% | 104 |
-| `questions-s2.json` | Ingesting and Processing the Data | 25% | 126 |
-| `questions-s3.json` | Storing the Data | 20% | 117 |
-| `questions-s4.json` | Preparing and Using Data for Analysis | 15% | 90 |
-| `questions-s5.json` | Maintaining and Automating Data Workloads | 18% | 83 |
-| **Total** | | | **520** |
+| `questions-s1.json` | Designing Data Processing Systems | 22% | 173 |
+| `questions-s2.json` | Ingesting and Processing the Data | 25% | 134 |
+| `questions-s3.json` | Storing the Data | 20% | 167 |
+| `questions-s4.json` | Preparing and Using Data for Analysis | 15% | 132 |
+| `questions-s5.json` | Maintaining and Automating Data Workloads | 18% | 112 |
+| **Total** | | | **718** |
 
 - **Section quiz** — picks 20 random questions from the section pool. Options are shuffled every run.
 - **Full mock exam** — 50 questions, blueprint-weighted: 11 / 12 / 10 / 8 / 9 per section.
@@ -222,11 +222,11 @@ npx playwright show-report
 
 ```
 index.html              App — HTML + CSS + JS (~50 KB)
-questions-s1.json       Section 1 question bank (104 questions)
-questions-s2.json       Section 2 question bank (126 questions)
-questions-s3.json       Section 3 question bank (117 questions)
-questions-s4.json       Section 4 question bank (90 questions)
-questions-s5.json       Section 5 question bank (83 questions)
+questions-s1.json       Section 1 question bank (173 questions)
+questions-s2.json       Section 2 question bank (134 questions)
+questions-s3.json       Section 3 question bank (167 questions)
+questions-s4.json       Section 4 question bank (132 questions)
+questions-s5.json       Section 5 question bank (112 questions)
 tests/
   quiz.spec.js          Playwright regression test suite
 playwright.config.js    Playwright configuration
