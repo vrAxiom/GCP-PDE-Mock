@@ -1104,18 +1104,6 @@
     "concept": "BigQuery"
   },
   {
-    "q": "A company has a new IoT pipeline. Which services will make this design work?\n\nSelect the services that should be used to replace the icons with the number \"\"1\"\" and number \"\"2\"\" in the diagram.",
-    "opts": [
-      "Cloud IoT Core, Cloud Datastore",
-      "Cloud Pub/Sub, Cloud Storage",
-      "Cloud IoT Core, Cloud Pub/Sub",
-      "​App Engine, Cloud IoT Core"
-    ],
-    "ans": 2,
-    "explain": "Correct answer is C as device data captured by Cloud IoT Core gets published to Cloud Pub/Sub, which can then trigger Dataflow and Cloud Functions.\n\nRefer GCP documentation - Cloud IoT Core: - https://cloud.google.com/iot-core/;\n\nCloud IoT Core is a fully managed service that allows you to easily and securely connect, manage, and ingest data from millions of globally dispersed devices. Cloud IoT Core, in combination with other services on Cloud IoT platform, provides a complete solution for collecting, processing, analyzing, and visualizing IoT data in real time to support improved operational efficiency.\n\nCloud IoT Core, using Cloud Pub/Sub underneath, can aggregate dispersed device data into a single global system that integrates seamlessly with Google Cloud data analytics services. Use your IoT data stream for advanced analytics, visualizations, machine learning, and more to help improve operational efficiency, anticipate problems, and build rich models that better describe and optimize your business.",
-    "concept": "Pub/Sub, Dataflow"
-  },
-  {
     "q": "Your company has a variety of data processing jobs. Dataflow jobs to process real time streaming data using Pub/Sub. Data pipelines working with on-premises data. Dataproc spark batch jobs running weekly analytics with Cloud Storage. They want a single interface to manage and monitor the jobs. Which service would help implement a common monitoring and execution platform?",
     "opts": [
       "Cloud Scheduler",

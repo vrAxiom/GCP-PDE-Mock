@@ -1029,8 +1029,7 @@
       <button class="global-clear-btn" onclick="clearAllHistory()">🗑 Clear All History</button>
     </div>
     <div id="sections-grid" class="sections-grid"></div>
-    <button class="full-test-btn" onclick="startFullTest()">▶ Start 50-Question Mock Exam (Blueprint-Weighted,
-      Randomized)</button>
+    <button class="full-test-btn" id="full-test-btn" onclick="startFullTest()"></button>
   </div>
 
   <!-- ═══ QUIZ ═══ -->
@@ -1190,8 +1189,9 @@
       { id: 5, title: "Maintaining and Automating Data Workloads", weight: "18%", color: "#c5221f", questions: [] }
     ];
 
-        const SECTION_Q_COUNT = 20;
+      const SECTION_Q_COUNT = 20;
     const FULL_TEST_DIST = [11, 12, 10, 8, 9];
+      const FULL_TEST_Q_COUNT = FULL_TEST_DIST.reduce((sum, n) => sum + n, 0);
 
     function shuffle(arr) {
       const a = arr.slice();
@@ -1395,7 +1395,7 @@
         <span class="sec-badge ${done ? 'badge-done' : 'badge-new'}">${done ? `✓ ${tries} ${tries === 1 ? 'try' : 'tries'}` : 'New'}</span>
         <div class="sec-num">Section ${sec.id} · ${sec.weight}</div>
         <h3>${sec.title}</h3>
-        <div class="sec-weight">Pool: ${sec.questions.length} Qs · Quiz picks 20</div>
+        <div class="sec-weight">Pool: ${sec.questions.length} Qs · Quiz picks ${SECTION_Q_COUNT}</div>
         ${pillsHtml}
         <div class="sec-progress" style="margin-top:${done ? '10' : '12'}px">
           <div class="progress-bar"><div class="progress-fill" style="width:${barPct}%"></div></div>
@@ -1405,6 +1405,11 @@
       ${historySection}
     </div>`;
       }).join('');
+
+      const fullTestBtn = document.getElementById('full-test-btn');
+      if (fullTestBtn) {
+        fullTestBtn.textContent = `▶ Start ${FULL_TEST_Q_COUNT}-Question Mock Exam (Blueprint-Weighted, Randomized)`;
+      }
     }
 
     function toggleHistory(e, id) {
