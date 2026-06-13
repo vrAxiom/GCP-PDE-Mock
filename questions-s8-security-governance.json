@@ -1,0 +1,1206 @@
+[
+  {
+    "q": "Your Cloud Storage bucket containing sensitive customer data was encrypted with a Cloud KMS key that was compromised. You need to re-encrypt all objects with a new key and ensure future writes automatically use CMEK protection. What should you do?",
+    "opts": [
+      "Rotate the existing Cloud KMS key version and continue using the same bucket",
+      "Create a new Cloud KMS key, set it as the default CMEK key on the existing bucket, and manually re-encrypt each object",
+      "Create a new Cloud KMS key, create a new bucket with that key as the default CMEK, and copy all objects to the new bucket",
+      "Enable Cloud KMS automatic key rotation and wait for the rotation period"
+    ],
+    "ans": 2,
+    "explain": "Creating a new bucket with the new CMEK key as the default ensures: (1) All copied data is re-encrypted with the new key, (2) Future writes automatically use CMEK (bucket default), (3) Old compromised key can be safely destroyed after migration. Key rotation (option A) doesn't re-encrypt existing data. Setting default on existing bucket (option B) doesn't re-encrypt existing objects. Automatic rotation (option D) doesn't address the compromised key issue immediately.",
+    "concept": "CMEK Re-encryption Pattern: Compromised key → Create NEW key + NEW bucket with default CMEK → Copy data (auto re-encrypts) → Delete old bucket/key. Why new bucket? Ensures default CMEK protects all future writes. Rotation doesn't re-encrypt existing data. Ref: GCP Sample Q1"
+  },
+  {
+    "q": "Your applications with dynamic public IPs need to connect to Cloud SQL. You've configured SSL and strong passwords. You want to use public IP with maximum security. What should you do?",
+    "opts": [
+      "Add all application networks to Cloud SQL Authorized Networks and update them regularly",
+      "Add 0.0.0.0/0 to Authorized Networks and use Cloud SQL Auth Proxy on all applications",
+      "Leave Authorized Networks empty and use Cloud SQL Auth Proxy on all applications",
+      "Use Private IP instead of public IP for all connections"
+    ],
+    "ans": 2,
+    "explain": "Cloud SQL Auth Proxy provides secure connections WITHOUT requiring Authorized Networks configuration. It uses IAM for authentication, encrypts traffic, and handles dynamic IPs automatically. Option A fails when IPs change before updates. Option B (0.0.0.0/0) opens to the internet—a security risk. Option D changes the requirement (public IP specified). Auth Proxy is the correct pattern for dynamic IPs with public connectivity.",
+    "concept": "Cloud SQL Auth Proxy Use Cases: ✅ Dynamic IPs (auto-assigned, NAT) | ✅ No Authorized Networks management | ✅ IAM-based authentication | ✅ Encrypted connections | When NOT to use: Static IPs + prefer direct connection. Empty Authorized Networks + Proxy = secure dynamic IP pattern. Ref: GCP Sample Q2"
+  },
+  {
+    "q": "You need to preprocess organization-wide customer data from Cloud Storage before analysis. The data contains PII. Compliance requires PII protection but you want to retain data utility for analytics. What should you do?",
+    "opts": [
+      "Use Dataflow with Cloud KMS to encrypt PII fields and write to BigQuery",
+      "Use Cloud DLP API with Dataflow to detect and remove PII fields, write to BigQuery",
+      "Use Cloud DLP API with Dataflow to mask/de-identify PII, write to BigQuery",
+      "Use CMEK to encrypt data in Cloud Storage and use BigQuery federated queries"
+    ],
+    "ans": 2,
+    "explain": "Cloud DLP API provides de-identification/masking techniques (hashing, masking, tokenization) that PROTECT PII while RETAINING data utility for analytics. Removal (option B) loses valuable data. Encryption (option A) makes data unusable for analytics unless decrypted (defeating the purpose). CMEK (option D) protects at rest but doesn't solve PII handling for analytics. Masking is the optimal balance: compliant + analytically useful.",
+    "concept": "Cloud DLP De-identification Methods: MASKING (replace with *, preserve length/format) | HASHING (deterministic, joinable) | TOKENIZATION (reversible with token vault) | REDACTION (complete removal). Use masking for: PII compliance + preserve analytics value. Dataflow + DLP = scalable PII processing. Ref: GCP Sample Q3"
+  },
+  {
+    "q": "Project A has a Pub/Sub topic with confidential data. Only resources in Project A should access this data. You want to prevent Project B and future projects from accessing it. What should you do?",
+    "opts": [
+      "Configure VPC Service Controls with a perimeter around Project A",
+      "Configure VPC Service Controls with a perimeter around Project A's VPC",
+      "Add firewall rules in Project A to only allow traffic from Project A's VPC",
+      "Use IAM conditions to restrict access to Project A users and service accounts only"
+    ],
+    "ans": 0,
+    "explain": "VPC Service Controls (VPC-SC) prevents data exfiltration by creating a security perimeter around PROJECTS (not VPCs) for supported Google services. Pub/Sub is VPC-SC supported. Perimeter around Project A blocks all external access, including from other projects. Option B is wrong—Pub/Sub is serverless (no VPC). Option C—firewall rules don't apply to serverless services. Option D—IAM conditions aren't supported for Pub/Sub project-level restrictions.",
+    "concept": "VPC Service Controls: PURPOSE → Prevent data exfiltration | SCOPE → Project or organization level | SUPPORTED → BigQuery, Pub/Sub, Cloud Storage, etc. (serverless + VPC) | NOT VPC-scoped → Applies to projects, not VPCs. Pattern: Confidential data + prevent cross-project access → VPC-SC perimeter. Ref: GCP Sample Q4"
+  },
+  {
+    "q": "Your data governance team needs to encrypt all BigQuery data with keys that NEVER leave your on-premises HSM. You want a Google-managed solution. What should you do?",
+    "opts": [
+      "Create keys in on-prem HSM, import to Cloud KMS, use with BigQuery CMEK",
+      "Create keys in on-prem HSM, import to Cloud HSM, use with BigQuery",
+      "Create keys in on-prem HSM, link to Cloud EKM, use with BigQuery CMEK",
+      "Create keys in on-prem HSM, manually encrypt data before loading to BigQuery"
+    ],
+    "ans": 2,
+    "explain": "Cloud External Key Manager (EKM) allows you to use keys stored in EXTERNAL HSMs (on-prem or 3rd party) WITHOUT importing them to Google Cloud. Keys never leave your HSM; GCP calls your HSM for encryption/decryption operations. Options A and B IMPORT keys (they leave your HSM). Option D requires manual encryption (not Google-managed). EKM is the only solution for 'keys never leave on-prem HSM' + managed service.",
+    "concept": "Key Management Options: CLOUD KMS → Google-managed HSM, keys in Google Cloud | CLOUD HSM → Google-managed, FIPS 140-2 Level 3, keys in GCP | CLOUD EKM → Keys stay in YOUR HSM (on-prem/external), GCP calls your HSM. Use EKM when: Keys must never leave your infrastructure, regulatory requirement. Ref: GCP Sample Q5"
+  },
+  {
+    "q": "Your Dataproc jobs run in us-central1 but data is in Cloud Storage. You need 15-minute RPO for regional failure recovery with minimal latency. What should you do?",
+    "opts": [
+      "Use US multi-region bucket; redeploy Dataproc to us-central2 on failure",
+      "Use dual-region bucket (us-central1 + us-south1) with turbo replication; redeploy Dataproc to us-south1 on failure",
+      "Use two regional buckets with hourly Storage Transfer Service sync; redeploy Dataproc on failure",
+      "Use dual-region bucket; run primary Dataproc in us-south1 region"
+    ],
+    "ans": 1,
+    "explain": "Dual-region buckets with turbo replication provide 15-minute RPO (writes replicated within 15 min). Dataproc in us-central1 reads from co-located data (minimal latency). On failure, redeploy to us-south1 (same bucket, data already replicated). Multi-region (option A) has 1-hour RPO. Hourly sync (option C) misses RPO. Option D has Dataproc in different region than data (increased latency for normal operations).",
+    "concept": "Cloud Storage Disaster Recovery: DUAL-REGION + Turbo Replication → RPO 15 min, co-locate compute with data | MULTI-REGION → RPO 1 hour (eventual consistency) | Regional + STS → RPO = sync frequency. Pattern: <1 hour RPO + low latency → Dual-region turbo. Dataproc redeploys to secondary region on failure. Ref: GCP Sample Q6, Q9"
+  },
+  {
+    "q": "Your Dataflow streaming pipeline is slow. Dataflow auto-merged steps into one, making it hard to identify bottlenecks. How do you identify the slow step?",
+    "opts": [
+      "Insert output sinks after each step and observe write throughput",
+      "Log debug info in each ParDo function and analyze logs",
+      "Insert Reshuffle operations after each step and monitor Dataflow console execution details",
+      "Verify Dataflow service account permissions for output sinks"
+    ],
+    "ans": 2,
+    "explain": "Dataflow fuses (combines) pipeline steps for efficiency, making bottleneck identification difficult. Reshuffle operation forces a fusion break without changing logic. After inserting Reshuffle, each step appears separately in Dataflow console with individual metrics (throughput, latency). This identifies the bottleneck. Option A adds unnecessary I/O overhead. Option B creates log volume issues. Option D doesn't address bottleneck identification.",
+    "concept": "Dataflow Reshuffle for Debugging: PURPOSE → Prevent fusion, break pipeline into observable steps | USE CASE → Identify bottlenecks when auto-optimization merges steps | HOW → .apply(Reshuffle.viaRandomKey()) after each transformation | TRADE-OFF → Slight performance cost, but necessary for debugging. Production: Remove Reshuffle after identifying issue. Ref: GCP Sample Q7"
+  },
+  {
+    "q": "You have on-premises Hadoop (HDFS) and hundreds of Airflow DAGs with thousands of steps. You need minimal-change migration to GCP. What should you do?",
+    "opts": [
+      "Migrate to Dataproc + Cloud Storage; convert ETL pipelines to Dataflow",
+      "Migrate to Dataproc + Cloud Storage; orchestrate with Cloud Composer",
+      "Migrate to Bigtable + Cloud Storage; orchestrate with Cloud Composer",
+      "Migrate to Dataproc + Cloud Storage; use Cloud Data Fusion for ETL"
+    ],
+    "ans": 1,
+    "explain": "Minimal changes requires: (1) Hadoop → Dataproc (HDFS → Cloud Storage connector), (2) Airflow → Cloud Composer (managed Airflow, same DAG syntax). Option A changes orchestration logic (Dataflow requires rewriting ETL). Option C changes data architecture (Bigtable is NoSQL, not Hadoop replacement). Option D requires visual redesign of ETL (Data Fusion GUI). Dataproc + Composer = lift-and-shift with minimal code changes.",
+    "concept": "Hadoop Migration Pattern: COMPUTE → Dataproc (managed Hadoop/Spark) | STORAGE → Cloud Storage (HDFS replacement) | ORCHESTRATION → Cloud Composer (managed Airflow, same DAG code). Minimal changes = preserve Airflow DAGs. Alternatives: Dataflow (rewrite), Data Fusion (visual redesign). Lift-and-shift → Dataproc + Composer. Ref: GCP Sample Q8"
+  },
+  {
+    "q": "You're building a Dataform pipeline with SQL transformations. You need to validate uniqueness and null checks on final tables efficiently. What should you do?",
+    "opts": [
+      "Build Dataform assertions into your code",
+      "Create Dataplex data quality tasks separately",
+      "Build BigQuery user-defined functions (UDFs) for validation",
+      "Write Spark-based stored procedures for checks"
+    ],
+    "ans": 0,
+    "explain": "Dataform assertions are NATIVE data quality checks within Dataform workflows. They execute as part of the job, fail the pipeline if checks don't pass, and integrate seamlessly with SQL transformations. Dataplex tasks (option B) are external to the pipeline. UDFs (option C) require custom validation logic outside Dataform's framework. Spark procedures (option D) are unrelated to Dataform. Assertions = built-in, efficient, pipeline-integrated validation.",
+    "concept": "Dataform Assertions: TYPES → Uniqueness, null checks, custom SQL conditions | INTEGRATION → Part of Dataform job, fails pipeline on violation | SYNTAX → assert_unique, assert_not_null, custom queries. Use for: Data quality gates in transformation pipelines. Alternative: dbt tests (similar concept). Dataplex tasks = separate orchestration. Ref: GCP Sample Q10"
+  },
+  {
+    "q": "Your Cloud Composer 2 environment shows increased worker memory usage and pod evictions. Data processing tasks are failing. What should you do? (Choose two)",
+    "opts": [
+      "Increase DAG file parsing interval",
+      "Increase Cloud Composer environment size (medium → large)",
+      "Increase memory available to Airflow workers",
+      "Increase memory available to Airflow triggerer",
+      "Increase max workers and reduce worker concurrency"
+    ],
+    "ans": [
+      2,
+      4
+    ],
+    "explain": "Worker pod evictions + high memory = out-of-memory (OOM) on workers. Solutions: (1) Increase worker memory (option C)—gives each worker more capacity. (2) Increase max workers + reduce concurrency (option E)—distributes load across more workers with fewer tasks per worker. Option A affects scheduler, not workers. Option B affects backend (DB, queue), not worker capacity. Option D targets triggerer, not worker memory issue.",
+    "concept": "Cloud Composer Worker Tuning: SYMPTOM → Pod evictions + high memory | FIX → (1) Increase worker memory, (2) Scale workers horizontally + reduce task concurrency. Environment size ≠ worker capacity (affects backend only). Worker config: memory, CPU, min/max replicas, concurrency. Monitor: Worker memory %, eviction rate. Ref: GCP Sample Q11"
+  },
+  {
+    "q": "Non-technical business users need to clean data before analysis in a spreadsheet. What should you recommend?",
+    "opts": [
+      "Use Dataprep to clean data → BigQuery → analyze with Connected Sheets",
+      "Use Dataprep to clean data → BigQuery → analyze with Looker Studio",
+      "Use Dataflow to clean data → BigQuery → analyze with Connected Sheets",
+      "Use Dataflow to clean data → BigQuery → analyze with Looker Studio"
+    ],
+    "ans": 0,
+    "explain": "Requirements: (1) GUI-based data cleaning (non-technical users), (2) Spreadsheet analysis. Dataprep provides a visual, no-code UI for data wrangling. Connected Sheets lets users analyze BigQuery data directly in Google Sheets. Dataflow (options C, D) requires code. Looker Studio (options B, D) is a dashboard tool, not a spreadsheet. Only option A satisfies both requirements.",
+    "concept": "GUI-Based Data Tools: DATAPREP → Visual data cleaning/transformation (no code) | CONNECTED SHEETS → Analyze BigQuery data in Google Sheets | DATA FUSION → Visual ETL pipelines (code-free) | LOOKER STUDIO → Dashboards (not spreadsheets). Use Dataprep when: Non-technical users, data wrangling. Connected Sheets when: Spreadsheet analysis required. Ref: GCP Sample Q12"
+  },
+  {
+    "q": "You're deploying a Dataflow batch job and want to mitigate zonal failures at submission time. What should you do?",
+    "opts": [
+      "Specify a worker region using --region flag (not a specific zone)",
+      "Create an Eventarc trigger to resubmit the job if a zone fails",
+      "Submit duplicate pipelines in two zones using --zone flag",
+      "Set pipeline staging location as a regional Cloud Storage bucket"
+    ],
+    "ans": 0,
+    "explain": "Specifying a REGION (not a zone) allows Dataflow to automatically select the best available zone within that region, providing zonal failure tolerance. Option B adds delay/overhead. Option C duplicates processing (cost + complexity). Option D addresses storage, not compute zonal failures. Regional deployment = Dataflow's built-in fault tolerance mechanism for zonal outages.",
+    "concept": "Dataflow Regional Deployment: --region us-central1 → Dataflow chooses best zone automatically | --zone us-central1-a → Fixed zone, no fault tolerance | Regional staging bucket → Storage resilience | BENEFIT → Auto zone selection on initial failure. Pattern: Regional deployment for zonal fault tolerance. Zones for specific requirements only. Ref: GCP Sample Q13"
+  },
+  {
+    "q": "Multiple teams have BigQuery data. Each team needs control over their data, ability to query within their project, and ability to share with other teams. Minimize operational overhead. What should you do?",
+    "opts": [
+      "Create authorized views in each team's project; grant bigquery.jobUser role",
+      "Have each team publish their data in Analytics Hub; other teams subscribe",
+      "Create BigQuery scheduled queries to replicate data across team projects",
+      "Enable teams to create materialized views of data they need"
+    ],
+    "ans": 1,
+    "explain": "Analytics Hub automates data sharing: Publishers list datasets, subscribers get automatic authorized datasets (no IAM management). No data duplication (cost-efficient). No operational overhead (automated authorization). Authorized views (option A) require manual IAM per consumer. Scheduled queries (option C) duplicate data (cost). Materialized views (option D) duplicate data and require management. Analytics Hub = self-service, low-ops data sharing.",
+    "concept": "Analytics Hub Use Cases: PUBLISHER → Lists datasets in exchange (private or public) | SUBSCRIBER → Auto-authorized access (linked dataset) | BENEFITS → No data copies, auto IAM, self-service discovery | VS Authorized Views → Manual IAM management | VS Data Copies → Storage cost + staleness. Use for: Organization-wide data sharing. Ref: GCP Sample Q14, Q24"
+  },
+  {
+    "q": "Your decentralized healthcare organization has data in various storage services. You need data management, lineage tracking, and quality validation. What should you do?",
+    "opts": [
+      "Build a custom data discovery tool on GKE for source onboarding and lineage",
+      "Use BigLake to convert to a data lake architecture",
+      "Use Dataplex to manage data, track lineage, and perform data quality validation",
+      "Use BigQuery for lineage tracking and Dataprep for data management"
+    ],
+    "ans": 2,
+    "explain": "Dataplex is designed for decentralized data management: (1) Unified view across multiple storage systems (GCS, BigQuery, etc.), (2) Automatic data lineage tracking, (3) Built-in data quality rules. Custom tools (option A) are high-effort. BigLake (option B) is for query federation, not governance. BigQuery lineage (option D) only covers BigQuery data, not multi-storage. Dataplex = unified governance for distributed data.",
+    "concept": "Dataplex Capabilities: DATA DISCOVERY → Unified catalog across GCS, BigQuery, Cloud SQL | LINEAGE → Automatic tracking of data flow and transformations | QUALITY → Rules engine for validation | GOVERNANCE → Centralized policies on decentralized data. Use when: Multiple storage systems, need unified governance. Not a data lake (doesn't move data). Ref: GCP Sample Q15"
+  },
+  {
+    "q": "You want analysts to query shared tables (read-only) and have individual workspaces where they can create their own tables (isolated from other analysts). What should you do?",
+    "opts": [
+      "Give BigQuery Data Viewer at project level; create one dataset with Data Editor role for all analysts",
+      "Give BigQuery Data Viewer at project level; create per-analyst datasets with Data Editor role at project level",
+      "Give BigQuery Data Viewer on shared dataset; create per-analyst datasets with Data Editor role at dataset level for each",
+      "Give BigQuery Data Viewer on shared dataset; create one dataset with Data Editor role for all analysts"
+    ],
+    "ans": 2,
+    "explain": "Requirements: (1) Read shared dataset only (not all project data), (2) One dataset per analyst, (3) Write access limited to own dataset. Option C satisfies all: Data Viewer on shared dataset (scoped), per-analyst datasets (isolation), Data Editor at dataset level (scoped write). Project-level roles (options A, B) grant too broad access. Single dataset (options A, D) doesn't isolate analysts. Only C provides proper scoping + isolation.",
+    "concept": "BigQuery IAM Best Practices: PRINCIPLE → Least privilege at lowest scope | VIEWER on specific dataset → Read shared data only | EDITOR on own dataset → Write to workspace only | Project-level roles → Avoid (too broad) | Pattern: Shared read data + isolated write workspaces = dataset-level IAM. Ref: GCP Sample Q16"
+  },
+  {
+    "q": "You need to move Parquet and CSV files to Cloud Storage with your own encryption keys using a GUI solution. What should you do?",
+    "opts": [
+      "Use Storage Transfer Service to move files to Cloud Storage",
+      "Use Dataflow to move files to Cloud Storage",
+      "Use Cloud Data Fusion to move files to Cloud Storage",
+      "Use BigQuery Data Transfer Service to move files to BigQuery"
+    ],
+    "ans": 2,
+    "explain": "Cloud Data Fusion is the only GUI-based ETL tool that supports CMEK for Cloud Storage destinations. Storage Transfer Service (option A) doesn't support CMEK. Dataflow (option B) is code-based, not GUI. BigQuery DTS (option D) targets BigQuery, not Cloud Storage. Data Fusion = visual pipeline builder + CMEK support + Cloud Storage connector. Only option meeting all requirements.",
+    "concept": "Data Fusion Use Cases: GUI-based ETL | Connectors for multiple sources/sinks | CMEK support for Cloud Storage | Alternative to Informatica | When to use: (1) GUI requirement, (2) CMEK needed, (3) Complex transformations. NOT for: Simple transfers (use STS), code-preferred (use Dataflow). Ref: GCP Sample Q17"
+  },
+  {
+    "q": "A ride-hailing app needs to aggregate driver location (every 5s) and booking events for the last 30 seconds, recomputed every 2 seconds, with real-time dashboard display. What should you do?",
+    "opts": [
+      "Use tumbling window in Dataflow, write to Memorystore",
+      "Use hopping window in Dataflow, write to Memorystore",
+      "Use session window in Dataflow, write to BigQuery",
+      "Use hopping window in Dataflow, write to BigQuery"
+    ],
+    "ans": 1,
+    "explain": "Hopping windows create overlapping windows (last 30s, every 2s) for continuous real-time aggregation. Memorystore (Redis) provides <1ms latency for dashboard queries. Tumbling windows (option A) are non-overlapping (gaps in real-time view). Session windows (option C) group by activity periods (not time-based aggregation). BigQuery (options C, D) has higher latency than Memorystore for sub-second dashboard queries.",
+    "concept": "Dataflow Windowing: TUMBLING → Fixed, non-overlapping (e.g., every 1 min) | HOPPING → Overlapping windows (e.g., 30s window, advance 2s) | SESSION → Group by activity gaps. Real-time dashboards → Hopping window (continuous aggregation) + Memorystore (low latency). BigQuery → Analytics, not <1s latency. Ref: GCP Sample Q18"
+  },
+  {
+    "q": "You have terabytes of behavioral data in BigQuery and customer profiles in Cloud SQL (MySQL + PostgreSQL). Marketing runs 100-300 queries daily joining this data. You want to minimize Cloud SQL load. What should you do?",
+    "opts": [
+      "Use BigQuery federated queries to both Cloud SQL databases and BigQuery",
+      "Use Trino on Dataproc to connect both Cloud SQL databases and BigQuery",
+      "Use Datastream to replicate Cloud SQL tables to BigQuery for queries",
+      "Use Dataproc Serverless Spark to query Cloud SQL and BigQuery"
+    ],
+    "ans": 2,
+    "explain": "Datastream uses Change Data Capture (CDC) to continuously replicate Cloud SQL tables to BigQuery. Once replicated, all 100-300 daily queries run entirely in BigQuery (no Cloud SQL load). Federated queries (option A) hit Cloud SQL on every query (300x load). Trino (option B) and Spark (option D) still query Cloud SQL databases directly. Only Datastream eliminates Cloud SQL query load by moving data to BigQuery once.",
+    "concept": "Datastream for CDC Replication: SOURCE → Cloud SQL (MySQL, PostgreSQL, Oracle) | DESTINATION → BigQuery | METHOD → Change Data Capture (continuous replication) | BENEFIT → Minimize transactional DB load, enable analytics on BigQuery. Use when: Frequent analytics queries on transactional data. Alternative: Federated queries (real-time but high DB load). Ref: GCP Sample Q19"
+  },
+  {
+    "q": "You have Oracle in a VM (VPC) and need to replicate 50 tables to BigQuery continuously with minimal infrastructure management. What should you do?",
+    "opts": [
+      "Deploy Kafka with Oracle CDC and BigQuery Sink Connector in the VPC",
+      "Deploy Kafka with Oracle CDC in VPC, use Dataflow to stream to BigQuery",
+      "Create a Datastream connection from Oracle to BigQuery with private connectivity",
+      "Deploy Debezium Oracle connector to capture changes, sink to Pub/Sub, write to BigQuery"
+    ],
+    "ans": 2,
+    "explain": "Datastream is a fully managed, serverless CDC service. It connects to Oracle via private connectivity (VPC), captures changes, and streams to BigQuery—all managed by Google. Kafka (options A, B) requires VM management. Debezium (option D) requires VM for connector. Only Datastream minimizes infrastructure management (serverless). Oracle → Datastream → BigQuery = managed CDC pipeline.",
+    "concept": "Datastream Advantages: SERVERLESS → No VMs to manage | SOURCES → MySQL, PostgreSQL, Oracle, SQL Server | DESTINATIONS → BigQuery, Cloud Storage | CONNECTIVITY → Private (VPC peering), public | USE CASE → Continuous replication, minimize ops overhead. Alternative: Kafka + Debezium (more control, more management). Ref: GCP Sample Q20"
+  },
+  {
+    "q": "Your Workflows pipeline calls an API (returns 1KB JSON), applies complex Python logic, waits for completion, then loads Cloud Storage to BigQuery. Workflows standard library is insufficient. You want simplicity and speed. What should you do?",
+    "opts": [
+      "Create a Dataproc cluster and use PySpark for the logic",
+      "Invoke a Cloud Run function using Python to apply the logic",
+      "Invoke a subworkflow in Workflows to apply the logic",
+      "Create a Cloud Composer environment and run the logic"
+    ],
+    "ans": 1,
+    "explain": "Cloud Run functions are lightweight, fast to start, and support Python standard library. For small tasks (1KB JSON), they're ideal. Dataproc (option A) is overkill and slow to provision. Subworkflows (option C) still use Workflows standard library (doesn't solve the problem). Cloud Composer (option D) is heavyweight orchestration (not simple). Cloud Run function = fast, simple, Python support.",
+    "concept": "Workflows + Cloud Functions Pattern: USE CASE → Workflows needs custom logic beyond standard library | INTEGRATION → Workflows calls Cloud Run function as HTTP endpoint | BENEFITS → Leverage any language, libraries, fast execution. When NOT to use: Large data processing (use Dataflow/Dataproc). 1KB JSON + custom logic → Cloud Run function is optimal. Ref: GCP Sample Q21"
+  },
+  {
+    "q": "Your organization requires that all encryption keys for BigQuery must be managed in an on-premises Hardware Security Module (HSM). You need to configure BigQuery to comply with this policy. Which approach should you take?",
+    "opts": [
+      "Use Customer-Supplied Encryption Keys (CSEK) by passing the raw key via the BigQuery API.",
+      "Use Cloud External Key Manager (EKM) connected to a supported on-premises key management partner.",
+      "Use Default Google-Managed Encryption Keys but replicate the key state to your on-premises HSM.",
+      "Use Customer-Managed Encryption Keys (CMEK) and import the key material into Cloud KMS."
+    ],
+    "explain": "Cloud EKM allows you to use keys managed in a third-party external key management system (like an on-prem HSM) to protect GCP data. CMEK manages keys in Cloud KMS, CSEK isn't supported for BQ, and GMEK doesn't use on-prem HSMs.",
+    "concept": "Cloud EKM with BigQuery",
+    "ans": 1
+  },
+  {
+    "q": "You are configuring Customer-Managed Encryption Keys (CMEK) for a new Cloud Storage bucket. You need to ensure the key is rotated every 90 days automatically. What should you do?",
+    "opts": [
+      "Set the rotation schedule on the GCS bucket properties to 90 days. GCS will request a new key from KMS.",
+      "Create a Cloud Function triggered every 90 days to generate a new key version and update the bucket metadata.",
+      "Set the rotation schedule on the Cloud KMS Key to 90 days. GCS will use the primary key version for new objects.",
+      "Set the rotation schedule in the Organization Policy for Cloud KMS to force 90-day rotations across all buckets."
+    ],
+    "explain": "Cloud KMS handles automatic key rotation. You configure the rotation period on the KMS key itself. When rotated, the new primary version is used for new objects, while older versions remain active to decrypt existing objects.",
+    "concept": "CMEK Key Rotation",
+    "ans": 2
+  },
+  {
+    "q": "A security auditor asks how to cryptographically render data permanently unreadable (crypto-shredding) in BigQuery when using CMEK. What is the correct procedure?",
+    "opts": [
+      "Destroy the primary Cloud KMS key version used to encrypt the BigQuery table. The data becomes permanently inaccessible.",
+      "Delete the BigQuery table using the standard bq rm command, which instantly shreds the underlying disks.",
+      "Disable the Cloud KMS key version used to encrypt the table. The data is destroyed immediately.",
+      "Remove the IAM role 'roles/cloudkms.cryptoKeyEncrypterDecrypter' from the BigQuery service account."
+    ],
+    "explain": "Crypto-shredding involves destroying the encryption key. By destroying the KMS key version (which cannot be reversed after the pending destruction period), all data encrypted with that key version becomes permanently unreadable.",
+    "concept": "Crypto-shredding with CMEK",
+    "ans": 0
+  },
+  {
+    "q": "You want to encrypt a Pub/Sub topic using CMEK. You have created the KMS key ring and crypto key. What must you do before Pub/Sub can use this key?",
+    "opts": [
+      "Enable the 'Pub/Sub CMEK Integration' flag on the topic and provide the service account credentials.",
+      "Embed the KMS key directly into the Pub/Sub topic creation API payload as a raw string.",
+      "Grant the 'Pub/Sub Publisher' role to the Cloud KMS service account.",
+      "Grant the 'Cloud KMS CryptoKey Encrypter/Decrypter' role to the Pub/Sub service agent on the specific key."
+    ],
+    "explain": "To use CMEK with GCP services, you must grant the service-specific agent (in this case, the Pub/Sub service agent) the 'roles/cloudkms.cryptoKeyEncrypterDecrypter' role on the KMS key.",
+    "concept": "CMEK IAM configuration",
+    "ans": 3
+  },
+  {
+    "q": "Your company uses Cloud EKM to protect BigQuery data. The external key manager becomes temporarily unreachable due to a network outage. What happens to running and new BigQuery queries against tables protected by this key?",
+    "opts": [
+      "Queries will succeed for up to 24 hours because BigQuery caches the external key material locally.",
+      "Queries will fail only if the data was written during the outage; reading existing data does not require the EKM.",
+      "Queries will succeed because Cloud KMS automatically fails over to a Google-managed backup key.",
+      "Queries will fail because BigQuery must communicate with the external key manager for every cryptographic operation."
+    ],
+    "explain": "With Cloud EKM, GCP does not cache the external key material. If the external key manager is unreachable, Cloud KMS cannot wrap/unwrap data encryption keys, and services like BQ will fail to perform cryptographic operations.",
+    "concept": "Cloud EKM availability",
+    "ans": 3
+  },
+  {
+    "q": "Which GCP data storage service supports Customer-Supplied Encryption Keys (CSEK) where you provide the raw encryption key as part of the API request?",
+    "opts": [
+      "BigQuery",
+      "Cloud Spanner",
+      "Cloud Storage",
+      "Cloud Pub/Sub"
+    ],
+    "explain": "Cloud Storage and Compute Engine (Persistent Disks) support CSEK. BigQuery, Spanner, and Pub/Sub support CMEK but do not support CSEK.",
+    "concept": "CSEK vs CMEK support",
+    "ans": 2
+  },
+  {
+    "q": "You need to enforce Key Access Justifications (KAJ) for all encryption operations in your project. Which key management solution must you use?",
+    "opts": [
+      "Cloud KMS with software-backed keys only",
+      "Default Google-Managed Encryption Keys",
+      "Customer-Supplied Encryption Keys (CSEK)",
+      "Cloud EKM or Assured Workloads with CMEK"
+    ],
+    "explain": "Key Access Justifications (KAJ) provides visibility into every request made for an encryption key. It is available when using Cloud EKM or hardware-backed CMEK in Assured Workloads.",
+    "concept": "Key Access Justifications (KAJ)",
+    "ans": 3
+  },
+  {
+    "q": "You want to deploy a Dataflow pipeline that reads from Cloud Storage and writes to BigQuery. You want to encrypt the worker node persistent disks using CMEK. How do you apply the CMEK?",
+    "opts": [
+      "Set the CMEK key on the Cloud Storage bucket and BigQuery dataset, Dataflow will inherit it.",
+      "Pass the KMS key name using the '--dataflowKmsKey' pipeline option during job submission.",
+      "Dataflow worker disks can only be encrypted with Google-managed keys.",
+      "Encrypt the Dataflow template file with the KMS key before executing the job."
+    ],
+    "explain": "For Dataflow, you can specify a CMEK key to encrypt the worker VM persistent disks by passing the `--dataflowKmsKey` pipeline option when submitting the job.",
+    "concept": "CMEK with Dataflow",
+    "ans": 1
+  },
+  {
+    "q": "Your KMS key ring is created in the 'us-central1' region. You want to use a key from this key ring to encrypt a BigQuery dataset located in the 'us-east1' region. What will happen?",
+    "opts": [
+      "It will succeed, but there will be high latency for every query as BigQuery contacts KMS in another region.",
+      "It will fail because BigQuery datasets can only be encrypted with global KMS keys.",
+      "It will succeed only if you create a regional replica of the KMS key in us-east1.",
+      "It will fail. The KMS key location must match the location of the resource it protects."
+    ],
+    "explain": "In GCP, a CMEK key and the resource it protects (like a BQ dataset or GCS bucket) must be in the same location (region or multi-region). You cannot use a us-central1 key for a us-east1 dataset.",
+    "concept": "KMS and Resource location matching",
+    "ans": 3
+  },
+  {
+    "q": "You want to evaluate the impact of implementing a VPC Service Controls (VPC-SC) perimeter before actually blocking any traffic. What feature should you use?",
+    "opts": [
+      "VPC-SC Dry Run mode",
+      "IAM Policy Simulator",
+      "Cloud Armor Evaluation mode",
+      "VPC Network Flow Logs"
+    ],
+    "explain": "VPC-SC provides a 'Dry Run' mode, which logs policy violations without actively blocking the requests. This is crucial for testing the impact of perimeters before enforcement.",
+    "concept": "VPC-SC Dry Run",
+    "ans": 0
+  },
+  {
+    "q": "You created a VPC-SC perimeter protecting BigQuery and Cloud Storage. An external user needs to query a BigQuery table from their corporate office IP. How should you grant access?",
+    "opts": [
+      "Create an Access Level for the corporate IP range and attach it to the perimeter's ingress rules.",
+      "Whitelist the IP range in the Cloud Armor policy attached to the BigQuery API.",
+      "Add the corporate IP range to the BigQuery Authorized Views configuration.",
+      "Create a VPC Network peering connection between the corporate office and the VPC-SC perimeter."
+    ],
+    "explain": "In VPC-SC, you allow access from outside the perimeter by creating an Access Level (e.g., based on IP range or device identity) and applying it to the perimeter via an ingress policy.",
+    "concept": "VPC-SC Access Levels",
+    "ans": 0
+  },
+  {
+    "q": "A Cloud Function inside a VPC-SC perimeter needs to call an external third-party API on the internet. However, the Cloud Function is failing to reach the API. How do you resolve this?",
+    "opts": [
+      "Add the external API's IP address to an Access Level attached to the perimeter.",
+      "Move the Cloud Function out of the perimeter because VPC-SC prevents all outbound internet access.",
+      "Configure an egress rule in the VPC-SC perimeter to allow traffic to the specific external API.",
+      "VPC-SC only blocks Google APIs; check the Cloud NAT or firewall rules associated with the VPC."
+    ],
+    "explain": "VPC-SC perimeters mitigate data exfiltration from Google-managed APIs (like BQ, GCS). They do NOT block standard outbound internet traffic from a VPC. Outbound traffic to third-party APIs is controlled by VPC firewall rules and Cloud NAT.",
+    "concept": "VPC-SC Scope vs VPC Firewalls",
+    "ans": 2
+  },
+  {
+    "q": "You want to share a BigQuery dataset located inside a VPC-SC perimeter with a partner project located in a different VPC-SC perimeter. How do you enable this?",
+    "opts": [
+      "Create an IAM custom role for the partner and assign it at the Organization level.",
+      "Configure VPC Network Peering between the VPC networks of the two projects.",
+      "Create an ingress and egress policy (or a perimeter bridge) between the two VPC-SC perimeters.",
+      "Set the BigQuery dataset to 'Public' but restrict it using Cloud Armor."
+    ],
+    "explain": "To allow communication between resources in two different VPC-SC perimeters, you must configure a Perimeter Bridge or explicit ingress/egress rules allowing the specific APIs and identities to cross the boundary.",
+    "concept": "VPC-SC Perimeter Bridge / Ingress-Egress",
+    "ans": 2
+  },
+  {
+    "q": "Which networking prerequisite is required to route traffic to Google APIs from a private VM inside a VPC-SC perimeter?",
+    "opts": [
+      "Set up a Cloud VPN tunnel pointing directly to the Google API edge endpoints.",
+      "Enable Identity-Aware Proxy (IAP) for all outbound API requests.",
+      "Configure Private Google Access on the subnet and route traffic to the restricted.googleapis.com VIP.",
+      "Configure Cloud NAT to translate internal IP addresses to public IPs for Google API endpoints."
+    ],
+    "explain": "For VMs without public IPs to reach Google APIs inside a VPC-SC perimeter, the subnet must have Private Google Access enabled, and DNS should be configured to resolve to the restricted.googleapis.com VIP (which respects VPC-SC).",
+    "concept": "VPC-SC and Private Google Access",
+    "ans": 2
+  },
+  {
+    "q": "You need to identify which requests were blocked by VPC Service Controls. Where should you look?",
+    "opts": [
+      "VPC Network Flow Logs",
+      "Cloud Armor request logs",
+      "Cloud Security Command Center Threat Detection",
+      "VPC Service Controls audit logs in Cloud Logging"
+    ],
+    "explain": "VPC-SC logs all denied requests (and Dry Run violations) to Cloud Logging under the 'vpc_service_controls' log name. These audit logs detail why a request was blocked by the perimeter.",
+    "concept": "VPC-SC Troubleshooting",
+    "ans": 3
+  },
+  {
+    "q": "You are running a Dataflow job inside a VPC-SC perimeter. What APIs must be explicitly restricted in the perimeter to ensure the job runs securely without exfiltrating data?",
+    "opts": [
+      "Cloud Run API, Kubernetes Engine API, and BigQuery API.",
+      "Only the Dataflow API and Cloud Logging API.",
+      "VPC-SC automatically protects all APIs used by Dataflow, no configuration is needed.",
+      "Dataflow API, Compute Engine API, Cloud Storage API, and any other data source/sink APIs."
+    ],
+    "explain": "To properly secure a Dataflow job in a perimeter, you must restrict the Dataflow API, Compute Engine API (since Dataflow provisions VMs), Cloud Storage (for staging/temp files), and the APIs for the data sources/sinks (e.g., BigQuery).",
+    "concept": "VPC-SC with Dataflow",
+    "ans": 3
+  },
+  {
+    "q": "A user on an unmanaged device tries to access BigQuery data inside a VPC-SC perimeter. You want to allow access only if the user is on a corporate-managed device. Which service integrates with VPC-SC to provide this context?",
+    "opts": [
+      "Cloud Security Command Center",
+      "Google Workspace Admin Console",
+      "Chrome Enterprise Premium (BeyondCorp Enterprise)",
+      "Cloud Identity-Aware Proxy (IAP)"
+    ],
+    "explain": "BeyondCorp Enterprise (formerly context-aware access) integrates with VPC-SC to provide device-level context, allowing you to enforce access levels based on device status, OS, and corporate management state.",
+    "concept": "VPC-SC Device Context",
+    "ans": 2
+  },
+  {
+    "q": "You have a Shared VPC. The host project and service projects need to be placed in a VPC-SC perimeter. What is the recommended best practice?",
+    "opts": [
+      "Place both the host project and all attached service projects within the same VPC-SC perimeter.",
+      "Use Cloud Armor instead of VPC-SC for Shared VPC environments.",
+      "Only place the service projects in the perimeter; the host project does not support VPC-SC.",
+      "Place the host project in one perimeter and the service projects in separate perimeters connected via bridges."
+    ],
+    "explain": "Google recommends placing the Shared VPC host project and all its associated service projects in the same VPC-SC perimeter to ensure seamless internal network communication while securing Google API access.",
+    "concept": "VPC-SC with Shared VPC",
+    "ans": 0
+  },
+  {
+    "q": "You are using BigQuery Omni to query data residing in AWS S3. Can you secure this workflow using VPC Service Controls?",
+    "opts": [
+      "No, BigQuery Omni is not supported within VPC Service Controls perimeters because the compute runs in the external cloud.",
+      "Yes, by adding the AWS S3 API endpoint to the VPC-SC ingress rules.",
+      "No, BigQuery Omni requires an explicit egress rule to 'any' destination, which defeats the perimeter.",
+      "Yes, VPC-SC automatically extends its perimeter to AWS via Cloud VPN."
+    ],
+    "explain": "BigQuery Omni executes queries on clusters located in AWS or Azure. VPC-SC protects GCP APIs and cannot extend perimeters around compute infrastructure running in external clouds, meaning BQ Omni cannot be placed inside a strict VPC-SC perimeter.",
+    "concept": "VPC-SC limitations (BQ Omni)",
+    "ans": 0
+  },
+  {
+    "q": "You need to identify Social Security Numbers in a massive BigQuery table and replace them with a cryptographic token that can be reversed later if needed. Which Cloud DLP technique should you use?",
+    "opts": [
+      "Deterministic encryption using AES-SIV",
+      "Format-preserving encryption (FPE)",
+      "Data masking (redaction)",
+      "Cryptographic hashing (SHA-256)"
+    ],
+    "explain": "Deterministic encryption (using a KMS key) replaces the data with a ciphertext token. Because it requires a key to decrypt, it can be reversed (re-identified) later. FPE also works but AES-SIV is a standard deterministic approach; hashing is one-way, and masking destroys the original value.",
+    "concept": "Cloud DLP Re-identification",
+    "ans": 0
+  },
+  {
+    "q": "You want to tokenize phone numbers in a dataset while keeping the original length and character set (e.g., a 10-digit number remains a 10-digit number). Which Cloud DLP transformation is best?",
+    "opts": [
+      "Deterministic encryption (AES-SIV)",
+      "Character masking",
+      "Format-preserving encryption (FPE)",
+      "Bucketing"
+    ],
+    "explain": "Format-preserving encryption (FPE) encrypts data in a way that the output ciphertext has the same format and length as the input plaintext, which is ideal for legacy systems expecting strict schemas.",
+    "concept": "Cloud DLP FPE",
+    "ans": 2
+  },
+  {
+    "q": "Your company handles a proprietary internal project code format (e.g., 'PRJ-1234-XYZ'). You want Cloud DLP to scan and redact this format. What should you create?",
+    "opts": [
+      "A Cloud DLP exclusion rule to drop the data.",
+      "An inspection template using the built-in 'GLOBAL_ID' InfoType.",
+      "A custom InfoType based on a regular expression.",
+      "A custom InfoType based on a built-in dictionary."
+    ],
+    "explain": "For proprietary patterns that can be described by a regex, creating a custom InfoType based on a regular expression allows DLP to accurately identify and redact those specific formats.",
+    "concept": "Cloud DLP Custom InfoTypes",
+    "ans": 2
+  },
+  {
+    "q": "You want to schedule a daily Cloud DLP scan across a specific Cloud Storage bucket to find any newly uploaded PII. What is the most efficient way to achieve this?",
+    "opts": [
+      "Write a Cloud Function that downloads each file daily and calls the DLP content API.",
+      "Create a Cloud DLP Job Trigger that scans the storage bucket on a schedule.",
+      "Enable Auto-DLP at the organization level with a continuous scanning policy.",
+      "Export the GCS bucket logs to BigQuery and query for PII."
+    ],
+    "explain": "Cloud DLP Job Triggers allow you to configure automated, scheduled scans of GCP storage repositories (like GCS buckets, BigQuery tables, or Datastore), which is the most native and efficient way to perform recurring inspections.",
+    "concept": "Cloud DLP Job Triggers",
+    "ans": 1
+  },
+  {
+    "q": "You want to assess the risk of a dataset being deanonymized based on quasi-identifiers like Zip Code, Age, and Gender. Which Cloud DLP feature calculates the likelihood that an individual can be identified?",
+    "opts": [
+      "Pseudonymization",
+      "k-anonymity risk analysis",
+      "Data profiling",
+      "l-diversity risk analysis"
+    ],
+    "explain": "k-anonymity is a property of a dataset that indicates how well individuals are hidden within groups. Cloud DLP risk analysis can calculate k-anonymity to determine the probability that a combination of quasi-identifiers uniquely identifies a person.",
+    "concept": "Cloud DLP Risk Analysis (k-anonymity)",
+    "ans": 1
+  },
+  {
+    "q": "Which Cloud DLP technique ensures that sensitive values in a dataset are replaced by ranges (e.g., replacing age 34 with '30-40') to preserve analytical utility while enhancing privacy?",
+    "opts": [
+      "Redaction",
+      "Cryptographic hashing",
+      "Bucketing",
+      "Time extraction"
+    ],
+    "explain": "Bucketing (or generalization) groups distinct values into broader ranges. It maintains the dataset's usefulness for trend analysis while masking exact sensitive values.",
+    "concept": "Cloud DLP Bucketing",
+    "ans": 2
+  },
+  {
+    "q": "You need to redact PII from images uploaded to Cloud Storage before they are displayed on a website. Which approach is valid?",
+    "opts": [
+      "Cloud DLP only supports text and tabular data; you must use a third-party image processing tool.",
+      "Extract text with Vision API, redact with DLP, and write the text back over the image.",
+      "Use the Cloud DLP Image Redaction API to detect text in the image and obscure the PII bounding boxes.",
+      "Enable the 'Auto-Redact' metadata flag on the Cloud Storage bucket to automatically blur images."
+    ],
+    "explain": "Cloud DLP includes an Image Redaction API that directly accepts images, detects text, inspects it for sensitive InfoTypes, and returns an image with opaque rectangles drawn over the sensitive information.",
+    "concept": "Cloud DLP Image Redaction",
+    "ans": 2
+  },
+  {
+    "q": "Your organization wants continuous, automated visibility into PII across all BigQuery datasets in the entire organization without writing custom scheduling scripts. What should you use?",
+    "opts": [
+      "Cloud DLP Data Profiling (Auto-DLP)",
+      "Security Command Center continuous exports",
+      "Data Catalog scheduled tags",
+      "Cloud DLP Job Triggers"
+    ],
+    "explain": "Data Profiling (Auto-DLP) automatically scans and profiles BigQuery data across an entire organization, folder, or project, generating metrics and Data Catalog tags about where sensitive data resides without manual job scheduling.",
+    "concept": "Cloud DLP Data Profiling (Auto-DLP)",
+    "ans": 0
+  },
+  {
+    "q": "When using Cloud DLP to de-identify data using Cryptographic Hashing (SHA-256), what is a major security consideration?",
+    "opts": [
+      "The hashed data will change every time the DLP API is called, making joins impossible.",
+      "Cryptographic hashing cannot be used on string data.",
+      "Cloud DLP requires an external KMS key to perform SHA-256 hashing.",
+      "Hashes are susceptible to dictionary attacks if the input space is small (e.g., 5-digit zip codes)."
+    ],
+    "explain": "Standard cryptographic hashes (without a strong salt/key) on small input spaces (like zip codes or phone numbers) can be easily reversed via rainbow tables or brute-force dictionary attacks.",
+    "concept": "Cloud DLP Hashing weaknesses",
+    "ans": 3
+  },
+  {
+    "q": "To ensure your Cloud DLP inspection templates are applied consistently across all GCP projects in your organization, where should they be created?",
+    "opts": [
+      "Inside a VPC Service Controls perimeter.",
+      "At the Organization or Folder level.",
+      "In the Cloud Identity Admin console.",
+      "In a dedicated 'Security' GCP project."
+    ],
+    "explain": "Cloud DLP templates (inspection and de-identification) can be created at the Organization level, allowing them to be shared and referenced consistently across all projects within that organization.",
+    "concept": "Cloud DLP Template Scope",
+    "ans": 1
+  },
+  {
+    "q": "You are organizing a data lake using Dataplex. You want to enforce strict access control on raw, unvalidated data, but allow broader access to cleansed data. How should you structure this?",
+    "opts": [
+      "Use Cloud DLP to mask the raw data before it enters the Dataplex lake.",
+      "Create separate Dataplex lakes for Raw and Curated data and use VPC Peering to connect them.",
+      "Create separate Raw and Curated zones within the Dataplex lake, and apply IAM policies at the zone level.",
+      "Store all data in one zone and use BigQuery authorized views to filter raw data."
+    ],
+    "explain": "Dataplex organizes data into Lakes, which contain Zones. Best practice is to separate raw data and processed/cleansed data into Raw and Curated zones, allowing you to enforce different IAM access policies at the zone level.",
+    "concept": "Dataplex Zones",
+    "ans": 2
+  },
+  {
+    "q": "How does Dataplex propagate access control policies to the underlying storage resources like Cloud Storage and BigQuery?",
+    "opts": [
+      "Dataplex acts as a proxy; users query Dataplex directly, and it uses a service account to access storage.",
+      "Dataplex uses a centralized Cloud IAM Deny policy to block unauthorized access.",
+      "Dataplex automatically translates zone-level IAM roles into appropriate bucket-level and dataset-level IAM bindings.",
+      "You must manually configure the underlying IAM permissions to match the Dataplex policies."
+    ],
+    "explain": "When you grant access (like Dataplex Data Reader) at the Lake or Zone level, Dataplex centrally manages and automatically propagates the appropriate IAM bindings down to the attached BigQuery datasets and GCS buckets.",
+    "concept": "Dataplex IAM Propagation",
+    "ans": 2
+  },
+  {
+    "q": "You need to grant a data scientist read-only access to all tables within a specific Dataplex Curated zone. What role should you grant them?",
+    "opts": [
+      "roles/dataplex.dataReader on the Curated zone.",
+      "roles/bigquery.dataViewer on the Dataplex Lake.",
+      "roles/storage.objectViewer on the raw GCS bucket.",
+      "roles/dataplex.viewer on the Organization level."
+    ],
+    "explain": "The 'roles/dataplex.dataReader' role grants read access to the data assets within the specified Dataplex lake or zone. Dataplex then propagates this to BigQuery Data Viewer or GCS Object Viewer.",
+    "concept": "Dataplex Roles",
+    "ans": 0
+  },
+  {
+    "q": "You want to implement Column-level security on BigQuery tables registered in Dataplex. What is the recommended integration?",
+    "opts": [
+      "Define column-level IAM bindings directly in the Dataplex UI.",
+      "Create BigQuery Authorized Views mapped to Dataplex Zones.",
+      "Use Cloud DLP to encrypt the columns before ingestion into Dataplex.",
+      "Use BigQuery Policy Tags. Dataplex will respect and surface these tags."
+    ],
+    "explain": "Column-level security in BigQuery is handled via Policy Tags (Data Catalog). Dataplex integrates seamlessly with Data Catalog and respects these policy tags for granular column-level access control.",
+    "concept": "Dataplex and Column-level security",
+    "ans": 3
+  },
+  {
+    "q": "You need to ensure that data quality rules are met before data is moved from the Raw zone to the Curated zone in Dataplex. What Dataplex feature provides this capability?",
+    "opts": [
+      "Dataplex Data Quality Tasks",
+      "Dataplex IAM Propagation",
+      "Dataplex Auto-Discovery",
+      "Data Catalog Tag Templates"
+    ],
+    "explain": "Dataplex provides built-in Data Quality Tasks, allowing you to define rules (e.g., non-null, uniqueness) and run them automatically. You can use the results to determine if data is fit for the Curated zone.",
+    "concept": "Dataplex Data Quality",
+    "ans": 0
+  },
+  {
+    "q": "Which Dataplex feature automatically scans new data added to Cloud Storage buckets and makes it immediately queryable in BigQuery, Spark, and Hive without manual schema definitions?",
+    "opts": [
+      "Data Catalog Sync",
+      "Dataproc Serverless",
+      "Dataplex Data Discovery",
+      "Dataplex Lineage"
+    ],
+    "explain": "Dataplex Data Discovery automatically scans attached GCS buckets, extracts metadata and schemas, and registers them in the Dataplex Metastore and Data Catalog, making external data instantly queryable.",
+    "concept": "Dataplex Data Discovery",
+    "ans": 2
+  },
+  {
+    "q": "You want to trace the origin of a BigQuery table, showing which Dataproc jobs and Dataflow pipelines transformed the data. Which feature integrates tightly with Dataplex for this?",
+    "opts": [
+      "Dataplex Data Lineage",
+      "Cloud Audit Logs",
+      "Security Command Center",
+      "BigQuery Information Schema"
+    ],
+    "explain": "Dataplex Data Lineage tracks how data moves and transforms across GCP systems (BigQuery, Dataproc, Dataflow, Composer), providing visual graphs of data provenance and dependencies.",
+    "concept": "Dataplex Data Lineage",
+    "ans": 0
+  },
+  {
+    "q": "Your Dataplex environment contains PII. You need to ensure that when Dataplex discovers new tables, any columns containing email addresses are automatically identified. What integration makes this possible?",
+    "opts": [
+      "Integration between Dataplex and Cloud KMS.",
+      "Integration between Dataplex and VPC Service Controls.",
+      "Integration between Dataplex and Cloud DLP (Auto-DLP).",
+      "Writing a custom Dataproc Spark script to run regex checks."
+    ],
+    "explain": "Auto-DLP (Data Profiling) integrates with Data Catalog and Dataplex to automatically scan discovered assets, identifying InfoTypes like emails and applying Data Catalog tags automatically.",
+    "concept": "Dataplex and Auto-DLP",
+    "ans": 2
+  },
+  {
+    "q": "An administrator wants to add an external BigQuery dataset (managed by a different department) as an asset in your Dataplex Lake. What is required?",
+    "opts": [
+      "You cannot attach existing BigQuery datasets to Dataplex; Dataplex must create them.",
+      "The dataset must be placed in a Dataplex Raw zone before being moved to Curated.",
+      "The Dataplex service account must have administrative permissions (e.g., BigQuery Admin) on the external dataset.",
+      "The external dataset must be copied into a GCS bucket first."
+    ],
+    "explain": "To attach an existing resource (like a BQ dataset or GCS bucket) as an asset in a Dataplex zone, the Dataplex service account requires admin permissions on that resource to manage IAM and discovery.",
+    "concept": "Dataplex Asset Attachment",
+    "ans": 2
+  },
+  {
+    "q": "In Dataplex, what is the primary security advantage of using environment definitions for Dataproc Serverless?",
+    "opts": [
+      "It prevents users from deploying any custom Python packages.",
+      "It encrypts all Dataproc cluster disks with CMEK automatically.",
+      "It bypasses VPC Service Controls to speed up query execution.",
+      "It enforces specific Service Accounts and IAM roles for executing data exploration and analytics tasks."
+    ],
+    "explain": "Dataplex Environments allow administrators to define standardized compute environments (like Dataproc Serverless) mapped to specific service accounts, ensuring that user analytics jobs execute with least-privilege permissions.",
+    "concept": "Dataplex Environments Security",
+    "ans": 3
+  },
+  {
+    "q": "You want to share a massive BigQuery dataset with external partner organizations without them copying the data. They should pay for their own query compute costs. Which service should you use?",
+    "opts": [
+      "Analytics Hub",
+      "VPC Network Peering",
+      "Cloud Storage Signed URLs",
+      "Dataplex Data Exchange"
+    ],
+    "explain": "Analytics Hub enables secure, scalable data sharing. Publishers create 'Linked Datasets' which subscribers can query. The data remains in the publisher's project, but subscribers use their own project's compute resources to run queries.",
+    "concept": "Analytics Hub Compute separation",
+    "ans": 0
+  },
+  {
+    "q": "In Analytics Hub, you have created a Data Exchange and added a listing. Who can request and subscribe to the data?",
+    "opts": [
+      "Users who have the 'BigQuery Data Viewer' role on the underlying source dataset.",
+      "Only users in the same GCP Organization as the publisher.",
+      "Any GCP user with a valid billing account.",
+      "Users who have the 'Analytics Hub Subscriber' role on the specific Data Exchange or Listing."
+    ],
+    "explain": "Access to subscribe to a listing is controlled by IAM. Specifically, users or groups need the 'roles/analyticshub.subscriber' role granted on the Data Exchange or the individual Listing.",
+    "concept": "Analytics Hub Subscriber IAM",
+    "ans": 3
+  },
+  {
+    "q": "A subscriber creates a linked dataset via Analytics Hub. Where is the physical data stored?",
+    "opts": [
+      "The data is immediately copied to the Subscriber's BigQuery storage.",
+      "The data remains strictly in the Publisher's BigQuery storage.",
+      "The data is stored in a temporary Cloud Storage bucket managed by Analytics Hub.",
+      "The data is cached regionally in the Subscriber's project for 24 hours."
+    ],
+    "explain": "Linked datasets are read-only references. The underlying data is not duplicated; it remains securely in the Publisher's storage, ensuring a single source of truth and no redundant storage costs.",
+    "concept": "Analytics Hub Storage",
+    "ans": 1
+  },
+  {
+    "q": "You want to establish a Data Clean Room using Analytics Hub. What is the primary security feature of a Data Clean Room?",
+    "opts": [
+      "It forces all data to be encrypted with a shared CMEK key.",
+      "It automatically scrubs and redacts all PII from the data using Cloud DLP.",
+      "It allows parties to join datasets and analyze combined data without exposing the raw underlying rows to each other.",
+      "It creates a physically isolated VM that neither party can access via SSH."
+    ],
+    "explain": "Data Clean Rooms allow multiple parties to securely share and analyze data together. They enforce privacy rules (like aggregation thresholds) so parties can derive insights from joined data without seeing the raw, row-level PII of the other party.",
+    "concept": "Data Clean Rooms",
+    "ans": 2
+  },
+  {
+    "q": "A publisher creates an Analytics Hub Data Exchange in the 'eu' multi-region. A subscriber wants to create a linked dataset in their project located in the 'us' multi-region. Is this possible?",
+    "opts": [
+      "No, unless the publisher uses Cloud EKM to encrypt the data globally.",
+      "Yes, but Analytics Hub will charge cross-region egress fees for every query.",
+      "No, linked datasets must be created in the same region or multi-region as the source Data Exchange.",
+      "Yes, Analytics Hub will automatically continuously replicate the data to the 'us' region."
+    ],
+    "explain": "BigQuery and Analytics Hub require data and compute to reside in the same location. A subscriber cannot create a linked dataset in the 'us' region if the publisher's exchange is in the 'eu' region.",
+    "concept": "Analytics Hub Region limitations",
+    "ans": 2
+  },
+  {
+    "q": "You are managing ELT pipelines in BigQuery using Dataform. You want to ensure that a table is not updated if the new data contains duplicate primary keys. What Dataform feature provides this protection?",
+    "opts": [
+      "Dataform Assertions",
+      "Cloud DLP Data Quality",
+      "BigQuery Primary Key Enforcements",
+      "Dataform Pre-operations"
+    ],
+    "explain": "Dataform Assertions are data quality tests that run as part of your pipeline. You can define an assertion to check for uniqueness (or non-null values). If the assertion fails, Dataform can halt the pipeline, protecting the target table.",
+    "concept": "Dataform Assertions",
+    "ans": 0
+  },
+  {
+    "q": "How does Dataform securely authenticate to third-party Git providers (like GitHub or GitLab) to manage code repositories?",
+    "opts": [
+      "By establishing a VPC Peering connection between GCP and GitHub Enterprise.",
+      "By using GCP Service Account federation directly with GitHub OIDC.",
+      "By storing a Personal Access Token (PAT) securely in Secret Manager and linking it to the Dataform repository.",
+      "By uploading an SSH private key directly into the Dataform UI."
+    ],
+    "explain": "To connect Dataform to a remote Git provider, you must create a Personal Access Token, store it securely in Google Cloud Secret Manager, and grant the Dataform service agent access to that secret.",
+    "concept": "Dataform Git Authentication",
+    "ans": 2
+  },
+  {
+    "q": "Which identity does Dataform use by default to execute SQL queries and create tables in BigQuery?",
+    "opts": [
+      "The Dataform default service account (service-@gcp-sa-dataform.iam.gserviceaccount.com).",
+      "A dynamically generated temporary identity.",
+      "The personal user account of the developer who triggered the run.",
+      "The Compute Engine default service account."
+    ],
+    "explain": "By default, Dataform uses its service agent to execute workflows in BigQuery. You must grant this service account the appropriate BigQuery roles (e.g., BigQuery Data Editor, BigQuery Job User) to allow it to build tables.",
+    "concept": "Dataform Execution Identity",
+    "ans": 0
+  },
+  {
+    "q": "You are setting up Datastream to capture changes from an on-premises Oracle database. The database is not exposed to the public internet. What is the most secure way for Datastream to connect?",
+    "opts": [
+      "Use Cloud IAP to proxy the database connection securely over the public internet.",
+      "Configure Datastream to use IP Allowlisting and open your on-prem firewall to all Google Cloud IP ranges.",
+      "Install the Datastream Agent on the Oracle server to push data over HTTPS.",
+      "Configure a Datastream Private Connectivity configuration utilizing a VPC Peering connection to a VPC that has Cloud VPN/Interconnect to on-prem."
+    ],
+    "explain": "For secure, private connections to on-premises databases, Datastream uses 'Private Connectivity'. This provisions a peering connection to your VPC. From there, traffic routes through your Cloud VPN or Cloud Interconnect to the on-prem database.",
+    "concept": "Datastream Private Connectivity",
+    "ans": 3
+  },
+  {
+    "q": "You are capturing Change Data Capture (CDC) events using Datastream and writing them to Cloud Storage. How does Datastream secure the data in transit between the source database and GCP?",
+    "opts": [
+      "By utilizing IPsec exclusively, regardless of the database settings.",
+      "By automatically masking PII in transit using Auto-DLP.",
+      "By enforcing TLS/SSL encryption on the connection to the source database.",
+      "By encrypting the payload with CMEK before it leaves the source database."
+    ],
+    "explain": "Datastream secures data in transit by supporting standard TLS/SSL encryption for the connection between Datastream and the source database, ensuring the CDC payload is encrypted over the wire.",
+    "concept": "Datastream Encryption in Transit",
+    "ans": 2
+  },
+  {
+    "q": "A marketing team needs to query a BigQuery table, but they should only see rows where the 'region' column is equal to 'EMEA'. What is the most secure and performant way to implement this?",
+    "opts": [
+      "Use BigQuery Column-Level Security via Policy Tags.",
+      "Grant the team access, but rely on them to add 'WHERE region = EMEA' to their queries.",
+      "Create a separate table for EMEA data and copy the data daily.",
+      "Implement BigQuery Row-Level Security (RLS) policies on the table."
+    ],
+    "explain": "Row-Level Security (RLS) allows you to define policies (using SQL filters) mapped to users or groups. When the marketing team queries the table, BQ automatically filters the results so they only see rows matching 'EMEA'.",
+    "concept": "BigQuery Row-Level Security",
+    "ans": 3
+  },
+  {
+    "q": "You want to restrict access to the 'Salary' column in an HR table so only the 'HR-Managers' group can view it. Others querying the table should get an access denied error. What should you use?",
+    "opts": [
+      "BigQuery Column-Level Security using Data Catalog Policy Tags.",
+      "Dataflow to split the table into two separate tables.",
+      "BigQuery Row-Level Security.",
+      "A BigQuery Authorized View that masks the salary column with asterisks."
+    ],
+    "explain": "Column-level security is achieved by creating Policy Tags in Data Catalog, applying them to the 'Salary' column, and restricting read access to that tag via IAM exclusively to the HR-Managers group.",
+    "concept": "BigQuery Column-Level Security",
+    "ans": 0
+  },
+  {
+    "q": "You have a source table with sensitive raw data. You want to provide a transformed, aggregated view to analysts without granting them any read permissions on the underlying source table. What is the best solution?",
+    "opts": [
+      "Apply Row-Level Security to the source table to hide the raw rows.",
+      "Create a BigQuery Authorized View and grant the analysts read access to the view only.",
+      "Grant the analysts the 'BigQuery Data Viewer' role at the dataset level, but use Cloud DLP to mask the data.",
+      "Use Dataplex to create a Curated zone and copy the aggregated data there."
+    ],
+    "explain": "An Authorized View allows you to share query results with users without giving them read access to the underlying tables. You authorize the view's execution against the source dataset.",
+    "concept": "BigQuery Authorized Views",
+    "ans": 1
+  },
+  {
+    "q": "You have 50 authorized views in 'Dataset A' that all query data from 'Dataset B'. Instead of authorizing each view individually, how can you streamline this?",
+    "opts": [
+      "Use a BigQuery Authorized Routine to wrap the views in a single function.",
+      "Assign the 'BigQuery Admin' role to the users querying the views.",
+      "Move all views and source tables into the same dataset.",
+      "Use BigQuery Authorized Datasets to authorize all views in 'Dataset A' to access 'Dataset B'."
+    ],
+    "explain": "Authorized Datasets allow you to authorize all views within a specific dataset to query tables in a different source dataset. This is much easier to manage than authorizing dozens of individual views.",
+    "concept": "BigQuery Authorized Datasets",
+    "ans": 3
+  },
+  {
+    "q": "You want to enforce that all objects in a Cloud Storage bucket have exactly the same IAM permissions, preventing users from granting access to individual files using ACLs. What bucket setting must you enable?",
+    "opts": [
+      "Uniform Bucket-Level Access (UBLA)",
+      "Object Versioning",
+      "Bucket Policy Only (BPO)",
+      "Hierarchical Namespace"
+    ],
+    "explain": "Uniform Bucket-Level Access (UBLA) disables fine-grained Object ACLs and ensures that only IAM policies applied at the bucket (or higher) level dictate access to the objects inside.",
+    "concept": "GCS Uniform Bucket-Level Access",
+    "ans": 0
+  },
+  {
+    "q": "You are migrating an application from AWS to GCP. The application uses the standard S3 API to access storage. To authenticate to Cloud Storage without rewriting the S3 authentication code, what should you generate?",
+    "opts": [
+      "A standard GCP Service Account JSON key file.",
+      "A Google Workspace OAuth 2.0 Client ID.",
+      "An API Key generated in the GCP Credentials page.",
+      "Cloud Storage HMAC Keys linked to a GCP Service Account."
+    ],
+    "explain": "HMAC (Hash-based Message Authentication Code) keys allow applications written for Amazon S3 to easily interoperate with Google Cloud Storage. They consist of an access ID and a secret, exactly like AWS credentials.",
+    "concept": "GCS HMAC Keys",
+    "ans": 3
+  },
+  {
+    "q": "Service A in Project 1 publishes messages to a Pub/Sub topic. Service B in Project 2 needs to subscribe to that topic. What IAM permission must be granted?",
+    "opts": [
+      "Create a VPC Peering connection between Project 1 and Project 2.",
+      "Pub/Sub topics cannot be shared across projects; you must use Cloud Dataflow to copy the messages.",
+      "Grant the Service B identity the 'Pub/Sub Subscriber' role on the topic (or subscription) in Project 1.",
+      "Grant the Service A identity the 'Pub/Sub Publisher' role in Project 2."
+    ],
+    "explain": "Pub/Sub natively supports cross-project communication. You simply need to grant the consuming identity (Service B's service account) the appropriate IAM role (Subscriber) on the resource in Project 1.",
+    "concept": "Pub/Sub Cross-Project IAM",
+    "ans": 2
+  },
+  {
+    "q": "Your on-premises application needs to read data from BigQuery. You want to avoid downloading and storing long-lived JSON service account keys on your on-premises servers. What is the recommended GCP feature to establish trust?",
+    "opts": [
+      "Cloud VPN with Private Google Access",
+      "Workload Identity Federation",
+      "Service Account Impersonation",
+      "Identity-Aware Proxy (IAP)"
+    ],
+    "explain": "Workload Identity Federation allows you to grant on-premises or other cloud workloads (AWS/Azure) access to GCP resources using short-lived tokens based on their native identities (e.g., OIDC or AWS IAM), eliminating the need for long-lived service account keys.",
+    "concept": "Workload Identity Federation",
+    "ans": 1
+  },
+  {
+    "q": "A developer needs temporary elevated access to run a sensitive Dataflow job, but you do not want to grant them permanent permissions. What is the most secure IAM approach?",
+    "opts": [
+      "Use Cloud DLP to mask the Dataflow code.",
+      "Grant the developer the 'Service Account Token Creator' role to impersonate a highly privileged Service Account for a short duration.",
+      "Add the developer to the Project Editor group temporarily.",
+      "Create a new Service Account, download the JSON key, give it to the developer, and delete it tomorrow."
+    ],
+    "explain": "Service Account Impersonation allows a user to generate short-lived credentials for a service account. This allows them to temporarily assume the privileges of that service account without managing or distributing static keys.",
+    "concept": "Service Account Impersonation",
+    "ans": 1
+  },
+  {
+    "q": "You are designing an IAM strategy. You notice that the predefined 'BigQuery Data Editor' role grants permissions to delete tables, which violates your governance policy. How do you resolve this?",
+    "opts": [
+      "Create a Custom IAM Role that includes all the permissions of 'BigQuery Data Editor' EXCEPT 'bigquery.tables.delete'.",
+      "Grant the user 'BigQuery Data Viewer' and tell them to use a Service Account for inserts.",
+      "Apply a VPC Service Controls perimeter to block the delete API call.",
+      "Use an Organization Policy to restrict table deletions."
+    ],
+    "explain": "Custom IAM roles allow you to combine specific permissions to adhere strictly to the principle of least privilege. If a predefined role provides too much access (like deleting tables), creating a custom role omitting that permission is the correct solution.",
+    "concept": "Custom IAM Roles",
+    "ans": 0
+  },
+  {
+    "q": "Your organization requires a Disaster Recovery plan where BigQuery datasets must survive a total regional failure with an RPO of 0. What architecture should you use?",
+    "opts": [
+      "Export BigQuery tables to a multi-region Cloud Storage bucket nightly.",
+      "Create a BigQuery dataset in a Multi-region location (e.g., 'US' or 'EU').",
+      "Use BigQuery Cross-Region Dataset Replication to actively sync data.",
+      "Create a dataset in a single region and schedule a Dataflow job to copy tables to another region every hour."
+    ],
+    "explain": "BigQuery multi-region locations (like 'US') store data redundantly across two different geographic regions within that macro-region, providing synchronous replication and an RPO of 0 against a single region failure.",
+    "concept": "BigQuery DR (Multi-region)",
+    "ans": 1
+  },
+  {
+    "q": "You accidentally executed a DELETE statement that removed critical rows from a BigQuery table 2 days ago. How can you recover the data most efficiently without having a manual backup?",
+    "opts": [
+      "Restore the table from the latest Cloud Storage export.",
+      "Contact GCP Support to retrieve the data from Google's internal tape backups.",
+      "Use BigQuery Time Travel to query the table's historical state from 2 days ago and restore the rows.",
+      "Use the BigQuery undelete API to rollback the specific transaction."
+    ],
+    "explain": "BigQuery Time Travel allows you to access historical data from any point within the time travel window (default 7 days). You can query the table using `FOR SYSTEM_TIME AS OF` to retrieve and restore the deleted rows.",
+    "concept": "BigQuery Time Travel",
+    "ans": 2
+  },
+  {
+    "q": "To fulfill compliance requirements, you must retain an exact copy of a BigQuery table as it looked at the end of every fiscal quarter for 5 years. What is the most cost-effective method?",
+    "opts": [
+      "Export the table as CSV to Cloud Storage.",
+      "Use BigQuery Time Travel.",
+      "Create a BigQuery Clone of the table.",
+      "Create a BigQuery Table Snapshot."
+    ],
+    "explain": "Table Snapshots preserve the contents of a table at a specific point in time. They are cost-effective because they only bill for the delta (changed bytes) between the base table and the snapshot, unlike full exports.",
+    "concept": "BigQuery Table Snapshots",
+    "ans": 3
+  },
+  {
+    "q": "You are designing a Cloud Spanner architecture for a highly critical global application. You need to ensure database availability even if an entire GCP region goes offline. Which configuration should you choose?",
+    "opts": [
+      "Deploy two Regional instances and use an HTTP load balancer to write to both.",
+      "Deploy a Regional instance with a high node count to ensure resilience.",
+      "Deploy a Multi-region Cloud Spanner instance.",
+      "Deploy a Regional instance and configure cross-region async replication."
+    ],
+    "explain": "Cloud Spanner Multi-region instances replicate data across multiple regions (and a witness region) using Paxos. This provides 99.999% availability and ensures the database survives a full regional failure with zero data loss (RPO 0).",
+    "concept": "Cloud Spanner Multi-region",
+    "ans": 2
+  },
+  {
+    "q": "You are using Cloud Bigtable for real-time analytics. You need to isolate read workloads from write workloads while maintaining high availability across zones. How do you configure this?",
+    "opts": [
+      "Use BigQuery federation to read the data, isolating the reads from Bigtable entirely.",
+      "Enable Bigtable Read Replicas in the instance settings.",
+      "Create two separate Bigtable instances and use Dataflow to sync them.",
+      "Configure a Bigtable instance with multiple clusters (replication) and use App Profiles to route reads to one cluster and writes to another."
+    ],
+    "explain": "Bigtable supports replication by adding multiple clusters to an instance. You use App Profiles to define routing policies, allowing you to route heavy analytical read traffic to one cluster while standard write traffic goes to another, ensuring workload isolation.",
+    "concept": "Bigtable Replication & App Profiles",
+    "ans": 3
+  },
+  {
+    "q": "You need to protect files in Cloud Storage from accidental deletion or modification for exactly 3 years to comply with SEC regulations. What feature should you enable?",
+    "opts": [
+      "Cloud Storage Retention Policy with a Bucket Lock.",
+      "Cloud KMS encryption with a 3-year key rotation.",
+      "Cloud Storage Lifecycle Management rules.",
+      "Cloud Storage Object Versioning."
+    ],
+    "explain": "A Retention Policy ensures objects cannot be deleted or modified for a specified period. Locking the policy (Bucket Lock) makes it immutable, satisfying strict regulatory compliance requirements like SEC Rule 17a-4.",
+    "concept": "GCS Retention Policies",
+    "ans": 0
+  },
+  {
+    "q": "You are running a Cloud SQL for PostgreSQL database. A developer dropped an important table 3 hours ago. How do you recover the table with minimal data loss?",
+    "opts": [
+      "Perform a Point-in-Time Recovery (PITR) to a time just before the table was dropped.",
+      "Promote the cross-region read replica to primary.",
+      "Export the remaining tables and recreate the database from scratch.",
+      "Query the Cloud SQL Time Travel schema."
+    ],
+    "explain": "Cloud SQL supports Point-in-Time Recovery (PITR) by utilizing continuous WAL (Write-Ahead Logs) combined with automated backups. You can restore an instance to a specific minute before the error occurred.",
+    "concept": "Cloud SQL PITR",
+    "ans": 0
+  },
+  {
+    "q": "A Pub/Sub subscriber application crashed and failed to process messages for several hours. The messages were acknowledged by a bug in the code before processing. How can you re-process the lost messages?",
+    "opts": [
+      "Ask the publishing application to republish the last 24 hours of data.",
+      "Use the Pub/Sub 'Seek' feature to replay messages from a previously created Snapshot or a specific timestamp.",
+      "There is no way to recover them; once a message is acknowledged, Pub/Sub deletes it instantly without recovery options.",
+      "Check the Cloud Logging export sink for the lost messages."
+    ],
+    "explain": "Pub/Sub allows you to use the 'Seek' feature to alter the state of a subscription. You can seek to a specific timestamp (if message retention is enabled) or to a saved Snapshot, allowing the subscriber to re-consume acknowledged messages.",
+    "concept": "Pub/Sub Seek and Snapshots",
+    "ans": 1
+  },
+  {
+    "q": "You need to ensure that Dataflow jobs are highly available and can recover from regional failures. Since Dataflow is a regional managed service, what is the best practice for Disaster Recovery?",
+    "opts": [
+      "Enable the 'Cross-Region Failover' toggle in the Dataflow job settings.",
+      "Dataflow automatically fails over to the nearest available region without user intervention.",
+      "Deploy an Active-Active Dataflow architecture that processes every message twice across two regions.",
+      "Store the Dataflow template in a multi-region GCS bucket and configure the orchestrator (e.g., Composer) to submit the job to an alternate region if the primary fails."
+    ],
+    "explain": "Dataflow jobs are executed regionally. For DR, you must treat the compute as ephemeral. Store templates and code in multi-region storage, and rely on an orchestrator (like Cloud Composer/Airflow) to trigger the pipeline in a secondary region during an outage.",
+    "concept": "Dataflow DR Strategy",
+    "ans": 3
+  },
+  {
+    "q": "What is the recommended approach to backup a persistent Dataproc cluster's Hive Metastore to protect against accidental corruption?",
+    "opts": [
+      "Take daily persistent disk snapshots of the Dataproc master node.",
+      "Export the metastore to a CSV file and store it in HDFS.",
+      "Configure the cluster to use an external Cloud SQL instance for the Hive Metastore and rely on Cloud SQL automated backups.",
+      "Dataproc automatically backs up the internal metastore to BigQuery."
+    ],
+    "explain": "Running the Hive Metastore locally on the Dataproc master node is risky. The best practice for production and DR is to externalize the metastore to a managed Cloud SQL instance, which provides automated backups and high availability.",
+    "concept": "Dataproc Metastore DR",
+    "ans": 2
+  },
+  {
+    "q": "A security analyst needs to investigate who granted the 'BigQuery Admin' role to a specific user yesterday. Which Cloud Audit Log should they query?",
+    "opts": [
+      "Data Access audit logs",
+      "System Event audit logs",
+      "Admin Activity audit logs",
+      "Policy Denied audit logs"
+    ],
+    "explain": "Admin Activity audit logs record actions that modify the configuration or metadata of resources, including IAM policy changes (like granting roles). These logs are always enabled by default.",
+    "concept": "Admin Activity Logs",
+    "ans": 2
+  },
+  {
+    "q": "You want to monitor every time a user executes a SELECT query against a highly sensitive BigQuery table. Which audit logs must be enabled and analyzed?",
+    "opts": [
+      "Admin Activity audit logs",
+      "Cloud DLP inspection logs",
+      "Data Access audit logs (DATA_READ)",
+      "VPC Service Controls logs"
+    ],
+    "explain": "Data Access audit logs record API calls that read the configuration or metadata of resources, as well as user-driven API calls that create, modify, or read user-provided data. For a SELECT query, 'DATA_READ' logs must be enabled.",
+    "concept": "Data Access Logs",
+    "ans": 2
+  },
+  {
+    "q": "You need to retain Data Access audit logs for 3 years for compliance. Cloud Logging default retention is only 30 days. What is the best practice?",
+    "opts": [
+      "Create a Log Sink to export the logs to a BigQuery dataset or Cloud Storage bucket with long-term retention configured.",
+      "Use Cloud DLP to encrypt the logs to prevent them from expiring.",
+      "Write a Cloud Function to download the logs daily and email them to the compliance team.",
+      "Increase the Cloud Logging retention period setting to 3 years in the Admin Console."
+    ],
+    "explain": "The standard approach for long-term log retention and analysis is to create a Cloud Logging Sink that routes logs to BigQuery (for SQL analysis) or Cloud Storage (for cheap, long-term archival) where custom retention policies can be applied.",
+    "concept": "Audit Log Exporting",
+    "ans": 0
+  },
+  {
+    "q": "Your organization strictly mandates that no GCP resources (BigQuery datasets, GCS buckets) can be created outside of the European Union (EU). How can you enforce this globally across all developers?",
+    "opts": [
+      "Write an audit script that deletes resources found outside the EU.",
+      "Configure VPC Service Controls to block traffic originating from non-EU IP addresses.",
+      "Implement an Organization Policy using the 'Resource Location Restriction' constraint.",
+      "Create a custom IAM role that denies the 'create' permission for regions outside the EU."
+    ],
+    "explain": "Organization Policies allow you to set broad guardrails. The 'constraints/gcp.resourceLocations' policy constraint allows you to define a whitelist of allowed regions. Any API call attempting to create a resource outside these regions will be blocked.",
+    "concept": "Org Policy: Resource Location",
+    "ans": 2
+  },
+  {
+    "q": "You want to ensure that users cannot grant IAM access on a BigQuery dataset to any email address outside of your corporate Google Workspace domain (e.g., @mycompany.com). What feature should you use?",
+    "opts": [
+      "VPC Service Controls",
+      "Cloud Identity-Aware Proxy (IAP)",
+      "BigQuery Row-Level Security",
+      "Domain Restricted Sharing Organization Policy"
+    ],
+    "explain": "The 'Domain Restricted Sharing' organization policy restricts the identities that can be added to IAM policies. It prevents users from accidentally granting access to public users (allUsers) or external Gmail accounts.",
+    "concept": "Org Policy: Domain Restricted Sharing",
+    "ans": 3
+  },
+  {
+    "q": "Security Command Center (SCC) alerts you to a 'Suspicious anomalous data exfiltration' event involving BigQuery. What SCC built-in service detects this?",
+    "opts": [
+      "Container Threat Detection",
+      "VPC Flow Logs",
+      "Web Security Scanner",
+      "Event Threat Detection (ETD)"
+    ],
+    "explain": "Event Threat Detection (ETD) analyzes Cloud Audit Logs and VPC Flow Logs in near-real-time to detect threats like anomalous IAM grants, cryptomining, and massive anomalous data exfiltration from services like BigQuery.",
+    "concept": "SCC Event Threat Detection",
+    "ans": 3
+  },
+  {
+    "q": "You want to find all tables across all GCP projects that contain a specific PII column named 'credit_card_number'. What is the most efficient way to search?",
+    "opts": [
+      "Query the Information Schema of the billing project.",
+      "Use Data Catalog search to search globally across the organization.",
+      "Check the Cloud DLP console for a list of all tables.",
+      "Write a bash script that iterates through every project and runs 'bq ls'."
+    ],
+    "explain": "Data Catalog provides a centralized, unified search interface that indexes technical metadata (schemas, table names, column names) across BigQuery, Pub/Sub, and Dataproc across the entire organization.",
+    "concept": "Data Catalog Search",
+    "ans": 1
+  },
+  {
+    "q": "You need to store database passwords and API keys used by your Cloud Composer DAGs. Where is the most secure place to store these credentials natively in GCP?",
+    "opts": [
+      "Airflow Variables in the Composer UI",
+      "Hardcoded in the DAG python file",
+      "Secret Manager",
+      "Cloud Storage with CMEK"
+    ],
+    "explain": "Secret Manager is the native GCP service designed specifically for securely storing, managing, and auditing access to secrets like API keys, passwords, and certificates.",
+    "concept": "Secret Manager",
+    "ans": 2
+  },
+  {
+    "q": "A data engineer wants to securely access a private internal web dashboard hosted on a Compute Engine VM without using a VPN. What is the recommended GCP service to secure this access?",
+    "opts": [
+      "Cloud NAT",
+      "VPC Service Controls",
+      "Cloud Armor",
+      "Cloud Identity-Aware Proxy (IAP)"
+    ],
+    "explain": "Cloud IAP allows you to establish a central authorization layer for applications accessed by HTTPS. It verifies user identity and context, enabling zero-trust access to internal apps without requiring a VPN.",
+    "concept": "Identity-Aware Proxy (IAP)",
+    "ans": 3
+  },
+  {
+    "q": "Your organization has a strict data residency requirement that Dataflow job metadata must not leave the EU region. How do you configure Dataflow to ensure this?",
+    "opts": [
+      "Encrypt the Dataflow job using a CMEK key located in the EU.",
+      "Specify a regional endpoint (e.g., europe-west1) when submitting the Dataflow job.",
+      "VPC Service Controls will automatically enforce this if the VPC is in the EU.",
+      "Dataflow metadata is always stored globally in the US; this requirement cannot be met."
+    ],
+    "explain": "Dataflow regional endpoints allow you to deploy and manage jobs within a specific region. This ensures that the telemetry, logs, and job metadata are stored and processed only within that specified region.",
+    "concept": "Dataflow Regional Endpoints",
+    "ans": 1
+  },
+  {
+    "q": "You are designing an ETL process that loads data into BigQuery. The data contains highly sensitive PII. Your security team mandates that GCP must not even have access to the raw encryption keys used to encrypt this data before it arrives in BigQuery. Which approach meets this requirement?",
+    "opts": [
+      "Use Customer-Managed Encryption Keys (CMEK) via Cloud KMS.",
+      "Use Customer-Supplied Encryption Keys (CSEK) via the BigQuery API.",
+      "Use Cloud External Key Manager (EKM) with BigQuery.",
+      "Use client-side encryption before uploading the data to GCP."
+    ],
+    "explain": "Client-side encryption means the data is encrypted on your own premises (or within your own client application) before it is sent to GCP. GCP never sees the plaintext data or the encryption keys. EKM and CMEK still require GCP to briefly use the key to decrypt the data in memory. CSEK is not supported for BigQuery tables.",
+    "concept": "Client-Side Encryption",
+    "ans": 3
+  }
+]

@@ -35,7 +35,6 @@ npm-debug.log*
 
 # Cloud
 .gcloud/
-*.json
 service-account-key.json
 
 #Unknown

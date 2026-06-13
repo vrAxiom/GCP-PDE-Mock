@@ -276,16 +276,16 @@
     "concept": "Dataflow updatable side inputs, slowly-changing data, streaming pipeline patterns"
   },
   {
-    "q": "Your organization processes financial transactions. Auditors require the ability to query the exact state of any BigQuery table at any point in the past 6 months. What BigQuery feature supports this and what configuration is needed?",
+    "q": "Your organization processes financial transactions. Auditors require the ability to query the exact state of any BigQuery table at any point in the past 7 days. You need to configure the dataset's time-travel window to its maximum capacity with minimum administrative effort. What configuration and query syntax should you use?",
     "opts": [
-      "BigQuery snapshots — manually create a snapshot every day",
-      "BigQuery time travel configured to max_time_travel_hours=4380 (6 months); use FOR SYSTEM_TIME AS OF for historical queries",
-      "BigQuery table clones that retain full history",
-      "Incremental BigQuery exports to Cloud Storage for historical reconstruction"
+      "Configure the dataset's time travel window (max_time_travel_hours) to 168 (7 days); use the FOR SYSTEM_TIME AS OF clause in your SQL queries.",
+      "Configure the dataset's time travel window to 4380 hours (6 months); use the FOR SYSTEM_TIME AS OF clause in your SQL queries.",
+      "Create daily table snapshots manually using the CREATE SNAPSHOT TABLE DDL statement.",
+      "BigQuery time travel is a fixed 30-day window that cannot be configured; use the SECURE_TIME AS OF clause for queries."
     ],
-    "ans": 1,
-    "explain": "BigQuery time travel retains historical table data for up to 7 days by default, but can be extended up to 6 months (168–4380 hours) via table or dataset settings. FOR SYSTEM_TIME AS OF 'TIMESTAMP' queries the exact table state at that time — without manually maintaining snapshots.",
-    "concept": "BigQuery time travel, historical queries, extended retention"
+    "ans": 0,
+    "explain": "The BigQuery time travel window is configurable at the dataset level between 48 hours (2 days) and 168 hours (7 days). Setting max_time_travel_hours to 168 hours allows auditors to query historical data up to 7 days ago using the FOR SYSTEM_TIME AS OF clause, satisfying the requirement with zero operational overhead. It cannot be configured beyond 7 days (like 6 months/4380 hours); for longer retention, table snapshots are required.",
+    "concept": "BigQuery time travel limits, max_time_travel_hours dataset settings, FOR SYSTEM_TIME AS OF"
   },
   {
     "q": "When would you choose Pub/Sub message ordering keys, and what constraint does enabling ordering impose?",
@@ -1200,16 +1200,16 @@
     "concept": "Cloud Storage"
   },
   {
-    "q": "A company has lot of data sources from multiple systems used for reporting. Over a period of time, a lot data is missing and you are asked to perform anomaly detection. How would you design the system?",
+    "q": "A company has multiple raw data sources ingested into Cloud Storage used for analytical reporting. Over time, they notice widespread format inconsistencies and missing values, and need a visual tool to perform data profiling, cleaning, and anomaly identification before reporting. Which architecture should you recommend?",
     "opts": [
-      "Use Dataprep with Data Studio",
-      "Load in Cloud Storage and use Dataflow with Data Studio",
-      "Load in Cloud Storage and use Dataprep with Data Studio",
-      "Use Dataflow with Data Studio"
+      "Load the data into Cloud Storage and use Cloud Dataprep by Trifacta for interactive cleaning and profiling, then visualize results in Looker Studio.",
+      "Use Dataflow to stream files directly into BigQuery and use Looker Studio for in-dashboard schema cleaning and anomaly patching.",
+      "Store the raw files in BigQuery as external tables and perform manual anomaly editing inside Looker Studio directly.",
+      "Deploy Cloud Data Fusion to continuously ingest data and utilize its built-in Looker Studio connector for visual missing-value replacement."
     ],
-    "ans": 2,
-    "explain": "Correct answer is C as Dataprep provides data cleaning and automatically identifies anomalies in the data. It can integrated with Cloud Storage and BigQuery;\n\nRefer GCP documentation - Dataprep: - https://cloud.google.com/dataprep/;\n\nOption A is wrong as Dataprep would not be able interact directly with local system.\n\nOptions B & D are wrong as Cloud Dataflow is a fully-managed service for transforming and enriching data in stream (real time) and batch (historical) modes with equal reliability and expressiveness -- no more complex workarounds or compromises needed. It does not provide anomaly detection.",
-    "concept": "BigQuery, Cloud Storage, Dataflow"
+    "ans": 0,
+    "explain": "Cloud Dataprep by Trifacta is an intelligent, serverless visual data preparation service for exploring, cleaning, and profiling structured and unstructured data stored in Cloud Storage or BigQuery. It automatically identifies anomalies, missing values, and outliers. Looker Studio (formerly Data Studio) can then connect to the cleaned outputs for visualization. Dataflow handles programmatic batch and stream processing but does not provide an interactive visual interface for data prep.",
+    "concept": "Cloud Dataprep visual profiling, Looker Studio reporting, anomaly identification"
   },
   {
     "q": "Your BigQuery table needs to be accessed by team members who are not proficient in technology. You want to simplify the columns they need to query to avoid confusion. How can you do this while preserving all of the data in your table?",
@@ -1536,16 +1536,16 @@
     "concept": "Message routing by machine type"
   },
   {
-    "q": "An application used by finance is written in Java, deployed on VMs, has several distinct services, and uses SOAP for message exchange. How would you categorize this architecture?",
+    "q": "A retail client wants to optimize query performance and reduce analysis costs for a 20 TB transactions table in BigQuery containing 5 years of history. Users predominantly query this table filtering by 'transaction_timestamp' and grouping or filtering by 'store_id' or 'customer_country'. How should you design the table?",
     "opts": [
-      "Monolithic",
-      "Service-oriented architecture (SOA)",
-      "Microservice",
-      "Serverless functions"
+      "Partition the table by day on transaction_timestamp, and cluster the table by store_id and customer_country.",
+      "Cluster the table by transaction_timestamp, and partition the table by store_id and customer_country.",
+      "Partition the table by store_id into individual integer partition IDs, and cluster by customer_country.",
+      "Create individual daily tables using a wildcard suffix (e.g., transactions_YYYYMMDD) and query them using wildcard table searches."
     ],
-    "ans": 1,
-    "explain": "Multiple independent services using SOAP deployed on VMs fits the definition of a service-oriented architecture. Microservices typically use lightweight protocols.",
-    "concept": "SOA service-oriented architecture"
+    "ans": 0,
+    "explain": "Partitioning by day on the transaction_timestamp column divides the physical storage into daily segments, allowing BigQuery to prune partitions based on query filters and greatly reduce bytes scanned. Clustering by store_id and customer_country sorts the data within each partition, which significantly speeds up filtering and aggregation along those dimensions. You cannot partition directly on high-cardinality string columns like store_id or customer_country (only ingestion-time, boundary integers, or dates/timestamps are allowed for partitioning).",
+    "concept": "BigQuery Table Partitioning vs Clustering, cost optimization, query performance"
   },
   {
     "q": "A distributed app runs services on VMs where each service implements several functions and it's hard to update one without disrupting others. Your company standardizes on Docker containers. What architecture would you recommend?",
@@ -1788,16 +1788,16 @@
     "concept": "Cloud Composer, workflow orchestration"
   },
   {
-    "q": "Business owners need data warehouse history of every change between snapshots, not just point-in-time states. What pipeline approach should be used?",
+    "q": "You need to replicate high-volume transactions from an on-premises Oracle database into BigQuery in near real-time with minimal impact on the performance of the source transactional database. Which GCP service and pattern represents the recommended best practice?",
     "opts": [
-      "ETL",
-      "ELT",
-      "Extraction and load",
-      "Change data capture"
+      "Use Datastream to extract CDC streams from Oracle and write them directly to BigQuery using the native Storage Write API replication.",
+      "Write a custom Java application that polls the Oracle database every minute and writes rows using BigQuery streaming inserts.",
+      "Set up an Apache Spark cluster on Dataproc that uses JDBC to run parallel SELECT queries on Oracle every 5 minutes and loads them to BigQuery.",
+      "Export a full Oracle database backup daily to Cloud Storage as CSV, then run a scheduled BigQuery load job to overwrite the destination table."
     ],
-    "ans": 3,
-    "explain": "Change data capture records each data change event over time, whereas ETL/ELT/extract-load capture state at extraction time.",
-    "concept": "CDC, change data capture"
+    "ans": 0,
+    "explain": "Datastream is a serverless Change Data Capture (CDC) and replication service that supports streaming changes from sources like Oracle, MySQL, and PostgreSQL into BigQuery. It integrates natively with BigQuery's Storage Write API to replicate changes with sub-second latency and minimal impact on source databases (since it reads the transaction logs, rather than querying the database tables directly).",
+    "concept": "Datastream Change Data Capture (CDC), Oracle-to-BigQuery replication, Storage Write API"
   },
   {
     "q": "You need to ingest IoT sensor data and run a Python validation check before continuing pipeline processing. What approach would you use?",
@@ -1872,28 +1872,28 @@
     "concept": "Message routing, ML specialization, machine type"
   },
   {
-    "q": "An application has independent services using SOAP deployed on VMs. What architecture type is this?",
+    "q": "You need to share a confidential employee dataset in BigQuery with an external analytics vendor. The vendor must only see records where the 'office_region' is 'EMEA' and is strictly forbidden from accessing the 'annual_salary' column. How should you implement this access control with the least maintenance overhead?",
     "opts": [
-      "Monolithic",
-      "Service-oriented architecture (SOA)",
-      "Microservice",
-      "Serverless"
+      "Create an Authorized View in BigQuery that filters for region EMEA and excludes the annual_salary column; grant the vendor access to this view and not the source dataset.",
+      "Create two separate physical tables, manually delete non-EMEA rows and the salary column daily, and grant access to the new tables.",
+      "Configure BigQuery Row-level security for EMEA records and Column-level security (Policy Tags) for the salary column directly on the source table, giving the vendor Reader role on the dataset.",
+      "Export the filtered EMEA data to a Cloud Storage bucket as CSV, omitting the salary column, and give the vendor IAM Storage Object Viewer permissions."
     ],
-    "ans": 1,
-    "explain": "SOAP-based independent services on VMs are characteristic of SOA.",
-    "concept": "SOA, distributed architecture, SOAP"
+    "ans": 0,
+    "explain": "BigQuery Authorized Views allow you to share query results with users or groups without giving them permissions to read the underlying source tables. Creating a view that filters for EMEA and omits the salary column securely isolates the data. Applying fine-grained row/column-level security directly on production transactional tables can be highly complex to manage for external vendors and might limit underlying table operations.",
+    "concept": "BigQuery Authorized Views, data sharing governance, column/row security"
   },
   {
-    "q": "You want independent functions that can be deployed in separate containers and updated independently. Which architecture pattern should you use?",
+    "q": "A streaming Dataflow job consumes messages from a Cloud Pub/Sub subscription. Daily, a few corrupted, malformed JSON messages cause the processing code within your Dataflow pipeline to fail, triggering retries and stalling the entire subscription queue. What is the recommended GCP architectural solution to resolve this 'poison pill' issue?",
     "opts": [
-      "Monolithic",
-      "Hub-and-spoke",
-      "Microservices",
-      "Pipeline architecture"
+      "Configure a Dead-Letter Topic on the Pub/Sub subscription with a maximum delivery attempts threshold, and redirect failing messages to a queue for manual inspection.",
+      "Set up a seek operation on the Pub/Sub subscription to automatically skip messages that have failed processing more than twice.",
+      "Configure the Dataflow pipeline to use DirectRunner to bypass Pub/Sub's message acknowledgement deadlines, allowing the job to skip failed messages.",
+      "Write a Cloud Function that polls the subscription every minute and purges any message containing a mismatched character."
     ],
-    "ans": 2,
-    "explain": "Microservices allow independent deployment and lifecycle of components, often in separate containers.",
-    "concept": "Microservices, independent deployment"
+    "ans": 0,
+    "explain": "Configuring a Dead-Letter Topic (DLQ) on a Pub/Sub subscription allows Pub/Sub to divert messages that cannot be successfully processed and acknowledged after a designated number of attempts (e.g., 5 attempts). This removes the 'poison pills' from the main ingestion pipeline so standard message stream processing continues without head-of-line blocking, while bad messages are quarantined securely for evaluation.",
+    "concept": "Pub/Sub Dead-Letter Topics (DLQ), error handling in streams, poison pill mitigation"
   },
   {
     "q": "What is the first step in migrating an on-premises data warehouse to GCP?",
@@ -1920,16 +1920,16 @@
     "concept": "Migration planning, technical requirements"
   },
   {
-    "q": "A reporting backlog exists because the current on-prem warehouse is too limited, preventing valuable new reports. What kind of cost is this?",
+    "q": "Your company has a highly fluctuating and unpredictable BigQuery analytics workload. There are massive, intensive query surges during seasonal promotions, but weeks of very low activity. You want to optimize the balance between performance (high slot availability) and cost efficiency (no pay for idle compute). Which pricing model should you choose?",
     "opts": [
-      "Capital cost",
-      "Operating cost",
-      "Opportunity cost",
-      "Sunk cost"
+      "Use the On-Demand pricing model, which charges per slice of bytes scanned and dynamically allocates up to 2,000 slots per query during bursts without idle slot costs.",
+      "Purchase BigQuery capacity-based pricing (Enterprise Edition) with a static 3,000-slot reservation to ensure peak performance is always guaranteed.",
+      "Provision a flat-rate slot reservation of 500 slots and configure a nightly Cloud Scheduler job to manually double it during promotions.",
+      "Set up a Cloud SQL federated database backend for the reports in order to avoid paying for custom BigQuery slots and runtime."
     ],
-    "ans": 2,
-    "explain": "The organization loses potential value due to delayed insight generation, which is opportunity cost.",
-    "concept": "Opportunity cost, analytics backlog"
+    "ans": 0,
+    "explain": "The On-Demand pricing model is ideal for unpredictable and bursty workloads with low baseline activity, as you pay purely for the bytes processed by your queries (with no ongoing charge for idle compute capacity). For bursts, BigQuery automatically allocates up to 2,000 slots dynamically. Purchasing static capacity-based slots would incur high idle costs during weeks of low activity.",
+    "concept": "BigQuery On-Demand pricing, slot allocation, cost-performance trade-offs"
   },
   {
     "q": "When migrating normalized on-prem schemas with many joins to BigQuery, what feature should you use to optimize design?",
@@ -1980,52 +1980,52 @@
     "concept": "GPU vs TPU, high-precision arithmetic, interactive ML"
   },
   {
-    "q": "You are training a TensorFlow model with synchronous distributed training on TPUs. Which distribution strategy should you use?",
+    "q": "A Machine Learning engineer wants to set up a distributed training job for a large transformer model on Multi-VM Cloud TPU Pods using Vertex AI Custom Training. They need to implement synchronous distributed training with minimal code changes. Which TensorFlow distribution strategy should they configure?",
     "opts": [
-      "MirroredStrategy",
-      "CentralStorageStrategy",
-      "MultiWorkerMirroredStrategy",
-      "TPUStrategy"
+      "tf.distribute.TPUStrategy, which is optimized for managing synchronous distributed training on TPU devices across multiple virtual machines.",
+      "tf.distribute.MirroredStrategy, which replicates variables onto multiple devices on a single host machine with synchronous updates.",
+      "tf.distribute.MultiWorkerMirroredStrategy, which runs synchronous training on multiple CPU or GPU worker nodes without hardware accelerators.",
+      "tf.distribute.experimental.ParameterServerStrategy, which utilizes asynchronous training on a pool of parameters and worker nodes."
     ],
-    "ans": 3,
-    "explain": "TPUStrategy is designed for synchronous distributed training on TPU devices.",
-    "concept": "TensorFlow TPUStrategy, distributed training"
+    "ans": 0,
+    "explain": "tf.distribute.TPUStrategy is the standard, optimized API for running synchronous distributed training on Cloud TPUs, including multi-VM TPU pods and TPU slice configurations. It transparently handles connection, weights distribution, and intermediate gradient reduction across TPU cores. MirroredStrategy is limited to single-host GPU/CPU setups, and MultiWorkerMirroredStrategy is optimized for GPU/CPU clusters, not TPUs.",
+    "concept": "TensorFlow TPUStrategy, Vertex AI Custom Training, Multi-VM distributed training"
   },
   {
-    "q": "A model service runs in us-west1, but users in London and New York report prediction response times are too slow. What type of issue is this?",
+    "q": "Your global analytical application exposes an interactive user recommendation portal backed by a machine learning model deployed on Vertex AI Prediction in us-central1. Users in Europe and Asia report slow recommendation loads, whereas US users experience sub-second loads. How should you design the system to improve global inference response times?",
     "opts": [
-      "Overfitting",
-      "Underfitting",
-      "Latency",
-      "Scalability"
+      "Deploy the model to regional Vertex AI online prediction endpoints in europe-west1 and asia-east1, and use a Global External HTTP(S) Load Balancer with regional backends to route users to the nearest endpoint.",
+      "Enable autoscaling for the us-central1 Vertex AI prediction endpoint and set the minimum nodes parameter to 10.",
+      "Set up Cloud CDN in front of the us-central1 prediction endpoint with a default cache TTL of 24 hours to cache responses closer to users.",
+      "Redeploy the application in us-central1 using higher-memory bare-metal compute instances and increase worker thread limits."
     ],
-    "ans": 2,
-    "explain": "Geographic distance adds network round-trip delay, causing latency issues in inference serving.",
-    "concept": "ML serving latency, geographic distance"
+    "ans": 0,
+    "explain": "To reduce geographical physical distance network latency for users in Europe and Asia, deploying models to regional endpoints (like europe-west1 and asia-east1) close to the users is the recommended GCP architecture. A Global Load Balancer routes user requests automatically to the closest low-latency backend. Cloud CDN cannot cache online predictions effectively since recommendations are highly dynamic, user-specific, and real-time. Autoscaling only addresses load bottlenecks, not network transit distance.",
+    "concept": "Vertex AI multi-region prediction endpoints, Global HTTP(S) Load Balancing, network latency optimization"
   },
   {
     "q": "A global climate project has limited/unreliable bandwidth from gateways to GCP. Sensors send one reading per second, but scientists only need one-minute averages for temperature/pressure/humidity. Which strategy should you implement?",
     "opts": [
-      "Send all raw data to Pub/Sub and average in Dataflow",
-      "Average at gateway, send averages to Pub/Sub, then Dataflow and BigQuery",
-      "Send all raw data to BigQuery streaming inserts",
-      "Average at gateway, send averages to Pub/Sub, then Dataflow and BigQuery"
+      "Send all raw data from sensors directly to Pub/Sub and compute the averages using a streaming Dataflow window.",
+      "Aggregate readings into one-minute averages locally on the edge gateway, then publish only those averages to Pub/Sub to minimize bandwidth consumption.",
+      "Stream the raw sensor data directly into BigQuery using streaming inserts and use scheduled queries to aggregate them.",
+      "Buffer the raw data locally on the gateway and upload raw binary files to Cloud Storage via SFTP once daily for batch processing."
     ],
     "ans": 1,
-    "explain": "Compute one-minute aggregates at the gateway to reduce bandwidth, then send compact summaries upstream for further processing and storage.",
-    "concept": "Edge aggregation, bandwidth optimization, IoT"
+    "explain": "Performing local windowed processing and aggregation on edge gateways before transmission is the recommended strategy when network bandwidth is limited or unreliable. It minimizes data egress size, reducing Cellular/WAN connection costs. Sending raw data (1/sec) would unnecessarily overwhelm the narrow billing and performance limits of the local gateway's upstream connectivity.",
+    "concept": "Edge gateway aggregation, bandwidth cost control, IoT streaming"
   },
   {
-    "q": "In a standard IoT architecture, which component would you not use?",
+    "q": "You are designing a secure, high-scale IoT ingestion pipeline on GCP for millions of smart utility meters. You must guarantee that every ingested telemetry message conforms strictly to a predetermined structure (containing meter_id string, timestamp, and consumption float) at the ingestion boundary itself. Malformed payloads must be rejected immediately to protect downstream Dataflow pipelines from crashing. Which architecture should you select?",
     "opts": [
-      "Edge devices",
-      "Gateways",
-      "Repeater",
-      "Cloud platform services"
+      "Define an Apache Avro schema in the Pub/Sub Schema Registry and associate it with the ingestion topic, configuring the topic to enforce schema validation on publish.",
+      "Develop a custom Java Dataflow streaming pipeline that validates the schema of each message and writes invalid payloads to a log file.",
+      "Configure a Cloud Function triggered by Pub/Sub that parses the message JSON structure and deletes any inputs containing missing keys.",
+      "Utilize Firestore Security Rules to validate the format of the smart meter payloads before they are serialized and published."
     ],
-    "ans": 2,
-    "explain": "Repeaters are networking tools, not core components of the IoT reference architecture.",
-    "concept": "IoT reference architecture"
+    "ans": 0,
+    "explain": "The Pub/Sub Schema Registry allows you to define schema definitions (in Avro or Protocol Buffers) and schema-validation policies directly on the topic. When configured, Pub/Sub rejects any publisher messages that do not conform to the schema at the ingestion boundary, protecting downstream jobs with zero compute overhead. Implementing validation in Dataflow or Cloud Functions would still incur Pub/Sub ingestion costs and require custom coding.",
+    "concept": "Pub/Sub Schema Registry, schema validation at ingestion, robust streaming pipelines"
   },
   {
     "q": "A startup product for autonomous vehicles needs low-latency object detection inference from a TensorFlow model. Where should the model be served?",
@@ -2040,16 +2040,16 @@
     "concept": "Edge TPU, edge inference, low latency"
   },
   {
-    "q": "In the Google Cloud IoT reference model, which service is used for stream processing?",
+    "q": "A streaming Dataflow pipeline aggregates smart-grid power readings on an hourly basis. Due to intermittent network connections at the edge, some device telemetry arrives up to 90 minutes late, falling into a processing window that has already closed. You must ensure late-arriving data updates the calculations for up to 2 hours of allowed lateness. How should you design the windowing and trigger strategy?",
     "opts": [
-      "Cloud Storage",
-      "BigQuery streaming inserts",
-      "Cloud Pub/Sub",
-      "Cloud Dataflow"
+      "Define a Fixed Window of 1 hour, configure .withAllowedLateness() to 2 hours, and use .accumulatingFiredPanes() so updated aggregation results are emitted downstream.",
+      "Establish a Slider Window of 3 hours with a sliding period of 30 minutes, and discard any data that arrives after the watermark closes.",
+      "Implement a Session Window with a gap duration of 2 hours, and trigger updates to BigQuery on a daily scheduled Cloud Composer DAG.",
+      "Configure a Cloud Tasks queue that delays processing of all stream elements by 2 hours, ensuring that late-arriving data is completely buffered."
     ],
-    "ans": 3,
-    "explain": "Cloud Dataflow performs stream and batch processing. Pub/Sub is for ingestion.",
-    "concept": "IoT reference model, stream processing"
+    "ans": 0,
+    "explain": "To handle late-arriving stream data within windowed aggregations in Apache Beam/Dataflow, you must set an allowed lateness threshold using .withAllowedLateness(). This instructs the runner to keep the window's state active. Specifying .accumulatingFiredPanes() ensures that when late-arriving elements are processed, a new pane (an updated aggregation representing both on-time and late data) is emitted to update the downstream database securely.",
+    "concept": "Dataflow late data handling, allowed lateness, windowing and triggers with accumulating panes"
   },
   {
     "q": "You have a TensorFlow model using basic ops (no custom ops). Training on CPU would take weeks. What should you try to dramatically reduce training time?",

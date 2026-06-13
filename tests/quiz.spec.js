@@ -5,10 +5,10 @@ const path = require('path');
 
 // ── App constants (must match index.html) ────────────────────────────
 const SECTION_Q_COUNT = 20;
-const FULL_TEST_DIST = [11, 12, 10, 8, 9];
+const FULL_TEST_DIST = [4, 4, 4, 4, 4, 10, 10, 10];
 const FULL_TOTAL = FULL_TEST_DIST.reduce((a, b) => a + b, 0); // 50
-const EXPECTED_POOL = [104, 126, 117, 90, 83];
-const EXPECTED_TOTAL_POOL = EXPECTED_POOL.reduce((a, b) => a + b, 0); // 520
+const EXPECTED_POOL = [173, 134, 167, 132, 112, 100, 180, 100];
+const EXPECTED_TOTAL_POOL = EXPECTED_POOL.reduce((a, b) => a + b, 0); // 1098
 
 // ── Mock question factory ─────────────────────────────────────────────
 // ans is always 0 pre-shuffle so we can use state.questions[i].ans after shuffle
@@ -32,13 +32,23 @@ function mockSection(tag, count) {
 
 // ── Route interceptors ────────────────────────────────────────────────
 async function withMock(page) {
-  for (var i = 1; i <= 5; i++) {
+  const fileNames = [
+    'questions-s1.json',
+    'questions-s2.json',
+    'questions-s3.json',
+    'questions-s4.json',
+    'questions-s5.json',
+    'questions-s6-core-fundamentals.json',
+    'questions-s7-mlops.json',
+    'questions-s8-security-governance.json'
+  ];
+  for (var i = 1; i <= 8; i++) {
     var data = mockSection('S' + i);
-    await page.route('**/questions-s' + i + '.json', (function (d) {
+    await page.route('**/' + fileNames[i - 1], (function (d, num) {
       return function (route) {
         route.fulfill({ contentType: 'application/json', body: JSON.stringify(d) });
       };
-    })(data));
+    })(data, i));
   }
 }
 
@@ -87,12 +97,23 @@ async function waitForQuiz(page) {
 // 1. JSON DATA INTEGRITY — file-system checks, no browser
 // ═══════════════════════════════════════════════════════════════════════
 test.describe('JSON Data Integrity', function () {
+  const FILE_NAMES = [
+    'questions-s1.json',
+    'questions-s2.json',
+    'questions-s3.json',
+    'questions-s4.json',
+    'questions-s5.json',
+    'questions-s6-core-fundamentals.json',
+    'questions-s7-mlops.json',
+    'questions-s8-security-governance.json'
+  ];
 
-  for (var si = 1; si <= 5; si++) {
+  for (var si = 1; si <= 8; si++) {
     (function (sectionNum) {
       var expectedCount = EXPECTED_POOL[sectionNum - 1];
-      test('questions-s' + sectionNum + '.json — valid JSON, count=' + expectedCount + ', full schema', function () {
-        var file = path.join(__dirname, '../questions-s' + sectionNum + '.json');
+      var fileName = FILE_NAMES[sectionNum - 1];
+      test(fileName + ' — valid JSON, count=' + expectedCount + ', full schema', function () {
+        var file = path.join(__dirname, '../' + fileName);
         expect(fs.existsSync(file), 'file exists').toBe(true);
 
         var raw = fs.readFileSync(file, 'utf-8');
@@ -129,18 +150,20 @@ test.describe('JSON Data Integrity', function () {
     })(si);
   }
 
-  test('grand total across all 5 files = 522', function () {
+  test('grand total across all 8 files = 1098', function () {
     var total = 0;
-    for (var i = 1; i <= 5; i++) {
-      var qs = JSON.parse(fs.readFileSync(path.join(__dirname, '../questions-s' + i + '.json'), 'utf-8'));
+    for (var i = 1; i <= 8; i++) {
+      var fileName = FILE_NAMES[i - 1];
+      var qs = JSON.parse(fs.readFileSync(path.join(__dirname, '../' + fileName), 'utf-8'));
       total += qs.length;
     }
     expect(total).toBe(EXPECTED_TOTAL_POOL);
   });
 
   test('no duplicate question text within any section file', function () {
-    for (var i = 1; i <= 5; i++) {
-      var qs = JSON.parse(fs.readFileSync(path.join(__dirname, '../questions-s' + i + '.json'), 'utf-8'));
+    for (var i = 1; i <= 8; i++) {
+      var fileName = FILE_NAMES[i - 1];
+      var qs = JSON.parse(fs.readFileSync(path.join(__dirname, '../' + fileName), 'utf-8'));
       var seen = new Set();
       qs.forEach(function (q, idx) {
         var key = q.q.trim().toLowerCase().slice(0, 150);
@@ -151,8 +174,9 @@ test.describe('JSON Data Integrity', function () {
   });
 
   test('ans values are valid indices into opts array', function () {
-    for (var i = 1; i <= 5; i++) {
-      var qs = JSON.parse(fs.readFileSync(path.join(__dirname, '../questions-s' + i + '.json'), 'utf-8'));
+    for (var i = 1; i <= 8; i++) {
+      var fileName = FILE_NAMES[i - 1];
+      var qs = JSON.parse(fs.readFileSync(path.join(__dirname, '../' + fileName), 'utf-8'));
       qs.forEach(function (q, idx) {
         expect(q.opts[q.ans], 's' + i + '[' + idx + '] opts[ans] exists').toBeDefined();
       });
@@ -164,29 +188,29 @@ test.describe('JSON Data Integrity', function () {
 // 2. HOME SCREEN — real data, verifies actual pool sizes
 // ═══════════════════════════════════════════════════════════════════════
 test.describe('Home Screen', function () {
-  test('shows 5 section cards with correct pool sizes, "Not attempted" state, full-test button', async function ({ page }) {
+  test('shows 8 section cards with correct pool sizes, "Not attempted" state, full-test button', async function ({ page }) {
     await page.addInitScript(function () { localStorage.clear(); });
     await page.goto('/');
-    // Wait for all 5 sections to load real data
+    // Wait for all 8 sections to load real data
     await page.waitForFunction(
       function () {
         return typeof SECTIONS !== 'undefined' &&
-        SECTIONS.length === 5 &&
+        SECTIONS.length === 8 &&
         SECTIONS.every(function (s) { return s.questions.length > 0; });
       },
       { timeout: 10000 }
     );
 
     var cards = page.locator('.section-card');
-    await expect(cards).toHaveCount(5);
+    await expect(cards).toHaveCount(8);
 
-    var poolSizes = ['104 Qs', '126 Qs', '117 Qs', '90 Qs', '83 Qs'];
-    for (var i = 0; i < 5; i++) {
+    var poolSizes = ['173 Qs', '134 Qs', '167 Qs', '132 Qs', '112 Qs', '100 Qs', '180 Qs', '100 Qs'];
+    for (var i = 0; i < 8; i++) {
       await expect(cards.nth(i)).toContainText(poolSizes[i]);
     }
 
     // All sections show "Not attempted" on fresh state
-    for (var j = 0; j < 5; j++) {
+    for (var j = 0; j < 8; j++) {
       await expect(cards.nth(j)).toContainText('Not attempted');
     }
 
@@ -203,9 +227,9 @@ test.describe('Home Screen', function () {
       { timeout: 10000 }
     );
 
-    var weights = ['22%', '25%', '20%', '15%', '18%'];
+    var weights = ['22%', '25%', '20%', '15%', '18%', '100Q', '180Q', '100Q'];
     var cards = page.locator('.section-card');
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 8; i++) {
       await expect(cards.nth(i)).toContainText('Section ' + (i + 1));
       await expect(cards.nth(i)).toContainText(weights[i]);
     }
@@ -382,7 +406,7 @@ test.describe('Full Mock Exam', function () {
     expect(totalQs).toBe(FULL_TOTAL);
 
     var dist = await page.evaluate(function () {
-      var counts = [0, 0, 0, 0, 0];
+      var counts = [0, 0, 0, 0, 0, 0, 0, 0];
       state.questions.forEach(function (q) {
         if (q._secIdx !== undefined) counts[q._secIdx]++;
       });
@@ -450,10 +474,10 @@ test.describe('Full Mock Exam', function () {
     await programmaticAnswers(page, { correctIndices: all50 });
     await viewResults(page);
 
-    // Check localStorage has entries for all 5 sections
+    // Check localStorage has entries for all 8 sections
     var saved = await page.evaluate(function () {
       var store = JSON.parse(localStorage.getItem('gcp_pde_quiz_v1') || '{}');
-      return [1, 2, 3, 4, 5].map(function (id) {
+      return [1, 2, 3, 4, 5, 6, 7, 8].map(function (id) {
         return store.scores && store.scores[id] ? store.scores[id].bestPct : null;
       });
     });

@@ -1186,11 +1186,14 @@
       { id: 2, title: "Ingesting and Processing the Data",         weight: "25%", color: "#1e8e3e", questions: [] },
       { id: 3, title: "Storing the Data",                          weight: "20%", color: "#e37400", questions: [] },
       { id: 4, title: "Preparing and Using Data for Analysis",     weight: "15%", color: "#9334e6", questions: [] },
-      { id: 5, title: "Maintaining and Automating Data Workloads", weight: "18%", color: "#c5221f", questions: [] }
+      { id: 5, title: "Maintaining and Automating Data Workloads", weight: "18%", color: "#c5221f", questions: [] },
+      { id: 6, title: "Core Data Engineering Fundamentals",        weight: "100Q", color: "#d93025", questions: [] },
+      { id: 7, title: "ML/MLOps on GCP",                           weight: "180Q", color: "#188038", questions: [] },
+      { id: 8, title: "Security, Governance & Advanced Services",  weight: "100Q", color: "#ea8600", questions: [] }
     ];
 
       const SECTION_Q_COUNT = 20;
-    const FULL_TEST_DIST = [11, 12, 10, 8, 9];
+    const FULL_TEST_DIST = [4, 4, 4, 4, 4, 10, 10, 10]; // 50 questions: balanced randomized sampling from all sections
       const FULL_TEST_Q_COUNT = FULL_TEST_DIST.reduce((sum, n) => sum + n, 0);
 
     function shuffle(arr) {
@@ -1315,7 +1318,10 @@
         'questions-s2.json',
         'questions-s3.json',
         'questions-s4.json',
-        'questions-s5.json'
+        'questions-s5.json',
+        'questions-s6-core-fundamentals.json',
+        'questions-s7-mlops.json',
+        'questions-s8-security-governance.json'
       ];
       try {
         const results = await Promise.all(files.map(f => fetch(f).then(r => {

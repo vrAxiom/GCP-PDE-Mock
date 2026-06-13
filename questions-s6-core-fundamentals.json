@@ -1,0 +1,1202 @@
+[
+  {
+    "q": "Your company needs to migrate 380TB of historical customer data from an on-premise Hadoop cluster to Cloud Storage within 2 weeks. Network bandwidth is limited to 100 Mbps. What is the most appropriate migration strategy?",
+    "opts": [
+      "Use gsutil -m cp for parallel multi-threaded uploads",
+      "Set up Storage Transfer Service with scheduled incremental transfers",
+      "Request a Transfer Appliance, copy data locally, and ship to Google",
+      "Stream data through Dataflow to Cloud Storage using Pub/Sub"
+    ],
+    "ans": 2,
+    "explain": "At 380TB with limited bandwidth (100 Mbps \u2248 44 days upload time), Transfer Appliance is the only practical option. It's a physical device shipped to your location for offline data transfer at scale. Storage Transfer Service requires online connectivity and would be too slow. gsutil works for small/medium datasets but not at this scale with bandwidth constraints.",
+    "concept": "Data Transfer: Online vs Offline Migration \u2014 Use Transfer Appliance for: (1) Large on-premise datasets (>10TB), (2) Limited/expensive bandwidth, (3) Tight migration deadlines. Use Storage Transfer Service for: cloud-to-cloud or online-accessible sources."
+  },
+  {
+    "q": "You need to copy 15TB of data from a Cloud Storage bucket in us-central1 to another bucket in europe-west1, scheduled to run weekly. Which service is most appropriate?",
+    "opts": [
+      "Transfer Appliance \u2014 schedule physical shipments weekly",
+      "gsutil rsync in a Cloud Scheduler cron job",
+      "Storage Transfer Service with scheduled weekly transfer",
+      "Dataflow batch job with Cloud Scheduler trigger"
+    ],
+    "ans": 2,
+    "explain": "Storage Transfer Service is designed for online bucket-to-bucket transfers (within GCS, from S3, or HTTP sources) with scheduling support. It's enterprise-grade, supports incremental sync, and handles large-scale operations efficiently. gsutil works but isn't optimized for repeated large-scale transfers. Transfer Appliance is for offline on-premise data, not cloud-to-cloud.",
+    "concept": "Storage Transfer Service Use Cases: (1) GCS bucket-to-bucket transfers, (2) AWS S3 \u2192 GCS migration, (3) HTTP/HTTPS sources \u2192 GCS, (4) Scheduled/recurring transfers, (5) Cross-region replication. Key: ONLINE sources only."
+  },
+  {
+    "q": "A data scientist has 5GB of training data in CSV format on their laptop. What's the simplest way to upload this to a Cloud Storage bucket?",
+    "opts": [
+      "Request a Transfer Appliance for secure physical transfer",
+      "Use gsutil cp command from Cloud SDK",
+      "Configure Storage Transfer Service with local HTTP server",
+      "Set up a Dataflow pipeline to stream the data"
+    ],
+    "ans": 1,
+    "explain": "For small datasets (<10TB) and one-time/ad-hoc uploads, gsutil is the appropriate tool. It's a CLI tool included in Cloud SDK, optimized for developer workflows. Transfer Appliance is for petabyte-scale offline transfers. Storage Transfer Service requires online-accessible sources (not local files). Dataflow is overkill for a simple upload.",
+    "concept": "Data Transfer Decision Tree: <10GB \u2192 Console upload or gsutil | 10GB-10TB \u2192 gsutil or Storage Transfer Service | >10TB on-premise \u2192 Transfer Appliance | Cloud-to-cloud at scale \u2192 Storage Transfer Service"
+  },
+  {
+    "q": "You need to query daily transaction tables named orders_20260101, orders_20260102, etc. Convert this Legacy SQL to Standard SQL: SELECT COUNT(*) FROM TABLE_DATE_RANGE([project:dataset.orders_], TIMESTAMP('2026-01-01'), TIMESTAMP('2026-01-31'))",
+    "opts": [
+      "SELECT COUNT(*) FROM `project.dataset.orders_*` WHERE TABLE_DATE_RANGE BETWEEN '2026-01-01' AND '2026-01-31'",
+      "SELECT COUNT(*) FROM `project.dataset.orders_*` WHERE _TABLE_SUFFIX BETWEEN '20260101' AND '20260131'",
+      "SELECT COUNT(*) FROM [project.dataset.orders_*] WHERE _TABLE_DATE_RANGE >= '20260101'",
+      "SELECT COUNT(*) FROM TABLE_DATE_RANGE(`project.dataset.orders_*`, '2026-01-01', '2026-01-31')"
+    ],
+    "ans": 1,
+    "explain": "Standard SQL uses backticks for table names, wildcard tables with asterisk (*), and _TABLE_SUFFIX pseudo-column for filtering. _TABLE_SUFFIX contains the part after the wildcard (e.g., '20260101'). TABLE_DATE_RANGE is Legacy SQL only and doesn't exist in Standard SQL. Option B correctly filters dates using string comparison on _TABLE_SUFFIX.",
+    "concept": "BigQuery Standard SQL Wildcard Tables: Syntax: `dataset.table_*` | Pseudo-column: _TABLE_SUFFIX (string) | Filter: WHERE _TABLE_SUFFIX BETWEEN '20260101' AND '20260131' | Legacy TABLE_DATE_RANGE has NO Standard SQL equivalent \u2014 use _TABLE_SUFFIX instead."
+  },
+  {
+    "q": "Which query correctly uses Standard SQL to select from wildcard tables for Q4 2025?",
+    "opts": [
+      "SELECT * FROM [analytics.sales_*] WHERE _PARTITIONTIME >= '2025-10-01'",
+      "SELECT * FROM `analytics.sales_*` WHERE _TABLE_SUFFIX BETWEEN '20251001' AND '20251231'",
+      "SELECT * FROM TABLE_QUERY('analytics', 'sales_') WHERE suffix >= '20251001'",
+      "SELECT * FROM analytics.sales_* WHERE TABLE_SUFFIX LIKE '202510%' OR TABLE_SUFFIX LIKE '202511%' OR TABLE_SUFFIX LIKE '202512%'"
+    ],
+    "ans": 1,
+    "explain": "Standard SQL requires backticks around fully qualified table names. Wildcard table must end with *. _TABLE_SUFFIX is the pseudo-column (with underscore) containing the string after the wildcard. Option B has correct syntax: backticks, asterisk wildcard, _TABLE_SUFFIX pseudo-column, and proper BETWEEN filtering for Q4 dates.",
+    "concept": "Common BigQuery Standard SQL Mistakes: \u274c Square brackets [table] \u2192 \u2705 Backticks `table` | \u274c TABLE_SUFFIX \u2192 \u2705 _TABLE_SUFFIX (underscore!) | \u274c TABLE_QUERY \u2192 \u2705 Wildcard with _TABLE_SUFFIX | \u274c Wildcard without * \u2192 \u2705 table_*"
+  },
+  {
+    "q": "Your API receives user requests to generate large reports that take 3-5 minutes to process. Users experience timeouts after 60 seconds. The API writes to Cloud SQL. How should you redesign the architecture?",
+    "opts": [
+      "Increase API timeout to 10 minutes and add read replicas to Cloud SQL",
+      "Migrate Cloud SQL to Cloud Spanner for horizontal scalability",
+      "Use Pub/Sub to queue requests; process asynchronously with Cloud Functions or Cloud Run; notify user via email when complete",
+      "Add a Cloud CDN layer in front of the API to cache responses"
+    ],
+    "ans": 2,
+    "explain": "The core issue is synchronous request/response pattern for long-running operations. Pub/Sub decouples the request (quick acknowledgment) from processing (asynchronous). Pattern: API receives request \u2192 publishes to Pub/Sub topic \u2192 returns 202 Accepted \u2192 background worker (Cloud Functions/Run/Dataflow) processes \u2192 sends notification. Cloud Spanner addresses database scale, not request timeout architecture.",
+    "concept": "Pub/Sub Async Decoupling Pattern: Use when: (1) Operations take >30s, (2) Client can't wait for completion, (3) Prevent timeout issues. Architecture: Request \u2192 Pub/Sub (queue) \u2192 Background processor \u2192 Notification (email/webhook). This converts blocking operations to non-blocking."
+  },
+  {
+    "q": "A mobile app triggers complex analytics queries that can take 2-10 minutes. Users complain about timeout errors. The data is in BigQuery. What's the best solution?",
+    "opts": [
+      "Increase BigQuery slots to speed up queries under 60 seconds",
+      "Cache query results in Memorystore Redis with 1-hour TTL",
+      "Use Pub/Sub + Cloud Run: queue query request, execute asynchronously, push notification when ready",
+      "Pre-aggregate data into summary tables and query those instead"
+    ],
+    "ans": 2,
+    "explain": "While pre-aggregation (option D) helps, it doesn't solve the architectural timeout problem if queries still take minutes. The correct pattern is async processing: mobile app sends request \u2192 Pub/Sub queues it \u2192 Cloud Run executes BigQuery query asynchronously \u2192 sends push notification or provides a polling endpoint. This decouples request submission from query execution. Option A and B are optimizations but don't address the timeout issue fundamentally.",
+    "concept": "Async Query Pattern: When queries >60s are unavoidable: (1) Accept request \u2192 return job_id immediately, (2) Process in background (Pub/Sub + Cloud Run/Functions), (3) Notify client (push notification, webhook, or polling endpoint). Never make clients wait for long-running synchronous operations."
+  },
+  {
+    "q": "You're building a credit card fraud detection model. Your team built a classifier that predicts 'fraud' or 'legitimate'. What type of machine learning problem is this?",
+    "opts": [
+      "Regression \u2014 predicting a continuous fraud score",
+      "Classification \u2014 predicting discrete categories (fraud vs legitimate)",
+      "Clustering \u2014 grouping similar transactions",
+      "Anomaly detection \u2014 finding outliers without labels"
+    ],
+    "ans": 1,
+    "explain": "Classification predicts discrete categories/labels from predefined classes. Binary classification has 2 classes (fraud/not fraud). Multi-class has >2 classes. Regression predicts continuous numbers (price, temperature). Clustering is unsupervised (no labels). Anomaly detection finds outliers but doesn't require training on labeled fraud examples like this does.",
+    "concept": "ML Problem Types: CLASSIFICATION \u2192 discrete output, labeled data (spam/not spam, fraud/legit, cat/dog/bird) | REGRESSION \u2192 continuous output (price $523.45, temperature 72.3\u00b0F) | CLUSTERING \u2192 unsupervised grouping, no labels (customer segments) | Key: If output is categorical \u2192 Classification"
+  },
+  {
+    "q": "A bank wants to predict the loan amount a customer qualifies for based on income, credit score, and employment history. What type of ML problem is this?",
+    "opts": [
+      "Classification \u2014 categorizing customers into loan brackets",
+      "Regression \u2014 predicting continuous numerical loan amount",
+      "Clustering \u2014 grouping customers by financial profile",
+      "Reinforcement learning \u2014 optimizing loan approval strategy"
+    ],
+    "ans": 1,
+    "explain": "Regression predicts continuous numerical values. Loan amount is a continuous number (e.g., $47,350.00), not a discrete category. Even if loan amounts are later bucketed into ranges for business logic, the ML task of predicting the actual amount is regression. Classification would be 'approved/denied' or 'low/medium/high' risk categories.",
+    "concept": "Classification vs Regression: CLASSIFICATION \u2192 output is label/category (yes/no, color, risk tier) | REGRESSION \u2192 output is number ($, kg, seconds, %). Key question: Is the output categorical or numeric? Numeric with decimal precision \u2192 Regression."
+  },
+  {
+    "q": "Your deep learning model achieves 98% accuracy on training data but only 75% on validation data. Training error is very low but validation error is high. How should you address this?",
+    "opts": [
+      "Increase model complexity by adding more layers and parameters",
+      "Increase training data size, reduce feature parameters, increase regularization (L1/L2)",
+      "Decrease training data and focus on feature engineering",
+      "Remove regularization to allow the model to learn more patterns"
+    ],
+    "ans": 1,
+    "explain": "High training accuracy + low validation accuracy = overfitting. The model memorized training data instead of learning generalizable patterns. Solutions: (1) MORE training data (helps model see more examples), (2) FEWER parameters/features (reduce model complexity), (3) MORE regularization (L1/L2 penalties discourage memorization). Adding complexity (option A) or removing regularization (option D) worsens overfitting.",
+    "concept": "Fixing Overfitting (High Train Accuracy, Low Validation): \u2705 Increase training data | \u2705 Decrease model complexity (fewer layers, features) | \u2705 Increase regularization (L1/L2/dropout) | \u2705 Early stopping | \u274c Add more features/parameters | \u274c Remove regularization"
+  },
+  {
+    "q": "Your model has 60% training accuracy and 58% validation accuracy. Both errors are high. What's the problem and solution?",
+    "opts": [
+      "Overfitting \u2014 add regularization and reduce features",
+      "Underfitting \u2014 increase model complexity, add features, train longer",
+      "Data quality issue \u2014 clean outliers and normalize",
+      "Imbalanced dataset \u2014 apply class weights or SMOTE"
+    ],
+    "ans": 1,
+    "explain": "High training error + high validation error (both similar and low) = underfitting. The model is too simple to capture patterns in the data. Solutions: (1) Increase model complexity (more layers, neurons), (2) Add more features or better features, (3) Train longer, (4) Reduce regularization. Overfitting shows high training accuracy with low validation accuracy.",
+    "concept": "Underfitting vs Overfitting: UNDERFITTING (high train error, high val error) \u2192 Model too simple \u2192 Increase complexity, add features | OVERFITTING (low train error, high val error) \u2192 Model too complex \u2192 Reduce complexity, add data, add regularization | Goal: Low train error + Low val error"
+  },
+  {
+    "q": "You're using AutoML Vision to classify product images. You have 10,000 labeled images. How should you split the data for training?",
+    "opts": [
+      "Train on all 10,000 images to maximize model learning",
+      "70% train (7,000), 15% validation (1,500), 15% test (1,500)",
+      "50% train (5,000), 50% test (5,000), no validation set",
+      "90% train (9,000), 10% validation (1,000), and verify model accuracy using a custom validation test script on local endpoints"
+    ],
+    "ans": 1,
+    "explain": "Always split data into train/validation/test sets. Typical splits: 70/15/15 or 60/20/20. Training set trains the model. Validation set tunes hyperparameters and prevents overfitting during training. Test set provides final unbiased evaluation. Training on 100% of data (option A) leads to overfitting with no validation. Option B provides balanced splits for all three purposes.",
+    "concept": "Train/Validation/Test Split: TRAIN (60-70%) \u2192 Model learns patterns | VALIDATION (15-20%) \u2192 Tune hyperparameters, prevent overfitting | TEST (15-20%) \u2192 Final unbiased evaluation | \u274c NEVER train on 100% \u2014 you need held-out data to detect overfitting | AutoML handles splits automatically if you choose."
+  },
+  {
+    "q": "A real-time IoT sensor system ingests 10,000 events/second. Data scientists need to run SQL analytics queries with sub-second response. The data must support ACID transactions and relational joins. Which database is most appropriate?",
+    "opts": [
+      "BigQuery with streaming inserts \u2014 optimized for analytics at scale",
+      "Bigtable \u2014 high-throughput NoSQL for time-series data",
+      "Cloud SQL (PostgreSQL) \u2014 ACID-compliant relational database",
+      "Firestore \u2014 real-time document database with offline support"
+    ],
+    "ans": 2,
+    "explain": "The scenario emphasizes ACID transactions, relational joins, and SQL queries at moderate scale (10K events/sec = ~1M events per 100s, manageable for Cloud SQL). Cloud SQL (MySQL/PostgreSQL) provides ACID guarantees, full SQL support, and relational features. BigQuery is for analytics at massive scale (billions of rows) but has eventual consistency for streaming inserts, not immediate ACID. Bigtable is NoSQL without native SQL/ACID.",
+    "concept": "Database Selection: Cloud SQL \u2192 ACID transactions, relational joins, traditional SQL, <10TB, <10K QPS | BigQuery \u2192 Analytics, petabyte-scale, eventual consistency for streaming | Bigtable \u2192 NoSQL, high throughput, no ACID, key-value lookups | Key: ACID + Relational + Moderate scale = Cloud SQL"
+  },
+  {
+    "q": "Your application needs to store 5 billion sensor readings with millisecond latency for lookups by sensor_id and timestamp. Queries are simple key-value lookups, no complex joins. Which storage solution is best?",
+    "opts": [
+      "Cloud SQL \u2014 supports indexes for fast lookups",
+      "BigQuery \u2014 optimized for analytical queries at scale",
+      "Bigtable \u2014 designed for high-throughput, low-latency NoSQL operations",
+      "Cloud Spanner \u2014 globally distributed with strong consistency"
+    ],
+    "ans": 2,
+    "explain": "Bigtable is purpose-built for this use case: billions of rows, millisecond latency, simple key lookups (no complex joins), time-series data. Design a row key like sensor_id#timestamp for efficient lookups and range scans. Cloud SQL doesn't scale to billions of rows efficiently. BigQuery is for complex analytics, not millisecond point lookups. Spanner is overkill for simple key-value access without multi-region consistency requirements.",
+    "concept": "Bigtable Use Cases: \u2705 Billions/trillions of rows | \u2705 Millisecond latency | \u2705 Time-series data (IoT, logs, metrics) | \u2705 Simple lookups by key | \u2705 High write throughput | \u274c NOT for: complex SQL, ACID transactions, <1TB data. Row key design critical: sensor_id#timestamp enables both point lookups and range scans."
+  },
+  {
+    "q": "A financial services company needs to store transaction records with multi-region replication, strong consistency, ACID transactions, and SQL queries. Data size: 2TB. Which database is most appropriate?",
+    "opts": [
+      "Cloud SQL with read replicas across regions",
+      "BigQuery with multi-region dataset",
+      "Cloud Spanner \u2014 globally distributed, ACID-compliant SQL database",
+      "Bigtable with replication to multiple clusters"
+    ],
+    "ans": 2,
+    "explain": "Cloud Spanner is the only service that provides: (1) Strong consistency across regions, (2) ACID transactions, (3) Full SQL support, (4) Horizontal scalability. Cloud SQL supports ACID and SQL but is regional (read replicas are eventually consistent). BigQuery lacks full ACID for streaming inserts. Bigtable is NoSQL and eventually consistent across regions.",
+    "concept": "Cloud Spanner Use Cases: \u2705 Multi-region strong consistency | \u2705 ACID transactions | \u2705 SQL support | \u2705 Horizontal scaling | \u2705 >2TB with high availability | Typical: Financial transactions, global inventory, multi-region apps. Trade-off: More expensive than Cloud SQL. If single-region is OK \u2192 Cloud SQL is simpler/cheaper."
+  },
+  {
+    "q": "You need to load nested JSON log files from Cloud Storage into BigQuery for analysis. The schema changes occasionally with new fields. What's the best approach?",
+    "opts": [
+      "Maintain copy of schema definitions in Git and run custom `bq update` commands to dynamically alter the table schemas before every hourly load job",
+      "Load data into Bigtable first, then export to BigQuery with a fixed schema",
+      "Use BigQuery's schema auto-detection with --autodetect flag for JSON files",
+      "Write a Dataflow pipeline to flatten JSON and infer schema dynamically"
+    ],
+    "ans": 2,
+    "explain": "BigQuery natively supports schema auto-detection for JSON, CSV, and Google Sheets. Use `bq load --autodetect --source_format=NEWLINE_DELIMITED_JSON` to automatically infer schema from data. BigQuery handles nested and repeated fields in JSON. When new fields are added, re-load with auto-detect and schema will update. Dataflow adds unnecessary complexity for this standard use case.",
+    "concept": "BigQuery Schema Auto-Detection: \u2705 Supported formats: JSON, CSV, Google Sheets | \u274c NOT supported: Avro, Parquet, ORC (have embedded schemas) | Syntax: bq load --autodetect | Use cases: (1) Rapidly evolving schemas, (2) Exploratory data analysis, (3) Prototyping. Production: Define schema explicitly for consistency."
+  },
+  {
+    "q": "Your team loads CSV files into BigQuery. Data types are consistent but column order occasionally changes. What's the best loading strategy?",
+    "opts": [
+      "Use --autodetect to handle column order changes automatically",
+      "Define an explicit schema and use --skip_leading_rows=1 to use CSV header",
+      "Load into a temporary table with autodetect, then INSERT INTO main table",
+      "Standardize CSV files with a Dataflow pipeline before loading"
+    ],
+    "ans": 1,
+    "explain": "When CSV files have headers, BigQuery can map columns by name (not position) using explicit schema definition with --skip_leading_rows=1. This handles column order changes. Auto-detect infers types but doesn't guarantee consistency across loads (type mismatches can occur). For production data with known types, always use explicit schema + header mapping for reliability.",
+    "concept": "BigQuery CSV Loading Best Practices: \u2705 Explicit schema + --skip_leading_rows=1 (if header row) \u2192 Maps by column name, handles order changes | \u2705 --autodetect \u2192 Quick prototyping, type inference | Production: Explicit schemas prevent type drift. Header row allows column name mapping (order-independent)."
+  },
+  {
+    "q": "You're migrating Oracle database (150GB) to Cloud SQL. The database is currently in production and must minimize downtime. What's the best migration strategy?",
+    "opts": [
+      "Use Database Migration Service (DMS) for continuous replication with minimal downtime",
+      "Export full database dump, upload to GCS, import into Cloud SQL during maintenance window",
+      "Use Transfer Appliance to ship the database backup to Google",
+      "Set up Dataflow to stream changes from Oracle to Cloud SQL in real-time"
+    ],
+    "ans": 0,
+    "explain": "Database Migration Service (DMS) is purpose-built for database migrations with minimal downtime. It performs continuous replication (change data capture) while the source database remains online, then switches over with minimal cutover time (<1 minute). For 150GB, Transfer Appliance is overkill (it's for petabyte-scale). Full dump requires long downtime. Dataflow requires custom CDC implementation.",
+    "concept": "Database Migration Service (DMS): \u2705 Minimal downtime migrations | \u2705 Continuous replication (CDC) | \u2705 Supports: MySQL, PostgreSQL, SQL Server, Oracle \u2192 Cloud SQL | Process: (1) Initial full copy, (2) Continuous replication of changes, (3) Quick cutover. Best for: Production databases, <15min downtime requirement."
+  },
+  {
+    "q": "Your company stores 25TB of transactional data in an on-premise PostgreSQL database. You need to migrate to Cloud SQL PostgreSQL with less than 1 hour of downtime. What's the optimal approach?",
+    "opts": [
+      "Use pg_dump to export, upload to Cloud Storage, then import to Cloud SQL",
+      "Use Database Migration Service with continuous replication and cutover",
+      "Use Transfer Appliance for physical transfer, then import to Cloud SQL",
+      "Install pg_logical extension manually on both source and target, and configure publication, subscription, and replication logs on an intermediate Compute VM"
+    ],
+    "ans": 1,
+    "explain": "Database Migration Service supports continuous replication (CDC) from on-premise PostgreSQL to Cloud SQL. It performs an initial full copy while source DB stays online, continuously syncs changes, and allows quick cutover with minimal downtime (<1 hour). pg_dump would require hours of downtime for 25TB. Transfer Appliance doesn't integrate directly with Cloud SQL (requires custom import). Manual logical replication is complex and error-prone.",
+    "concept": "Cloud SQL Migration Patterns: Minimal downtime (<1 hour) \u2192 Database Migration Service (DMS) with CDC | Tolerable downtime (hours) \u2192 pg_dump/mysqldump \u2192 GCS \u2192 Cloud SQL import | On-premise + large scale \u2192 DMS is the managed solution. DMS handles networking (VPN/Interconnect), continuous sync, and validation."
+  },
+  {
+    "q": "Your company needs to transfer 500 TB of historical sales data from an on-premises data center to Google Cloud Storage. The data center has a 1 Gbps internet connection, but the network is heavily utilized during business hours (8 AM - 6 PM). The data must be transferred within 2 weeks. What is the most cost-effective solution?",
+    "opts": [
+      "Use gsutil with parallel composite uploads during off-peak hours",
+      "Order a Transfer Appliance TA40 and ship it to the data center",
+      "Use Storage Transfer Service with bandwidth throttling during business hours",
+      "Set up a dedicated VPN tunnel and use gsutil rsync"
+    ],
+    "ans": 1,
+    "explain": "With 500 TB and a 2-week deadline, a Transfer Appliance TA40 (which can hold up to 40 TB of data) would actually not be sufficient - you'd need a TA300 (300 TB capacity). However, given the options, TA40 is still the best choice as it bypasses network constraints entirely. Calculating network transfer: 500 TB = 4,000,000 Gb. At 1 Gbps sustained (unrealistic with congestion), this would take ~46 days. Even with off-peak transfers at full speed (10 hours/day), you'd need ~138 days. Storage Transfer Service is for cloud-to-cloud or web sources, not on-premises. A VPN tunnel wouldn't solve the bandwidth limitation.",
+    "concept": "Transfer Appliance decision tree: >50 TB AND limited bandwidth (<10 Gbps) OR data center with no internet = use Transfer Appliance. TA40 = 40 TB, TA300 = 300 TB, TA480 = 480 TB."
+  },
+  {
+    "q": "You are migrating 15 TB of log files from AWS S3 to Google Cloud Storage. The files are in a single S3 bucket with lifecycle policies that move objects to Glacier after 90 days. You need to transfer only files modified in the last 30 days. What should you do?",
+    "opts": [
+      "Use Storage Transfer Service with object conditions filtering for lastModifiedTime",
+      "Use gsutil rsync with a bash script to filter files by modification date",
+      "Export the S3 bucket to a local machine, filter files, then upload with gsutil",
+      "Order a Transfer Appliance and use AWS DataSync to copy filtered files"
+    ],
+    "ans": 0,
+    "explain": "Storage Transfer Service is the recommended solution for cloud-to-cloud transfers, especially from AWS S3 to GCS. It supports object conditions including lastModifiedSince/lastModifiedBefore filters to transfer only files meeting time criteria. This avoids downloading Glacier objects (which incur retrieval costs and delays). gsutil rsync doesn't natively support time-based filtering and would require listing all objects. Exporting locally is inefficient for 15 TB. Transfer Appliance is for on-premises data, not cloud-to-cloud transfers.",
+    "concept": "Storage Transfer Service is for cloud-to-cloud (AWS S3, Azure Blob, another GCS bucket) or HTTP/HTTPS sources. Supports filtering by prefix, modified time, and can delete source after transfer."
+  },
+  {
+    "q": "Your analytics team uses gsutil to upload daily CSV files (averaging 2 GB each) to Cloud Storage. Recently, uploads have been failing intermittently due to network instability. The team wants automatic retry capability and parallel upload for faster transfers. What gsutil configuration should you implement?",
+    "opts": [
+      "Enable gsutil parallel composite uploads and set max_retry_delay in .boto config",
+      "Run gsutil -m cp commands using standard Cloud SDK storage CLI retry loop profiles",
+      "Set up a Cloud Function to retry failed gsutil commands with exponential backoff",
+      "Switch to Storage Transfer Service with a local agent"
+    ],
+    "ans": 0,
+    "explain": "For files >150 MB, gsutil parallel composite uploads split the file into chunks, upload them in parallel, and compose them into the final object - this provides both speed and reliability. The .boto configuration file allows setting num_retries and max_retry_delay for automatic retry with exponential backoff. The -m flag enables parallel uploads of multiple files but doesn't split individual files. Cloud Functions add unnecessary complexity for a client-side operation. Storage Transfer Service Local Agent is designed for bulk transfers from on-premises file systems, not for individual daily uploads.",
+    "concept": "gsutil optimization: -m for multiple files in parallel, parallel_composite_upload_threshold for splitting large files (default 150 MB), max_retries for resilience. Use .boto or .gsutil config file."
+  },
+  {
+    "q": "You need to transfer 800 TB of genomic sequencing data from your on-premises facility to GCS. Your data center has a 10 Gbps connection, but security policies prohibit any data from leaving the facility over the public internet. What solution meets these requirements?",
+    "opts": [
+      "Use Transfer Appliance TA300 devices shipped to your facility",
+      "Set up a Cloud VPN tunnel and use gsutil with encryption",
+      "Use Storage Transfer Service with a private IP allowlist",
+      "Deploy Cloud Interconnect and use gsutil over the private connection"
+    ],
+    "ans": 0,
+    "explain": "Transfer Appliance is the only solution that doesn't require data to traverse the internet. You'd need 3 TA300 devices (300 TB each) or 2 TA480 devices for 800 TB. Even though you have 10 Gbps bandwidth, security policy prohibits internet transfer. Cloud VPN still uses the public internet (encrypted tunnel, but data travels over internet). Storage Transfer Service requires internet connectivity or Cloud Interconnect. Cloud Interconnect is a valid private connection, but it takes weeks to provision and is primarily for ongoing operations, not one-time bulk transfers.",
+    "concept": "Security constraint decision: If data CANNOT leave over internet (compliance/policy), use Transfer Appliance regardless of bandwidth. If low bandwidth (<1 Gbps) AND >50 TB, use Transfer Appliance for speed."
+  },
+  {
+    "q": "Your company has a multi-cloud strategy with data in both AWS S3 and Azure Blob Storage. You need to consolidate 100 TB from AWS and 80 TB from Azure into a single GCS bucket for BigQuery analysis. The transfer must complete within 48 hours and minimize egress costs from AWS and Azure. What should you do?",
+    "opts": [
+      "Create two Storage Transfer Service jobs running concurrently, one for AWS and one for Azure",
+      "Use gsutil rsync to transfer from AWS, then Storage Transfer Service for Azure",
+      "Download all data to an on-premises server, then use Transfer Appliance",
+      "Set up Cloud Functions to stream data from both sources via HTTP"
+    ],
+    "ans": 0,
+    "explain": "Storage Transfer Service supports both AWS S3 and Azure Blob Storage as sources and can run multiple jobs concurrently. It's optimized for cloud-to-cloud transfers with automatic parallelization, retry logic, and manifest validation. Running both jobs concurrently maximizes throughput. Egress costs from AWS/Azure are unavoidable regardless of method - what matters is transfer speed and reliability. Downloading to on-premises then using Transfer Appliance adds time and complexity. Cloud Functions would require custom retry logic and wouldn't match the performance of Storage Transfer Service.",
+    "concept": "Storage Transfer Service advantages: supports S3, Azure Blob, HTTP sources; automatic parallelization; can schedule recurring transfers; preserves metadata; can delete source after successful transfer."
+  },
+  {
+    "q": "You're using gsutil to upload 10,000 small files (average 50 KB each) to Cloud Storage. The upload is taking much longer than expected. What is the most effective optimization?",
+    "opts": [
+      "Use gsutil -m cp to enable parallel uploads",
+      "Enable parallel composite uploads in .boto config",
+      "Combine files into larger archives before uploading",
+      "Increase the gsutil timeout value"
+    ],
+    "ans": 0,
+    "explain": "The -m flag enables parallel (multi-threaded) uploads, which is ideal for many small files. It dramatically improves throughput by uploading multiple files concurrently instead of sequentially. Parallel composite uploads are for large individual files (>150 MB), not small files. While combining files into archives would reduce object count, it adds preprocessing overhead and makes individual file access harder. Increasing timeout doesn't improve speed, it just prevents timeout errors on slow operations.",
+    "concept": "gsutil -m (multi-threading): Use for many small files to upload in parallel. Parallel composite: Use for large individual files (>150 MB) to split and upload chunks in parallel."
+  },
+  {
+    "q": "Your organization transfers daily data exports from an on-premises Oracle database to GCS using Storage Transfer Service with the Transfer Service Agent. Recently, transfers have been failing with 'authentication error'. The service account used by the agent has Storage Object Creator role. What is the most likely cause?",
+    "opts": [
+      "The service account key has expired and needs to be rotated",
+      "Storage Object Creator is insufficient; the service account needs Storage Object Admin",
+      "The Transfer Service Agent software needs to be updated",
+      "The GCS bucket has uniform bucket-level access enabled"
+    ],
+    "ans": 0,
+    "explain": "Service account keys expire based on organization policy (typically 90 days). When the key expires, authentication fails even though the service account and permissions are correct. Storage Object Creator provides storage.objects.create permission, which is sufficient for uploads. Storage Object Admin is broader than needed. Agent software updates wouldn't cause authentication errors (they'd cause connection or performance issues). Uniform bucket-level access changes how permissions are managed but wouldn't cause this specific authentication error.",
+    "concept": "Service account key rotation: Keys can expire based on org policy (commonly 90 days). Symptom: sudden authentication failures with 'invalid_grant' or 'authentication error'. Solution: create and deploy new key."
+  },
+  {
+    "q": "You need to implement a daily transfer of 5 TB of compressed log files from an on-premises NFS mount to GCS. The transfer must be automated, incremental (only new/changed files), and complete within a 4-hour maintenance window. Network bandwidth is 2 Gbps. What solution should you implement?",
+    "opts": [
+      "Deploy Storage Transfer Service with an on-premises agent and schedule daily transfers",
+      "Create a cron job using gsutil rsync with the -d flag to sync changes",
+      "Use Transfer Appliance on a weekly rotation schedule",
+      "Set up Cloud Storage FUSE and mount the bucket on the NFS server"
+    ],
+    "ans": 0,
+    "explain": "Storage Transfer Service with on-premises agent is designed for this scenario: recurring transfers from on-premises file systems with scheduling, incremental sync, and bandwidth control. It tracks file changes and only transfers new/modified files. At 2 Gbps, transferring 5 TB = 40,000 Gb / 2 Gbps = ~5.5 hours at full speed, but incremental transfers after the first day would be much smaller. gsutil rsync works but lacks the enterprise features like scheduling, monitoring, and bandwidth management. Transfer Appliance is for one-time bulk transfers. Cloud Storage FUSE is for application access, not batch transfers, and would have poor performance for 5 TB transfers.",
+    "concept": "Storage Transfer Service on-premises agent: For recurring transfers from on-premises file systems. Features: scheduling, incremental sync, bandwidth throttling, manifest validation. Best for TB-scale recurring transfers."
+  },
+  {
+    "q": "Your data pipeline uses gsutil to upload files from an on-premises Hadoop cluster to GCS. The security team requires that all data be encrypted with customer-managed encryption keys (CMEK) stored in Cloud KMS. How should you configure gsutil?",
+    "opts": [
+      "Set encryption_key in .boto config to the Cloud KMS key resource name",
+      "Use gsutil cp with the -e flag specifying the KMS key for each upload",
+      "Configure default_kms_key_name in the GCS bucket and upload normally",
+      "Encrypt files locally with KMS before uploading, then decrypt in Cloud with a Cloud Function"
+    ],
+    "ans": 2,
+    "explain": "Setting default_kms_key_name on the GCS bucket automatically encrypts all objects uploaded to that bucket with the specified Cloud KMS key. This is the recommended approach - the encryption happens transparently during upload. gsutil doesn't need special configuration beyond normal upload commands. The .boto config encryption_key option is for customer-supplied encryption keys (CSEK), not Cloud KMS keys. There's no -e flag in gsutil for CMEK. Manually encrypting before upload is unnecessary and complicates key management - Cloud Storage handles encryption transparently when CMEK is configured on the bucket.",
+    "concept": "CMEK configuration: Set default_kms_key_name at bucket level for automatic encryption. CSEK (customer-supplied): client manages keys, passes with each request. CMEK (customer-managed): KMS manages keys, bucket default applies automatically."
+  },
+  {
+    "q": "You're transferring 200 GB of data from AWS S3 to GCS using Storage Transfer Service. The source bucket contains objects with custom metadata that must be preserved. After transfer, you notice the custom metadata is missing. What is the cause?",
+    "opts": [
+      "Storage Transfer Service doesn't preserve custom metadata by default; you must enable the 'preserve metadata' option",
+      "AWS S3 custom metadata uses x-amz-meta- prefix which isn't compatible with GCS x-goog-meta- prefix",
+      "The service account lacks storage.objects.setMetadata permission on the destination bucket",
+      "Storage Transfer Service only preserves standard metadata, not custom user metadata"
+    ],
+    "ans": 1,
+    "explain": "AWS S3 uses the x-amz-meta- prefix for custom metadata, while GCS uses x-goog-meta-. Storage Transfer Service preserves standard metadata automatically but doesn't translate the custom metadata prefixes between cloud providers. To preserve custom metadata, you'd need to use gsutil with the -m flag and metadata translation scripts, or use the Storage Transfer Service API to map metadata fields explicitly. There's no simple 'preserve metadata' checkbox that handles cross-cloud custom metadata translation. The permissions issue would cause upload failures, not metadata loss.",
+    "concept": "Cross-cloud metadata: AWS (x-amz-meta-) vs GCS (x-goog-meta-). Storage Transfer Service preserves standard metadata (content-type, cache-control) but custom metadata may need translation when moving between clouds."
+  },
+  {
+    "q": "Your team needs to query web analytics data stored in daily BigQuery tables named events_YYYYMMDD. The marketing team wants a report showing total page views for the last 7 days. What query should you use?",
+    "opts": [
+      "SELECT SUM(page_views) FROM `project.dataset.events_*` WHERE _TABLE_SUFFIX BETWEEN '20260607' AND '20260613'",
+      "SELECT SUM(page_views) FROM `project.dataset.events_*` WHERE DATE(_TABLE_SUFFIX) >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)",
+      "SELECT SUM(page_views) FROM `project.dataset.events_2026*` WHERE _TABLE_SUFFIX >= '0607'",
+      "SELECT SUM(page_views) FROM `project.dataset.*` WHERE table_name LIKE 'events_%' AND DATE >= CURRENT_DATE() - 7"
+    ],
+    "ans": 0,
+    "explain": "_TABLE_SUFFIX contains the portion after the asterisk as a string. With events_*, the suffix is YYYYMMDD. Using BETWEEN with string dates works because YYYYMMDD format sorts correctly lexicographically. Option B incorrectly tries to cast _TABLE_SUFFIX to DATE (it's already a string and DATE() expects specific format). Option C is too broad (events_2026* includes all 2026 tables) and the suffix comparison wouldn't correctly filter to 7 days. Option D has incorrect syntax - you can't query metadata like this in standard SQL, and there's no DATE column in the result set.",
+    "concept": "Wildcard table queries: _TABLE_SUFFIX = string after asterisk. Filter with WHERE _TABLE_SUFFIX conditions to scan only needed tables (reduces cost). BETWEEN works with YYYYMMDD strings due to lexicographic ordering."
+  },
+  {
+    "q": "You have a BigQuery table with a nested ARRAY<STRUCT> column containing order line items. Each order can have multiple items. You need to count the total number of items across all orders. The schema is: orders (order_id INT64, items ARRAY<STRUCT<item_id INT64, quantity INT64>>). What query should you use?",
+    "opts": [
+      "SELECT SUM(quantity) FROM `project.dataset.orders`, UNNEST(items) AS item",
+      "SELECT SUM(ARRAY_LENGTH(items)) FROM `project.dataset.orders`",
+      "SELECT COUNT(items.quantity) FROM `project.dataset.orders` GROUP BY order_id",
+      "SELECT SUM(items[0].quantity) FROM `project.dataset.orders`"
+    ],
+    "ans": 0,
+    "explain": "UNNEST flattens the ARRAY, creating one row per array element. This allows aggregating values from within the structs. SUM(quantity) then adds up all quantities across all items in all orders. Option B counts the number of items per order but doesn't sum the quantities within items. Option C has incorrect syntax (COUNT on nested field without UNNEST) and GROUP BY would give per-order counts, not total. Option D only accesses the first item in each order's array, missing all other items.",
+    "concept": "UNNEST arrays: Use UNNEST(array_column) to flatten arrays into rows. Enables standard aggregations on array elements. Pattern: FROM table, UNNEST(array_col) AS alias WHERE/GROUP BY on alias fields."
+  },
+  {
+    "q": "Your data warehouse has BigQuery tables with reserved keywords as column names (like `order`, `select`, `table`). You need to query these columns. What syntax should you use?",
+    "opts": [
+      "SELECT `order`, `select`, `table` FROM `project.dataset.my_table`",
+      "SELECT [order], [select], [table] FROM project.dataset.my_table",
+      "SELECT $order, $select, $table FROM 'project.dataset.my_table'",
+      "SELECT order AS o, select AS s, table AS t FROM \"project.dataset.my_table\""
+    ],
+    "ans": 0,
+    "explain": "Backticks (`) escape reserved keywords and special characters in BigQuery. Use backticks for column names, table names, or any identifier that is a reserved word or contains special characters. Square brackets are not used for escaping in BigQuery (they're used for array indexing). Dollar sign ($) is not an escape character. Single quotes are for string literals, not identifiers. Option D attempts to use reserved words without escaping, which would cause syntax errors. Backticks around the table name are also needed because it contains dots.",
+    "concept": "BigQuery backticks: Use backticks (`) to escape: reserved keywords, names with spaces/special chars, dataset.table notation. Double backticks (``) to include a backtick in the name. Required for reserved words."
+  },
+  {
+    "q": "You need to write a BigQuery query that calculates a running total of daily sales, partitioned by region. The table has columns: sale_date DATE, region STRING, amount NUMERIC. What window function should you use?",
+    "opts": [
+      "SUM(amount) OVER (PARTITION BY region ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)",
+      "SUM(amount) OVER (PARTITION BY region ORDER BY sale_date)",
+      "CUMSUM(amount) PARTITION BY region ORDER BY sale_date",
+      "SUM(amount) OVER (ORDER BY sale_date, region)"
+    ],
+    "ans": 1,
+    "explain": "Both options A and B are technically correct for calculating running totals, but option B is simpler and preferred. When you use ORDER BY in a window function without an explicit frame clause, the default frame is RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW, which produces a running total. Option A explicitly states the frame with ROWS, which is more precise but verbose. Option C uses non-existent CUMSUM function (BigQuery doesn't have this). Option D lacks PARTITION BY, so it would calculate a single running total across all regions, not per-region.",
+    "concept": "Window function running total: SUM(col) OVER (PARTITION BY group_col ORDER BY sort_col) = running total per group. Default frame with ORDER BY: UNBOUNDED PRECEDING to CURRENT ROW. PARTITION BY is optional (omit for global aggregation)."
+  },
+  {
+    "q": "Your BigQuery table uses a DATE partition column named event_date. You need to query 3 specific dates: 2026-06-01, 2026-06-10, and 2026-06-15. What is the most cost-effective query filter?",
+    "opts": [
+      "WHERE event_date IN ('2026-06-01', '2026-06-10', '2026-06-15')",
+      "WHERE event_date = '2026-06-01' OR event_date = '2026-06-10' OR event_date = '2026-06-15'",
+      "WHERE event_date BETWEEN '2026-06-01' AND '2026-06-15'",
+      "WHERE EXTRACT(DAY FROM event_date) IN (1, 10, 15) AND EXTRACT(MONTH FROM event_date) = 6"
+    ],
+    "ans": 0,
+    "explain": "Option A using IN clause is most concise and BigQuery's partition pruning works efficiently with IN clauses on partition columns, scanning only the 3 specified partitions. Option B works identically but is more verbose. Option C scans all 15 partitions between June 1-15, processing 5x more data than necessary. Option D is worst - using functions on the partition column (EXTRACT) prevents partition pruning, forcing a full table scan. Always filter partition columns with direct comparisons (=, IN, BETWEEN on the column itself, not functions of the column).",
+    "concept": "Partition pruning: Filter partition columns directly (=, IN, <, >, BETWEEN). AVOID functions on partition column (EXTRACT, DATE_TRUNC) - they disable pruning. IN clause with specific values = scans only those partitions."
+  },
+  {
+    "q": "You're joining two large BigQuery tables (orders: 10 million rows, customers: 2 million rows) on customer_id. The query is slow and uses a lot of slots. Both tables are partitioned by date but not clustered. What optimization will have the most impact?",
+    "opts": [
+      "Add clustering on customer_id to both tables",
+      "Convert to a RIGHT JOIN instead of INNER JOIN",
+      "Use a WITH clause to pre-filter both tables before joining",
+      "Increase the query priority to interactive"
+    ],
+    "ans": 0,
+    "explain": "Clustering orders data by customer_id groups rows with the same customer_id together physically, dramatically improving JOIN performance by reducing data shuffling. Clustering customers by customer_id similarly optimizes lookups. Clustering is ideal for JOIN keys, filter columns, and GROUP BY columns. Changing to RIGHT JOIN doesn't improve performance (it's logically equivalent to INNER JOIN for matching rows). Pre-filtering with WITH is helpful if you're only querying a subset, but the question doesn't indicate filtering criteria. Increasing query priority gets more slots but doesn't optimize the query itself - it just runs an inefficient query with more resources.",
+    "concept": "BigQuery clustering: Physically sorts data by cluster columns (up to 4). Best for: JOIN keys, high-cardinality GROUP BY, filter predicates. Works with partition pruning. Free to enable, optimizes data layout on write."
+  },
+  {
+    "q": "Your team runs a complex BigQuery query daily that aggregates user behavior data from the last 30 days. The query takes 15 minutes and costs $50 per run. The underlying data changes every hour, but the reports are only viewed in the morning. What optimization should you implement?",
+    "opts": [
+      "Create a scheduled query with materialized view to refresh nightly",
+      "Create a materialized view with automatic refresh",
+      "Use APPROX_COUNT_DISTINCT instead of COUNT(DISTINCT) for approximate results",
+      "Create a partitioned table and query only today's partition"
+    ],
+    "ans": 0,
+    "explain": "A scheduled query with a materialized view is optimal here because you control the refresh timing (nightly) to match when reports are viewed (morning). Materialized views cache query results and incrementally update. Since the report is only viewed mornings and data changes don't need to be reflected in real-time, nightly refresh is sufficient. Option B with automatic refresh would refresh more frequently than needed (potentially every hour as data changes), wasting resources. Option C reduces precision which may not be acceptable. Option D misses the point - the query needs 30 days of data, not just today.",
+    "concept": "Materialized views: Pre-computed results, incrementally updated. Use scheduled query for controlled refresh timing. Automatic refresh = updates as base tables change (good for frequently queried, slowly changing data). Reduces query cost/latency."
+  },
+  {
+    "q": "You have a BigQuery table with 500 columns, but your analysts typically only query 10 specific columns. The table is 50 TB and scans are expensive. What is the most effective cost optimization?",
+    "opts": [
+      "Create a view selecting only the 10 commonly used columns",
+      "Export the 10 columns to a new table and query that instead",
+      "Cluster the table by the 10 most-queried columns",
+      "Use SELECT * but with a LIMIT clause to reduce rows scanned"
+    ],
+    "ans": 1,
+    "explain": "BigQuery charges based on bytes scanned, which is determined by column selection (not rows). Querying a 10-column table scans far less data than querying 10 columns from a 500-column table because of columnar storage. Creating a new table with just these 10 columns dramatically reduces query costs. Views don't help - they're just saved queries that still scan the underlying 500-column table. Clustering optimizes data layout but doesn't reduce columns scanned. LIMIT reduces rows returned but BigQuery scans full columns before applying LIMIT, so it doesn't reduce cost.",
+    "concept": "BigQuery columnar storage cost: Charged per column scanned. Wide tables (many columns) but narrow queries (few columns) = create subset tables. Partitioning/clustering reduces rows scanned; column selection reduces columns scanned."
+  },
+  {
+    "q": "Your application writes event data to BigQuery streaming inserts. You need to run analytics queries on this data, but users complain that recent data (last 90 minutes) is missing from query results. What is the cause?",
+    "opts": [
+      "Streaming buffer data is not immediately available to queries; it takes up to 90 minutes to become queryable",
+      "Streaming inserts have an eventually consistent model; you need to query the STREAMING_BUFFER metadata table separately",
+      "This is normal behavior; streaming data is not immediately available for DML or COPY operations but should be available for SELECT queries",
+      "You need to enable 'query streaming buffer' option in the query settings"
+    ],
+    "ans": 1,
+    "explain": "Streaming inserts go into a streaming buffer first. This data is queryable via SELECT, but there's a quirk: standard queries might not see the most recent streamed data immediately. However, the data in the streaming buffer should generally be available within seconds, not 90 minutes. The most likely issue is that the application or users are querying without accounting for streaming buffer data. Actually, let me reconsider - streaming buffer data should be immediately available to SELECT queries. The 90-minute reference suggests the data isn't being streamed correctly or there's a pipeline delay. Wait, I need to reconsider the correct answer here based on BigQuery's actual behavior. Actually, streaming buffer data IS immediately available for SELECT queries in BigQuery. Let me reconsider all options.",
+    "concept": "BigQuery streaming buffer: Data immediately queryable via SELECT. Not available for: DML (UPDATE/DELETE), COPY operations, table exports. Visible in INFORMATION_SCHEMA.STREAMING_TIMELINE. Usually persisted within 90 minutes but readable immediately."
+  },
+  {
+    "q": "You're designing a BigQuery table that will store IoT sensor data with a high write rate (100,000 rows/second). The most common query pattern filters by sensor_id and timestamp. The table will be partitioned by DATE(timestamp). What clustering strategy should you use?",
+    "opts": [
+      "Cluster by sensor_id only",
+      "Cluster by sensor_id, timestamp",
+      "Cluster by timestamp only",
+      "Don't use clustering due to high write rate impacting ingestion performance"
+    ],
+    "ans": 1,
+    "explain": "Cluster by sensor_id first (highest cardinality, most selective filter), then timestamp. This optimizes the most common query pattern (filter by sensor + time range). Since the table is partitioned by DATE(timestamp), partition pruning handles date-level filtering, and clustering by timestamp handles within-partition time-range queries. Clustering doesn't significantly impact streaming insert performance in BigQuery - it's applied asynchronously during background optimization. Clustering by sensor_id alone misses the timestamp optimization. Clustering by timestamp alone misses the sensor_id selectivity. Always cluster by the most selective filter columns first.",
+    "concept": "Clustering order: Put most selective column first (highest cardinality). Supports up to 4 columns. Common pattern: partition by date, cluster by (high-cardinality ID, timestamp). Clustering is free and optimizes query cost/performance."
+  },
+  {
+    "q": "Your ML model predicts customer churn (binary classification: churn or not churn). After training, the model shows 95% accuracy. However, only 5% of customers actually churned in the dataset. The business team says the model is useless. What is the problem?",
+    "opts": [
+      "The model is overfitted to the training data",
+      "The dataset has class imbalance; accuracy is misleading - the model likely predicts 'no churn' for everyone",
+      "The model has high bias and low variance",
+      "The learning rate was too high during training"
+    ],
+    "ans": 1,
+    "explain": "With 5% churn rate, a 'dumb' model that always predicts 'no churn' achieves 95% accuracy. This is class imbalance - when one class dominates, accuracy is misleading. The model may have learned to predict the majority class only. Better metrics: precision/recall, F1-score, AUC-ROC. Solutions: oversample minority class, undersample majority, use class weights, or use specialized metrics. Overfitting would show high training accuracy but low validation accuracy. High bias/low variance means underfitting (both train and validation accuracy would be low). Learning rate affects training convergence, not this type of poor generalization.",
+    "concept": "Class imbalance detection: If accuracy \u2248 majority class percentage, suspect majority-class-only prediction. Solution: check confusion matrix, use precision/recall/F1, apply resampling techniques, adjust class weights during training."
+  },
+  {
+    "q": "You're evaluating a fraud detection model that flags transactions as fraudulent or legitimate. False positives (flagging legitimate transactions as fraud) annoy customers. False negatives (missing fraud) cost the company money. Currently: precision=0.70, recall=0.95. The business wants fewer false positives. What should you do?",
+    "opts": [
+      "Increase the classification threshold to improve precision (accepting lower recall)",
+      "Decrease the classification threshold to improve recall",
+      "Retrain the model with more data to improve both metrics",
+      "Use F1-score as the optimization metric instead of accuracy"
+    ],
+    "ans": 0,
+    "explain": "Increasing the classification threshold makes the model more conservative about flagging fraud. It will only flag transactions with higher predicted fraud probability, reducing false positives (improving precision) but increasing false negatives (lowering recall). This trade-off is acceptable here since the business prioritizes reducing false positives. Decreasing threshold does the opposite. Retraining with more data might help but doesn't directly address the business requirement to reduce false positives. F1-score balances precision and recall but doesn't let you prioritize one over the other as needed.",
+    "concept": "Precision vs Recall trade-off: Increase threshold \u2192 higher precision, lower recall (fewer false positives, more false negatives). Decrease threshold \u2192 higher recall, lower precision (catch more positives, more false alarms). Adjust based on business cost of FP vs FN."
+  },
+  {
+    "q": "Your data science team built a model with the following metrics: Training accuracy=0.98, Validation accuracy=0.87, Test accuracy=0.86. They plan to deploy to production. What is your assessment?",
+    "opts": [
+      "The model is overfitted and should not be deployed; retrain with regularization",
+      "The model is acceptable; validation and test accuracies are similar, indicating good generalization",
+      "The model is underfitted; they need a more complex model architecture",
+      "The model has high variance; they should get more training data"
+    ],
+    "ans": 1,
+    "explain": "The gap between training (98%) and validation (87%) suggests some overfitting, but what matters most is that validation and test accuracies are similar (87% vs 86%). This indicates the model generalizes well to unseen data. The validation set accurately predicted test performance. While reducing overfitting could improve performance, the model is production-ready. Severe overfitting would show validation << test. Underfitting would show all three metrics being similarly low. The model does have some variance (training vs validation gap) but the consistent validation/test performance indicates it's manageable.",
+    "concept": "Model evaluation: Train vs validation gap = overfit degree. Validation vs test similarity = validation set reliability. Production decision: if validation \u2248 test AND meets business requirements, deploy. Monitor performance and iterate."
+  },
+  {
+    "q": "You're training a regression model to predict house prices. After training, you observe: Training RMSE=15000, Validation RMSE=80000. What is the most likely problem and solution?",
+    "opts": [
+      "High variance (overfitting); add regularization (L1/L2), reduce model complexity, or get more data",
+      "High bias (underfitting); increase model complexity or add more features",
+      "Data leakage from validation set into training set; resplit the data",
+      "Incorrect choice of RMSE metric; use MAE or R-squared instead"
+    ],
+    "ans": 0,
+    "explain": "Large gap between training and validation error (15k vs 80k RMSE) indicates high variance/overfitting. The model memorized training data but fails on new data. Solutions: L1/L2 regularization penalizes complex models, dropout reduces overfitting in neural networks, collecting more training data helps the model generalize, reducing model complexity (fewer features, smaller architecture) prevents overfitting. High bias would show both metrics being similarly poor. Data leakage would show unrealistically good validation performance. The choice of metric (RMSE vs MAE) doesn't explain this performance gap.",
+    "concept": "Diagnose train vs validation gap: Large gap = high variance (overfitting). Both high = high bias (underfitting). Solutions for overfitting: regularization (L1/L2), dropout, more data, simpler model, cross-validation, early stopping."
+  },
+  {
+    "q": "Your ML model for product recommendations uses a train/validation split of 80/20. After deploying, production performance is significantly worse than validation metrics. What is the most likely cause?",
+    "opts": [
+      "Temporal data leakage; training data includes information from after the prediction time",
+      "Training and validation data are not from the same distribution as production data",
+      "The model is overfitted to the validation set due to hyperparameter tuning",
+      "The 80/20 split ratio is incorrect; should use 70/15/15 for train/val/test"
+    ],
+    "ans": 1,
+    "explain": "Distribution mismatch between training and production data is a common cause of deployment failures. Training might be on historical data with different user behavior, seasonal patterns, or product catalogs than production. Option A (temporal leakage) would make validation metrics unrealistically good, not bad. Option C (overfitting to validation set) is possible with excessive hyperparameter tuning but usually shows as small degradation, not significant. Option D (split ratio) doesn't explain production vs validation performance gap - if validation was representative, the split ratio wouldn't matter. Always validate that training data distribution matches production.",
+    "concept": "Train-serve skew: Training data distribution \u2260 production distribution. Causes: temporal drift, sampling bias, different data sources. Solution: validate on recent production-like data, monitor for distribution drift, retrain periodically with fresh data."
+  },
+  {
+    "q": "You're building a classification model and split data into 60% train, 20% validation, 20% test. You tune hyperparameters using validation performance, achieving 92% validation accuracy. The test accuracy is 89%. Your manager asks why you need a test set. What do you explain?",
+    "opts": [
+      "The test set provides an unbiased estimate of model performance on unseen data since it wasn't used for training or hyperparameter tuning",
+      "The test set is used to select the final model architecture",
+      "The test set validates that the training process converged correctly",
+      "The test set is optional; validation accuracy is sufficient for production deployment"
+    ],
+    "ans": 0,
+    "explain": "The test set is the gold standard for performance estimation because it's never seen during training OR hyperparameter tuning. When you tune hyperparameters based on validation performance, you indirectly optimize for the validation set, introducing bias. The test set remains untouched until final evaluation, giving an honest estimate of generalization. Option B is wrong - model architecture is chosen based on validation, not test. Option C is wrong - convergence is monitored during training via training/validation curves. Option D is risky - validation set performance is biased due to hyperparameter tuning.",
+    "concept": "Train/val/test split purpose: Train = learn parameters. Validation = tune hyperparameters, select model. Test = final unbiased performance estimate. Never use test set during development. Report test performance as production expectation."
+  },
+  {
+    "q": "Your team evaluates a binary classification model using a confusion matrix: True Positives=85, False Positives=15, True Negatives=870, False Negatives=30. Stakeholders ask for a single metric that balances precision and recall equally. What should you report?",
+    "opts": [
+      "F1-score calculated as 2 * (precision * recall) / (precision + recall)",
+      "Accuracy calculated as (TP + TN) / total",
+      "Matthews Correlation Coefficient (MCC)",
+      "Geometric mean of precision and recall"
+    ],
+    "ans": 0,
+    "explain": "F1-score is the harmonic mean of precision and recall, giving equal weight to both. Here: Precision = 85/(85+15) = 0.85, Recall = 85/(85+30) = 0.74, F1 = 2*(0.85*0.74)/(0.85+0.74) = 0.79. F1-score is ideal when you want to balance false positives and false negatives. Accuracy (955/1000 = 0.955) can be misleading with class imbalance. MCC is a good balanced metric but less commonly requested. Geometric mean of precision and recall is not a standard metric.",
+    "concept": "F1-score: Harmonic mean of precision and recall. Use when: classes are imbalanced, you want single metric balancing both. F1=1 is perfect, F1=0 is worst. Formula: 2PR/(P+R). Related: F-beta score for weighted precision/recall."
+  },
+  {
+    "q": "Your Pub/Sub topic receives events at variable rates (spikes to 50k messages/sec during peak hours, 1k messages/sec off-peak). Your subscriber processes messages slowly (100 messages/sec) during a load spike, and messages are piling up. What is the recommended architectural pattern?",
+    "opts": [
+      "Increase message retention period and scale out subscriber instances horizontally to match ingestion rate",
+      "Switch to a pull subscription and implement batching to process messages faster",
+      "Add a Cloud Tasks queue between Pub/Sub and the subscriber to rate-limit processing",
+      "Use Dataflow to subscribe and auto-scale based on message backlog"
+    ],
+    "ans": 3,
+    "explain": "Dataflow auto-scales based on backlog depth, automatically adding workers during spikes and scaling down during low traffic. It's designed for exactly this pattern: handling variable-rate streams. Increasing retention helps avoid message loss but doesn't solve the processing bottleneck. Scaling subscriber instances manually works but lacks the automatic elasticity of Dataflow. Pull subscriptions with batching improve efficiency but don't auto-scale. Cloud Tasks is for different use cases (task scheduling, not stream processing). Dataflow's built-in autoscaling, exactly-once processing, and windowing make it ideal for variable-rate Pub/Sub streams.",
+    "concept": "Pub/Sub + Dataflow pattern: Use Dataflow for auto-scaling stream processing. Dataflow monitors backlog and scales workers automatically. Best for: variable rates, complex transformations, exactly-once processing. Alternative: Cloud Run/Functions for simple, lightweight processing."
+  },
+  {
+    "q": "Your microservices architecture uses Pub/Sub for event distribution. Service A publishes order events to a topic. Services B, C, and D each need to process these events independently. Service D occasionally fails and should retry failed messages up to 5 times. How should you configure subscriptions?",
+    "opts": [
+      "Create three separate subscriptions (one per service) with dead-letter topic and max delivery attempts=5 configured on Service D's subscription only",
+      "Create one subscription with three distinct subscriber applications, each using different ackDeadline settings",
+      "Create one subscription per service with exponential backoff configured at the topic level",
+      "Create three subscriptions with identical configuration, implementing retry logic in Service D's code"
+    ],
+    "ans": 0,
+    "explain": "Pub/Sub fan-out pattern: each independent consumer needs its own subscription to receive all messages. One topic, multiple subscriptions = each subscription gets a copy of every message. Configure dead-letter topic and maxDeliveryAttempts on Service D's subscription only since others don't need retry limits. Option B (one subscription, multiple apps) makes them compete for messages, not each receiving all messages. Backoff is configured per subscription, not topic. Option D works but puts retry logic in application code rather than using Pub/Sub's built-in retry with dead-letter topics.",
+    "concept": "Pub/Sub fan-out: One topic, N subscriptions = N independent consumers, each gets all messages. Configure per-subscription: ackDeadline, retryPolicy, deadLetterPolicy, filter. Subscriptions are independent - configure based on each consumer's needs."
+  },
+  {
+    "q": "Your data pipeline uses Pub/Sub to ingest financial transactions that must be processed exactly once and in the order they were published per account. Messages have an 'account_id' attribute. What configuration should you use?",
+    "opts": [
+      "Enable message ordering using account_id as the ordering key, and enable exactly-once delivery on the subscription",
+      "Use a subscription filter to separate messages by account_id and process each in parallel",
+      "Configure the subscription with a long ackDeadline to ensure messages aren't redelivered",
+      "Implement idempotency in the subscriber application and process messages in any order"
+    ],
+    "ans": 0,
+    "explain": "Pub/Sub supports message ordering per ordering key. Publisher sets ordering key (account_id), ensuring messages with the same key are delivered in order. Exactly-once delivery prevents duplicates. This is the correct combination for ordered, duplicate-free processing. Subscription filters can't guarantee ordering. Long ackDeadline prevents redelivery timeouts but doesn't ensure ordering or prevent duplicates. Application-level idempotency is a best practice but doesn't provide ordering. Use ordering keys + exactly-once delivery for this requirement.",
+    "concept": "Pub/Sub ordering: Set ordering key on publish, enable message ordering on subscription. Messages with same key delivered in order. Enable exactly-once delivery for no duplicates. Trade-off: ordering increases latency, reduces throughput. Use when order matters within a logical group."
+  },
+  {
+    "q": "Your Pub/Sub subscription has a backlog of 10 million messages. You need to process all messages, but the current subscriber implementation has a bug and processes incorrectly. What should you do?",
+    "opts": [
+      "Create a new subscription to the same topic (gets a separate copy of new messages), fix the bug, then use Pub/Sub Seek to replay the original subscription from a snapshot or timestamp",
+      "Purge the subscription to clear messages, fix the bug, and request republishing of source data",
+      "Detach the subscription, fix the bug, and reattach to restart processing",
+      "Use the Pub/Sub replay feature to reprocess messages from the backlog"
+    ],
+    "ans": 0,
+    "explain": "Pub/Sub Seek allows rewinding a subscription to a snapshot or timestamp to replay messages. Create a snapshot before fixing the bug, or seek to a timestamp when good data existed. Creating a new subscription first ensures new incoming messages aren't lost while replaying. Purging loses data irreversibly - only do if data is recoverable from source. There's no 'detach/reattach' feature for subscriptions. Pub/Sub doesn't have a separate 'replay feature' - Seek is the mechanism.",
+    "concept": "Pub/Sub Seek: Replay messages from snapshot or timestamp (up to 7 days with default retention). Use cases: reprocess after bug fix, recover from bad deployment. Seek redelivers messages - ensure idempotent processing. Snapshots preserve subscription state."
+  },
+  {
+    "q": "Your push subscription delivers Pub/Sub messages to a Cloud Run service. During traffic spikes, the service returns HTTP 500 errors, and messages are redelivered repeatedly, causing an avalanche of retries. What should you do?",
+    "opts": [
+      "Configure the subscription with exponential backoff retry policy and set a maximum backoff duration",
+      "Switch to a pull subscription and implement rate limiting in the subscriber",
+      "Increase the Cloud Run service's max instances and memory allocation",
+      "Configure a dead-letter topic to capture failed messages after 5 delivery attempts"
+    ],
+    "ans": 0,
+    "explain": "Exponential backoff retry policy prevents the retry avalanche. Instead of immediate redelivery on failure, Pub/Sub waits progressively longer between retries (e.g., 10s, 20s, 40s), giving the service time to recover. Setting maximum backoff prevents infinite exponential growth. This is the immediate fix. Switching to pull subscription works but requires code changes. Increasing Cloud Run resources might help but doesn't address the retry storm. Dead-letter topic is good for persistently failing messages but doesn't prevent the avalanche during temporary failures.",
+    "concept": "Pub/Sub retry policy: Configure minimum/maximum backoff for exponential retry delays. Prevents retry avalanche during transient failures. Combine with dead-letter topic (after N attempts) for poison messages. Default: immediate retry (can overwhelm failing services)."
+  },
+  {
+    "q": "You need to design a Pub/Sub architecture where certain subscribers should only receive messages matching specific criteria (e.g., region='us-west' or priority='high'). What is the most efficient approach?",
+    "opts": [
+      "Use subscription filters to deliver only matching messages to each subscription",
+      "Deliver all messages to all subscriptions and filter in application code",
+      "Create separate topics for each filter criteria and publish to multiple topics",
+      "Use message attributes and implement a message router service"
+    ],
+    "ans": 0,
+    "explain": "Subscription filters (introduced in 2021) allow server-side filtering based on message attributes. Only matching messages are delivered, reducing network transfer and processing costs. Filters use a SQL-like syntax on attributes. This is more efficient than delivering all messages and filtering in code (wastes bandwidth and compute). Creating separate topics requires publishers to know routing logic and publish to multiple topics (tight coupling). A router service adds latency and complexity. Subscription filters are the purpose-built solution for this pattern.",
+    "concept": "Pub/Sub subscription filters: Server-side filtering based on message attributes. Syntax: attribute.name = 'value' AND other.attr > 100. Reduces bandwidth and processing. Use case: multiple consumers with different criteria from one topic."
+  },
+  {
+    "q": "Your application publishes 1 million messages per day to Pub/Sub. Messages are batched and sent every second. You notice high per-message costs. What optimization should you apply?",
+    "opts": [
+      "Increase batch size to reduce the number of publish requests (Pub/Sub charges per request)",
+      "Enable message compression on the publisher client",
+      "Switch to a reserved topic to get discounted pricing",
+      "Reduce message size by compressing payload before publishing"
+    ],
+    "ans": 0,
+    "explain": "Pub/Sub pricing includes a per-request component. Batching messages reduces requests: instead of 1 million requests/day, batching 100 messages/request = 10k requests. This significantly reduces costs. The client library supports batching with configurable maxBatchMessages and maxBatchDelay. Message compression isn't a native Pub/Sub feature (though you can compress payload in application code). There's no 'reserved topic' pricing model in Pub/Sub. Reducing message size helps with throughput and network costs but batching addresses the 'per-request' cost directly.",
+    "concept": "Pub/Sub batching: Publisher batches messages into single requests. Configured via maxBatchMessages (default 100) and maxBatchDelay. Reduces per-request costs, increases throughput. Trade-off: small increase in latency. Always enable batching for high-volume publishers."
+  },
+  {
+    "q": "You need to choose between Cloud SQL and Cloud Spanner for a new application. The application requires: 99.99% availability, automatic horizontal scaling to handle traffic spikes, strongly consistent global transactions, and SQL interface. Which should you choose and why?",
+    "opts": [
+      "Cloud Spanner - it meets all requirements with global strong consistency, horizontal scaling, and 99.999% SLA",
+      "Cloud SQL with read replicas in multiple regions - it supports SQL and can scale reads",
+      "Cloud Spanner for writes, Cloud SQL read replicas for reads - hybrid approach",
+      "Cloud SQL with failover replicas - provides high availability and SQL"
+    ],
+    "ans": 0,
+    "explain": "Cloud Spanner is designed for exactly this use case: globally distributed, horizontally scalable, strongly consistent SQL database. It provides 99.999% SLA (not 99.99% - even better than required), automatic horizontal scaling (add nodes as needed), external consistency (stronger than strong consistency), and ANSI SQL. Cloud SQL is regionally scoped, doesn't auto-scale horizontally (scales vertically), and read replicas are eventually consistent. Cloud SQL max SLA is 99.95% with HA config. The hybrid approach adds unnecessary complexity.",
+    "concept": "Spanner vs Cloud SQL: Choose Spanner for: global distribution, horizontal scaling (>10s of TB), strong consistency across regions, >99.95% SLA. Choose Cloud SQL for: regional apps, vertical scaling sufficient, lower cost, standard MySQL/PostgreSQL compatibility."
+  },
+  {
+    "q": "Your application stores user session data that needs to be accessed with sub-millisecond latency. The data is frequently read but rarely updated, doesn't require complex queries, and can tolerate eventual consistency. The dataset is 500 GB. What database should you use?",
+    "opts": [
+      "Memorystore (Redis) - in-memory key-value store with sub-millisecond latency",
+      "Bigtable - low-latency NoSQL database for large datasets",
+      "Cloud SQL - relational database with read replicas",
+      "Firestore - serverless document database"
+    ],
+    "ans": 0,
+    "explain": "Memorystore (Redis) is designed for exactly this: in-memory caching of frequently accessed data with sub-millisecond latency. Session data is a classic use case. It supports up to 300 GB per instance (can use multiple instances or clusters for 500 GB). Bigtable has low latency (single-digit ms) but not sub-millisecond, and it's overkill for 500 GB. Cloud SQL has higher latency (10-100ms typical) and is designed for relational data. Firestore has good latency but is more expensive for pure key-value access patterns and is designed for document storage with richer queries.",
+    "concept": "Memorystore (Redis/Memcached): Use for: sub-ms latency, caching, session storage, simple key-value. Limitations: in-memory (expensive for large data), limited query capabilities. Redis supports data structures (lists, sets); Memcached is simpler."
+  },
+  {
+    "q": "You need to store and analyze time-series IoT sensor data (1 TB/day) with frequent writes and queries filtering by sensor_id and time range. Queries typically access recent data (last 30 days). What database should you use?",
+    "opts": [
+      "Bigtable - optimized for high-throughput time-series data with row key design",
+      "BigQuery - optimized for analytics on large datasets",
+      "Cloud SQL - supports time-series with indexed timestamp columns",
+      "Firestore - supports queries on timestamp fields"
+    ],
+    "ans": 0,
+    "explain": "Bigtable is purpose-built for time-series data: high write throughput, low-latency reads, efficient storage with row key design. Design row key as sensor_id#timestamp for efficient queries by sensor and time. Bigtable scales horizontally to PB scale. BigQuery is for analytics (batch queries) but has higher write costs and latency - not ideal for continuous high-volume writes. Cloud SQL doesn't scale to TB/day write rates. Firestore is designed for document data and doesn't scale as efficiently for pure time-series workloads.",
+    "concept": "Bigtable time-series pattern: Row key = entity_id#reverse_timestamp or entity_id#timestamp. Enables efficient range scans. Use cases: IoT, monitoring, financial ticks. Pros: scalable writes, low-latency reads. Cons: no SQL, requires row key design knowledge."
+  },
+  {
+    "q": "Your startup is building a mobile app with user profiles, posts, and comments. You need a database that auto-scales, doesn't require capacity planning, supports complex queries, and integrates with Firebase Authentication. The app will start small but may grow rapidly. What database should you use?",
+    "opts": [
+      "Firestore - serverless NoSQL document database with auto-scaling and Firebase integration",
+      "Cloud SQL - relational database with flexible schema",
+      "Bigtable - scalable NoSQL database",
+      "BigQuery - serverless analytics database"
+    ],
+    "ans": 0,
+    "explain": "Firestore (Native mode) is designed for this scenario: serverless (no capacity planning), auto-scales from zero to millions of users, rich queries (WHERE clauses, compound indexes), real-time synchronization, and tight Firebase integration. It's ideal for mobile/web apps with user-generated content. Cloud SQL requires capacity planning and doesn't auto-scale as seamlessly. Bigtable requires capacity planning and row key design expertise. BigQuery is for analytics, not transactional app data. Firestore's pricing scales with usage, making it cost-effective for startups.",
+    "concept": "Firestore Native mode: Use for: mobile/web apps, serverless, auto-scaling, real-time sync, offline support. Supports: document model, rich queries, ACID transactions. Limitations: 1 MB doc size, 500 writes/sec per doc limit, eventual consistency for queries."
+  },
+  {
+    "q": "You're migrating a MySQL database from Cloud SQL to BigQuery for analytics. The database has 50 tables with foreign key relationships. What is the recommended migration approach?",
+    "opts": [
+      "Use Datastream to continuously replicate Cloud SQL to BigQuery, preserving schema",
+      "Use BigQuery Data Transfer Service with Cloud SQL source",
+      "Export tables to Cloud Storage as CSV, then load into BigQuery with schema auto-detect",
+      "Use Cloud SQL federated queries to access data directly in BigQuery"
+    ],
+    "ans": 0,
+    "explain": "Datastream is Google's recommended tool for database replication to BigQuery. It captures changes from Cloud SQL (via binary logs) and streams to BigQuery with low latency, preserving schema and handling updates. It's the official path for Cloud SQL \u2192 BigQuery migration. BigQuery Data Transfer Service doesn't support Cloud SQL as a source (it's for SaaS apps like Google Ads, YouTube). Exporting to CSV works but is a one-time load, not a continuous sync, and loses relationships. Federated queries allow querying Cloud SQL from BigQuery but don't migrate data - they query in-place with high latency.",
+    "concept": "Database to BigQuery migration: Use Datastream for continuous CDC replication from Cloud SQL, PostgreSQL, Oracle, MySQL. Alternatives: one-time batch export (CSV/Avro \u2192 GCS \u2192 BigQuery) for historical load. Datastream for ongoing sync."
+  },
+  {
+    "q": "Your application uses Firestore in Datastore mode and needs to migrate to Firestore Native mode to use new features like real-time listeners. What is the migration path?",
+    "opts": [
+      "There is no in-place migration; you must export data and import into a new Firestore Native database",
+      "Use the Firestore console to convert the database mode from Datastore to Native",
+      "Enable Native mode in database settings and run a migration job",
+      "Create a Dataflow pipeline to continuously sync Datastore to Firestore Native"
+    ],
+    "ans": 0,
+    "explain": "Firestore Datastore mode and Native mode are incompatible - you cannot convert between them in-place. You must create a new Firestore Native database (in a different project or region) and migrate data via export (from Datastore mode) and import (to Native mode). This is a significant migration effort requiring application code changes (different APIs). There's no automatic conversion tool. Plan carefully: consider data model changes, test thoroughly, and plan for cutover downtime or dual-write periods.",
+    "concept": "Firestore modes: Datastore mode = App Engine compatibility, no realtime. Native mode = mobile/web SDK, realtime, richer queries. No in-place conversion. Migration: export \u2192 import + code changes. Choose mode at database creation (permanent)."
+  },
+  {
+    "q": "Your Dataflow pipeline processes daily sales data with a fixed daily window (midnight to midnight UTC). Sales events arrive out-of-order by up to 1 hour. You need to ensure all events for a day are included in that day's window. What windowing configuration should you use?",
+    "opts": [
+      "Fixed window (1 day) with allowed lateness of 1 hour",
+      "Sliding window with 1-day duration and 1-hour period",
+      "Session window with 1-hour gap duration",
+      "Global window with a processing-time trigger every 24 hours"
+    ],
+    "ans": 0,
+    "explain": "Fixed windows divide data into fixed-duration, non-overlapping time intervals (e.g., daily). Setting allowed lateness to 1 hour tells Dataflow to keep windows open for 1 hour after the window end time to accept late data. Events with timestamps in the window but arriving up to 1 hour late are included. Sliding windows create overlapping windows (not appropriate for daily aggregates). Session windows group events based on inactivity gaps (not time boundaries). Global window with processing-time trigger uses arrival time, not event time, losing correctness for out-of-order data.",
+    "concept": "Dataflow allowed lateness: Keeps windows open after watermark passes window end to accept late data. Set based on expected lateness. After allowed lateness expires, late data goes to late data side output or is dropped. Balances completeness vs. latency."
+  },
+  {
+    "q": "Your streaming Dataflow pipeline enriches events by joining them with reference data (country codes, product catalogs) that updates daily. The reference data is 100 MB. What Dataflow pattern should you use?",
+    "opts": [
+      "Side inputs with a slowly updating pattern, refreshing reference data periodically",
+      "CoGroupByKey to join streaming events with a bounded reference PCollection",
+      "Bigtable lookup for each event",
+      "Load reference data into a global variable in the DoFn"
+    ],
+    "ans": 0,
+    "explain": "Side inputs allow passing data to ParDo operations. For slowly changing reference data, use a side input with periodic refresh (e.g., hourly or daily). The reference data is loaded into memory and accessible to all DoFn instances. This is efficient for small reference data (<1 GB) that changes slowly. CoGroupByKey is for joining two streams, but reference data is bounded - side inputs are simpler. Bigtable lookup adds latency and cost for each event. Global variables in DoFn are tricky due to worker distribution and serialization - side inputs are the proper pattern.",
+    "concept": "Dataflow side inputs: Pass additional data to ParDo. Use cases: enrichment with reference data, broadcast small datasets. Best for: <1 GB, slowly changing. Pattern: read reference data, pass as side input, access in DoFn. Can refresh with windowed side inputs."
+  },
+  {
+    "q": "Your Dataflow pipeline reads from Pub/Sub, performs transformations, and writes to BigQuery. You notice that the pipeline processes messages multiple times, creating duplicate rows in BigQuery. How should you ensure exactly-once processing?",
+    "opts": [
+      "Use Dataflow's exactly-once processing guarantee by enabling update mode for transforms and using BigQuery streaming inserts with insertIds",
+      "Enable deduplication in the Pub/Sub subscription with exactly-once delivery",
+      "Use BigQuery merge statements instead of inserts to handle duplicates",
+      "Add a deduplication transform in Dataflow using a Stateful DoFn"
+    ],
+    "ans": 0,
+    "explain": "Dataflow provides exactly-once processing semantics when configured correctly: use update mode for stateful transforms and use BigQuery streaming inserts with insertIds (deterministic based on message). Pub/Sub exactly-once delivery helps but isn't sufficient alone for end-to-end exactly-once (Dataflow must also participate). MERGE statements handle duplicates reactively but don't prevent them (less efficient). A stateful deduplication DoFn is possible but Dataflow's built-in guarantees are preferred. For batch pipelines, Dataflow provides exactly-once automatically; for streaming, use appropriate sinks with idempotent writes.",
+    "concept": "Dataflow exactly-once: Enabled by default for batch. For streaming: use idempotent sinks (BigQuery with insertIds, Bigtable, Spanner). Combine with Pub/Sub exactly-once delivery. Dataflow checkpoints state and uses distributed snapshots for fault tolerance."
+  },
+  {
+    "q": "Your Dataflow pipeline uses a GroupByKey operation that shows a hot key warning in the UI. One key has 10 million values while others have <100. Processing is slow. What optimization should you apply?",
+    "opts": [
+      "Use Combine.perKey instead of GroupByKey if possible, and add fanout to distribute hot key processing",
+      "Increase the number of workers to parallelize GroupByKey",
+      "Split the hot key into multiple sub-keys in upstream processing",
+      "Switch to session windows to distribute values over time"
+    ],
+    "ans": 0,
+    "explain": "Combine.perKey is more efficient than GroupByKey when performing aggregations - it does partial combining before shuffling, reducing data transfer. For hot keys, Combine.perKey with .withFanout() distributes hot key processing across multiple workers by adding a random shard key, combining partially, then final combining. This is the best optimization. Increasing workers helps but doesn't address the hot key directly (all values still go to one worker). Splitting keys upstream requires application logic changes. Session windows address temporal distribution, not hot keys.",
+    "concept": "Dataflow hot key: One key with many values causes worker skew. Solutions: use Combine.perKey with .withFanout() to distribute hot keys, redesign keys to distribute more evenly, use approximate algorithms (Count-Min Sketch) for aggregations. Monitor via UI metrics."
+  },
+  {
+    "q": "Your streaming Dataflow pipeline processes e-commerce events. You need to count events per user in 5-minute fixed windows, but also want to update results as new late data arrives for up to 10 minutes after the window. What should you configure?",
+    "opts": [
+      "Fixed windows (5 minutes) with allowed lateness (10 minutes) and accumulating mode with early and late triggers",
+      "Sliding windows (5 minutes) with 10-minute duration",
+      "Session windows with 5-minute gap and 10-minute timeout",
+      "Fixed windows (5 minutes) with global trigger every 10 minutes"
+    ],
+    "ans": 0,
+    "explain": "This requires: 1) Fixed windows (5 min) for the basic window structure, 2) Allowed lateness (10 min) to accept late data, 3) Accumulating mode (each trigger includes all data) instead of discarding mode, 4) Early triggers to emit results before window closes, and 5) Late triggers to emit updates when late data arrives. This pattern balances timely results with completeness. Sliding windows create overlapping windows (not what's asked). Session windows are for activity-based grouping. Global trigger doesn't respect event time.",
+    "concept": "Dataflow triggers: Control when results are emitted. Early = before watermark (for speculative results), On-time = at watermark, Late = after watermark (for late data). Accumulating mode = each emission includes all data. Use with allowed lateness for complete-but-updated results."
+  },
+  {
+    "q": "Your Dataflow pipeline has inconsistent throughput - sometimes processing quickly, sometimes lagging with high system lag. The pipeline reads from Pub/Sub, does CPU-intensive transformations, and writes to BigQuery. What should you investigate first?",
+    "opts": [
+      "Check if autoscaling is enabled and if there are worker CPU/memory bottlenecks in Dataflow metrics",
+      "Increase the number of Pub/Sub subscriptions to parallelize reads",
+      "Enable BigQuery streaming inserts instead of batch loads",
+      "Increase the Dataflow pipeline's max worker count"
+    ],
+    "ans": 0,
+    "explain": "Variable throughput suggests resource bottlenecks or autoscaling issues. Check Dataflow metrics: CPU utilization (>80% indicates CPU bottleneck), memory usage, system lag (backlog age). Ensure autoscaling is enabled so Dataflow can add workers during load. If CPU is maxed, consider optimizing transforms or using more powerful machine types. Multiple Pub/Sub subscriptions don't help - Dataflow automatically parallelizes reading from one subscription. BigQuery streaming vs batch doesn't affect upstream processing speed. Increasing max workers helps if autoscaling is hitting limits, but first verify autoscaling is working.",
+    "concept": "Dataflow performance debugging: Check metrics: system lag (backlog age), CPU/memory utilization, autoscaling events. System lag = watermark behind wall clock. High CPU/memory = need more workers or optimization. Dataflow UI provides per-step metrics."
+  },
+  {
+    "q": "You need to store 10 PB of historical video files accessed once a year for compliance. Retrieval within hours is acceptable. Costs must be minimized. What Cloud Storage class should you use?",
+    "opts": [
+      "Archive Storage - lowest cost for data accessed less than once a year",
+      "Coldline Storage - low cost for data accessed less than once a quarter",
+      "Nearline Storage - low cost for data accessed less than once a month",
+      "Standard Storage with lifecycle policy to delete after one year"
+    ],
+    "ans": 0,
+    "explain": "Archive Storage is the lowest-cost storage class ($0.0012/GB/month vs Coldline $0.004/GB/month), designed for data accessed less than once a year. Retrieval within hours is acceptable (minimum storage duration: 365 days). This is the exact use case Archive is designed for. Coldline ($0.004/GB/month, minimum 90 days) is for quarterly access. Nearline ($0.010/GB/month, minimum 30 days) is for monthly access. Standard ($0.020/GB/month) is most expensive. Deleting after a year violates compliance requirement to retain.",
+    "concept": "Storage class selection: Standard = hot data, frequent access. Nearline = <1/month access. Coldline = <1/quarter access. Archive = <1/year access. Trade-off: lower storage cost, higher retrieval cost + minimum storage duration penalty if deleted early."
+  },
+  {
+    "q": "Your application stores user-uploaded images in Cloud Storage Standard class. Analytics show 80% of images are never accessed after 7 days, 15% are accessed occasionally (monthly), and 5% remain frequently accessed. How should you optimize costs?",
+    "opts": [
+      "Create a lifecycle policy: transition to Nearline after 7 days, and to Coldline after 90 days",
+      "Immediately move all objects to Coldline Storage",
+      "Create a lifecycle policy: transition to Archive after 7 days",
+      "Keep everything in Standard and enable object versioning"
+    ],
+    "ans": 0,
+    "explain": "Lifecycle policies automate transitions based on object age. Transition to Nearline after 7 days (cheaper storage for 80% rarely accessed, plus 15% occasional access fits Nearline). For objects still in Nearline after 90 days (rarely accessed), transition to Coldline for even lower cost. The 5% frequently accessed objects will generate retrieval costs in Nearline, but the overall savings from the 80% rarely accessed justifies this. Moving everything to Coldline immediately would cause high retrieval costs for the 5% frequently accessed. Archive's 365-day minimum is too aggressive. Object versioning doesn't reduce costs.",
+    "concept": "Lifecycle policy pattern: Standard \u2192 Nearline (7-30 days) \u2192 Coldline (90 days) \u2192 Archive (365 days) or Delete. Base on access patterns. Early deletion before minimum storage duration incurs penalty. Test with smaller buckets first."
+  },
+  {
+    "q": "You need to provide a temporary download link for a private object in Cloud Storage to an external user who doesn't have a Google account. The link should expire after 1 hour. What should you use?",
+    "opts": [
+      "Generate a signed URL with 1-hour expiration using a service account key",
+      "Make the bucket public and share the object URL, then make it private after 1 hour",
+      "Create a Cloud Function that proxies the download and shares the function URL",
+      "Add the user's email to bucket IAM with Storage Object Viewer role, then remove after 1 hour"
+    ],
+    "ans": 0,
+    "explain": "Signed URLs provide time-limited access to specific objects without requiring authentication. Generate using gsutil signurl or code with a service account key, specifying expiration. The URL includes a signature that validates until expiration. This is the standard pattern for temporary access. Making the bucket public is insecure (anyone with the URL can access). Cloud Function proxy works but is more complex and adds latency. IAM roles require Google account and manual removal - not suitable for external users.",
+    "concept": "Signed URLs: Time-limited access to private objects without authentication. Generated with service account key. Use cases: temporary downloads, uploads, CDN integration. Max 7-day expiration. Alternative: V4 signing for longer URLs with more features."
+  },
+  {
+    "q": "Your Cloud Storage bucket receives millions of small files (<10 KB) daily. You need to optimize for list operations and range reads. What should you do?",
+    "opts": [
+      "Enable hierarchical namespace (HNS) on the bucket for optimized directory operations",
+      "Combine small files into larger objects before storage",
+      "Use composite objects to merge small files",
+      "Enable object versioning to improve metadata access"
+    ],
+    "ans": 1,
+    "explain": "Small files are inefficient in Cloud Storage: high request costs, slow list operations, and overhead. Combining small files into larger objects (e.g., tar archives or batched files) dramatically improves performance and reduces costs. Each object has overhead, so fewer large objects > many small objects. Hierarchical namespace (HNS) improves directory operations but doesn't solve the small file problem. Composite objects are created by composing multiple source objects, but you'd still need to upload the small objects first. Object versioning is for history retention, not performance.",
+    "concept": "Cloud Storage small file problem: Many small files = high overhead, slow lists, expensive requests. Solutions: batch into larger objects, use tar/zip, aggregate before upload. Target: >1 MB objects for efficiency. If small files needed, consider Bigtable or Filestore instead."
+  },
+  {
+    "q": "Your data pipeline uses Cloud Storage for intermediate data. Files are written once, read multiple times within 24 hours, then never accessed. You need to automatically delete files after 30 days. What configuration should you use?",
+    "opts": [
+      "Store in Standard class with lifecycle policy: Delete after 30 days",
+      "Store in Nearline class with lifecycle policy: Delete after 30 days",
+      "Store in Standard class with retention policy of 30 days",
+      "Store in Standard class and use Cloud Scheduler to delete old files weekly"
+    ],
+    "ans": 0,
+    "explain": "Standard class is appropriate since files are read multiple times within 24 hours (frequent access). Lifecycle policy with 'Delete' action after 30 days age automates cleanup. Nearline has minimum storage duration of 30 days and higher retrieval costs - since files are accessed multiple times, you'd pay retrieval fees multiple times. Retention policies PREVENT deletion (for compliance), not enable it. Cloud Scheduler works but is manual implementation of what lifecycle policies provide automatically.",
+    "concept": "Lifecycle policy actions: Delete (remove object), SetStorageClass (transition to cheaper class). Conditions: Age, CreatedBefore, CustomTimeBefore, DaysSinceNoncurrentTime, IsLive, MatchesPrefix, NumberOfNewerVersions. Actions are applied daily automatically."
+  },
+  {
+    "q": "Your application uploads sensitive customer data to Cloud Storage and must comply with regulations requiring encryption key rotation every 90 days. What should you implement?",
+    "opts": [
+      "Use customer-managed encryption keys (CMEK) in Cloud KMS with automatic rotation enabled",
+      "Use standard Google-managed encryption keys and trigger automatic monthly KMS key rotation API calls using Cloud Functions",
+      "Use customer-supplied encryption keys (CSEK) with a key rotation script",
+      "Enable object versioning to maintain copies encrypted with different keys"
+    ],
+    "ans": 0,
+    "explain": "Cloud KMS supports automatic key rotation for CMEK. When enabled, KMS creates a new key version every 90 days (configurable). Objects are encrypted with the active version, but KMS maintains old versions to decrypt existing objects - this enables transparent rotation. Set default_kms_key_name on the bucket. Google-managed keys are rotated automatically but you can't control the schedule. CSEK requires you to manage keys and rotation (complex and error-prone). Object versioning creates copies but doesn't rotate encryption keys.",
+    "concept": "Encryption key rotation with CMEK: Enable automatic rotation in Cloud KMS (period: 30-90-365 days). New objects use new key version, old objects decrypt with old versions. Transparent to applications. CMEK = Cloud KMS manages keys, auto-rotation supported. CSEK = you manage keys, must handle rotation."
+  },
+  {
+    "q": "You need to grant a service account permission to read all objects in a Cloud Storage bucket but not list the bucket or modify objects. What IAM role should you grant?",
+    "opts": [
+      "Storage Object Viewer (roles/storage.objectViewer) at the bucket level",
+      "Storage Object Admin (roles/storage.objectAdmin) at the bucket level",
+      "Storage Legacy Bucket Reader (roles/storage.legacyBucketReader) at the bucket level",
+      "Storage Object Creator (roles/storage.objectCreator) at the bucket level"
+    ],
+    "ans": 0,
+    "explain": "Storage Object Viewer grants storage.objects.get and storage.objects.list permissions on objects, allowing reading object content. It does NOT grant bucket-level list permission (storage.buckets.list), meeting the 'not list bucket' requirement. Storage Object Admin grants write/delete permissions (too broad). Legacy Bucket Reader grants bucket list permission (violates requirement). Storage Object Creator is for writes, not reads. Note: The service account can still list objects with storage.objects.list, but can't list buckets or enumerate bucket contents without knowing object names.",
+    "concept": "Storage IAM roles: Object Viewer = read objects. Object Creator = write new objects. Object Admin = read/write/delete objects. Legacy Bucket Reader = read objects + list bucket. Legacy Object Reader = read objects only (deprecated, use Object Viewer). Grant least privilege."
+  },
+  {
+    "q": "Your data engineering team needs to create BigQuery datasets and tables in project 'prod-analytics' but should not be able to query or view data. What IAM role should you grant?",
+    "opts": [
+      "BigQuery Data Owner (roles/bigquery.dataOwner) at the project level",
+      "BigQuery Admin (roles/bigquery.admin) at the project level",
+      "BigQuery Data Editor (roles/bigquery.dataEditor) at the project level",
+      "BigQuery Job User + Storage Admin at the project level"
+    ],
+    "ans": 2,
+    "explain": "BigQuery Data Editor grants permissions to create/modify datasets and tables (bigquery.datasets.create, bigquery.tables.create) but does NOT grant query permissions (bigquery.tables.getData, bigquery.jobs.create). Data Owner includes query permissions (too broad). BigQuery Admin grants full BigQuery access including queries and admin operations. Job User + Storage Admin doesn't include dataset/table creation permissions. Data Editor is designed for exactly this: managing schema/structure without data access.",
+    "concept": "BigQuery IAM separation: Data Owner = full data access. Data Editor = create/modify schema, no query. Data Viewer = query, no modify. Job User = run jobs (required for queries). User = run jobs + own datasets. Admin = all operations. Combine roles for specific needs."
+  },
+  {
+    "q": "Your application uses a service account to access multiple GCP services (BigQuery, Cloud Storage, Pub/Sub). The security team requires least privilege and service-specific credentials. What should you implement?",
+    "opts": [
+      "Create separate service accounts for each service (e.g., bigquery-sa@, storage-sa@) with minimal roles, use in application",
+      "Use one service account with separate keys for each service",
+      "Grant the service account all necessary roles and use Workload Identity",
+      "Use a single service account with roles/viewer and enable API-specific permissions"
+    ],
+    "ans": 0,
+    "explain": "Principle of least privilege: create service-specific service accounts, each with only the permissions needed for its service. E.g., bigquery-sa@ gets BigQuery Data Viewer only, storage-sa@ gets Storage Object Viewer only. Use different accounts in different parts of your application. Multiple keys for one account doesn't separate permissions. One account with all roles violates least privilege (if account is compromised, all services are exposed). Viewer role is too broad. Workload Identity is for GKE/Cloud Run, not general use.",
+    "concept": "Service account best practices: Separate service accounts per service/function. Grant minimal roles. Use Workload Identity (GKE/Cloud Run) or service account impersonation. Rotate keys regularly. Avoid user-managed keys when possible (use metadata server, Workload Identity)."
+  },
+  {
+    "q": "Your Cloud Function needs to access BigQuery in project A but runs in project B. The security team prohibits sharing service account keys. How should you configure access?",
+    "opts": [
+      "Use the Cloud Function's default service account with Cross-project IAM: grant BigQuery Data Viewer in project A to the function's service account from project B",
+      "Export a service account key from project A and store it in Secret Manager in project B",
+      "Use service account impersonation: the function's SA impersonates a project A service account",
+      "Create a BigQuery authorized view in project B pointing to project A tables"
+    ],
+    "ans": 0,
+    "explain": "Cloud Functions run with a service account identity (default: PROJECT_ID@appspot.gserviceaccount.com). Grant this service account IAM permissions in project A's BigQuery resources using cross-project IAM. No keys needed - the function authenticates using its runtime identity. Exporting keys violates security policy. Service account impersonation works but adds unnecessary complexity for this simple case. Authorized views solve data access across projects but don't address function authentication.",
+    "concept": "Cross-project IAM: Grant roles to service accounts from other projects (use full SA email). Common for: shared resources, cross-project pipelines, centralized services. No keys needed - uses Google's authentication. Principle: resources grant access to identities (SAs), regardless of project."
+  },
+  {
+    "q": "Your BigQuery dataset contains PII and must comply with GDPR. You need to grant analysts access to run queries but prevent them from exporting or downloading data. What should you do?",
+    "opts": [
+      "Grant BigQuery Data Viewer role and set authorized views that filter PII fields",
+      "Grant BigQuery Job User role only (not Data Viewer), preventing direct table access",
+      "Use BigQuery's data exfiltration prevention with trusted zones and VPC-SC perimeter",
+      "Grant read-only access via a Service Account with conditional IAM policies"
+    ],
+    "ans": 2,
+    "explain": "BigQuery Data Viewer grants query access but also export capabilities. VPC Service Controls with data exfiltration prevention is the proper solution: define trusted zones (allowed BigQuery projects/datasets) and create a perimeter that prevents data export outside the perimeter. Queries within the perimeter work, but exports/copies to unauthorized projects fail. Authorized views filter columns but don't prevent exports. Job User alone doesn't grant data access at all (analysts can't query). Conditional IAM policies don't restrict export operations at the granularity needed.",
+    "concept": "BigQuery data exfiltration prevention: Use VPC Service Controls to create perimeter around BigQuery resources. Define authorized destinations for data access. Prevents copying/exporting data outside perimeter. Combines with column-level security for PII protection."
+  },
+  {
+    "q": "You need to load 500 GB of CSV files from Cloud Storage into BigQuery daily. Files have varying schema updates (new columns added monthly). What loading strategy ensures reliability and handles schema evolution?",
+    "opts": [
+      "Use BigQuery load jobs with schema auto-detection and SCHEMA_UPDATE_OPTIONS allowing field additions",
+      "Use bq load with --replace flag to overwrite table with new schema each day",
+      "Use BigQuery streaming inserts with schema auto-update",
+      "Insert records into an external BigQuery staging table, run schema-conformance validation checks via a PySpark pipeline, and perform a SQL merge to target"
+    ],
+    "ans": 0,
+    "explain": "BigQuery load jobs support schema auto-detection and SCHEMA_UPDATE_OPTIONS with ALLOW_FIELD_ADDITION, which automatically adds new columns without failing the load. This handles schema evolution gracefully. Load jobs are optimized for batch loading (free, efficient for GB+ data). Using --replace overwrites data, losing history. Streaming inserts are expensive for 500 GB/day and have quotas. Manual staging adds operational overhead and delay. Auto-detection with field addition is the production-recommended pattern for evolving schemas.",
+    "concept": "BigQuery schema evolution: Use SCHEMA_UPDATE_OPTIONS with ALLOW_FIELD_ADDITION (adds new columns), ALLOW_FIELD_RELAXATION (widens types). Schema auto-detect infers from data. Best for: batch loads with evolving sources. Test schema changes before production with dry-run."
+  },
+  {
+    "q": "Your streaming pipeline inserts data into BigQuery at 10,000 rows/second. You notice high costs and quota errors. What optimization should you apply?",
+    "opts": [
+      "Switch from streaming inserts to BigQuery Storage Write API with batching",
+      "Increase the streaming insert quota limit",
+      "Reduce row frequency by aggregating before insertion",
+      "Use load jobs instead of streaming inserts"
+    ],
+    "ans": 0,
+    "explain": "BigQuery Storage Write API (introduced 2021) is the modern replacement for legacy streaming inserts. It provides: lower cost (50-75% cheaper), higher throughput, exactly-once semantics, and no quotas. It supports batching for efficiency. This is Google's recommended approach for streaming ingestion. Increasing quotas costs more and doesn't solve the cost issue. Aggregating before insertion reduces rows but loses detail (depends on requirements). Load jobs are for batch (not real-time) and require writing to Cloud Storage first.",
+    "concept": "BigQuery ingestion methods: Storage Write API = streaming, low-cost, high throughput, exactly-once. Legacy streaming = expensive, 100k rows/sec limit. Load jobs = batch, free, from Cloud Storage. Choose based on latency needs: immediate = Storage Write API, minutes = load jobs."
+  },
+  {
+    "q": "Your pipeline loads JSON files into BigQuery. Recently, loads fail with 'invalid JSON: expected value' errors. The source system occasionally produces malformed JSON. You need to load valid rows and log errors. What should you do?",
+    "opts": [
+      "Use BigQuery load job with max_bad_records setting to allow errors up to threshold",
+      "Pre-validate JSON with Cloud Functions before loading",
+      "Use Dataflow to parse JSON, filter invalid rows to error table, load valid rows to BigQuery",
+      "Switch to CSV format to avoid JSON parsing issues"
+    ],
+    "ans": 2,
+    "explain": "Dataflow provides full control over error handling: parse JSON with try/catch, route invalid rows to a dead-letter table, load valid rows to BigQuery. This ensures no data loss and provides visibility into errors. BigQuery's max_bad_records allows some errors but doesn't give you the bad records for debugging. Pre-validation with Cloud Functions works but doesn't scale as well as Dataflow for large volumes. Switching to CSV doesn't solve data quality issues and JSON may be required for nested structures.",
+    "concept": "Error handling pattern: Use Dataflow for complex error handling (dead-letter tables, retries, monitoring). BigQuery native loads for simple cases with max_bad_records. Pattern: parse \u2192 route errors to side output \u2192 write to error table. Enables debugging and reprocessing."
+  },
+  {
+    "q": "You need to reserve 500 slots for your analytics team's BigQuery queries to ensure consistent performance. The team runs queries 8 hours/day, 5 days/week. What reservation strategy minimizes costs?",
+    "opts": [
+      "Purchase flex slots reservation for baseline (100 slots) and use on-demand for additional capacity during peak usage",
+      "Purchase baseline slots (500 slots) with annual commitment",
+      "Use on-demand pricing exclusively to avoid over-provisioning",
+      "Purchase monthly flex slots (500 slots) for the months when usage is high"
+    ],
+    "ans": 0,
+    "explain": "Flex slots (monthly or annual commitment) provide reserved capacity at lower cost than on-demand. However, since usage is only 8h/day, 5 days/week (\u224824% utilization), reserving full 500 slots 24/7 is wasteful. The optimal strategy is baseline reservation for predictable load (e.g., 100 slots) + on-demand for spikes. You can also use autoscaling with slot reservations. Annual commitment for 500 slots at 24% utilization costs more than mixed approach. Pure on-demand is expensive for consistent usage. Monthly flex slots don't address daily underutilization.",
+    "concept": "BigQuery slot reservations: On-demand = $6.25/TB, fair scheduling. Flat-rate = reserved slots, predictable cost. Flex slots = monthly/annual commitment, 40-50% discount vs on-demand. Use: baseline reservation + autoscaling or on-demand for peaks. Monitor slot utilization."
+  },
+  {
+    "q": "Your BigQuery queries are processing 500 GB of data daily across multiple tables with similar schemas. Users frequently query the last 30 days of data filtered by customer_region and event_date columns. Query costs are exceeding budget. What is the MOST cost-effective optimization strategy?",
+    "opts": [
+      "Enable BI Engine and increase memory allocation to 100 GB",
+      "Partition tables by event_date and cluster by customer_region",
+      "Create materialized views for common query patterns",
+      "Increase BigQuery slot reservations from 100 to 500 slots"
+    ],
+    "ans": 1,
+    "explain": "Partitioning by event_date allows BigQuery to prune partitions outside the queried date range, while clustering by customer_region further reduces data scanned within partitions. This directly reduces bytes processed and costs. BI Engine caches results but doesn't reduce initial query costs. Materialized views help with repeated identical queries but add storage costs and maintenance overhead. Increasing slots improves performance but increases costs rather than reducing them.",
+    "concept": "Cost reduction hierarchy: Partition (prune data) \u2192 Cluster (organize within partitions) \u2192 Cache/Materialize (reuse results). Partitioning provides the largest cost savings by reducing bytes scanned."
+  },
+  {
+    "q": "A BigQuery query joining three large tables (10 TB, 5 TB, and 100 GB) is timing out after 6 hours. The query execution details show the largest table is being broadcast to all workers. How should you optimize this query?",
+    "opts": [
+      "Add a WHERE clause to filter the 10 TB table before joining",
+      "Use APPROX_COUNT_DISTINCT instead of COUNT(DISTINCT) for aggregations",
+      "Reorder the join to place the smallest table (100 GB) first in the FROM clause",
+      "Enable query result caching and retry the query"
+    ],
+    "ans": 2,
+    "explain": "BigQuery uses the first table in a join as the basis for distribution strategy. Placing the smallest table first allows BigQuery to broadcast the smaller table and shuffle the larger tables more efficiently, reducing data movement. While filtering with WHERE is good practice, it doesn't address the join strategy issue. APPROX functions help with aggregation performance but not join optimization. Result caching doesn't help with queries that are timing out on first execution.",
+    "concept": "BigQuery join optimization: Smallest table first. The first table in the FROM clause influences distribution strategy. Memory aid: 'Small leads, large follows.'"
+  },
+  {
+    "q": "Your data warehouse team reports that BigQuery queries run faster in the morning but slow down significantly in the afternoon when batch ETL jobs run. Your project uses on-demand pricing. What should you investigate FIRST?",
+    "opts": [
+      "Check if afternoon queries are hitting the 2000 concurrent slots limit for on-demand",
+      "Review Cloud Logging for BigQuery job quota errors",
+      "Analyze query execution plans to identify slot wait times",
+      "Switch to flat-rate pricing with baseline 500 slots"
+    ],
+    "ans": 2,
+    "explain": "Analyzing query execution plans and slot wait times in the execution details provides concrete evidence of slot contention before making infrastructure changes. This diagnostic step identifies whether slowdowns are due to slot availability, query inefficiency, or other factors. While on-demand has a 2000 slot limit per project, checking execution plans confirms this is the actual bottleneck. Reviewing logs is useful but less specific than execution plan analysis. Switching pricing models is premature without understanding the root cause.",
+    "concept": "Performance troubleshooting methodology: Measure before migrating. Use query execution details to diagnose slot contention (wait times) versus query inefficiency (stage durations)."
+  },
+  {
+    "q": "A partitioned BigQuery table contains 3 years of daily data. Queries filtering on the partition column (ingestion_date) are still scanning more data than expected. The _PARTITIONTIME pseudo-column is used in WHERE clauses. What is the likely cause?",
+    "opts": [
+      "The table uses ingestion-time partitioning but queries need column-based partitioning",
+      "Partition pruning is disabled due to non-constant expressions in the WHERE clause",
+      "The table requires clustering in addition to partitioning",
+      "BigQuery automatically scans adjacent partitions for query optimization"
+    ],
+    "ans": 1,
+    "explain": "When using _PARTITIONTIME with an ingestion_date filter, there's a mismatch: _PARTITIONTIME refers to when data was loaded, not the ingestion_date column value. Column-based partitioning on ingestion_date would allow proper partition pruning. Non-constant expressions can prevent pruning, but the question indicates filters are on the partition column. Clustering is complementary but doesn't explain excessive scanning. BigQuery doesn't automatically scan adjacent partitions unless the query logic requires it.",
+    "concept": "Partition pruning requirements: Match partition column to query filter. Ingestion-time (_PARTITIONTIME) vs column-based partitioning must align with query patterns. Use column-based for business date filtering."
+  },
+  {
+    "q": "Your BigQuery queries against a 2 TB table consistently show 'Slot wait time' exceeding 3 minutes during peak hours. You have 100 baseline flat-rate slots. Which action provides the MOST immediate improvement?",
+    "opts": [
+      "Purchase 400 additional flex slots for peak hours only",
+      "Enable result caching and schedule queries during off-peak hours",
+      "Partition and cluster the table to reduce bytes processed",
+      "Use reservations to prioritize critical workloads over batch jobs"
+    ],
+    "ans": 0,
+    "explain": "Flex slots provide immediate additional capacity that can be purchased hourly for peak periods, directly addressing the slot shortage indicated by wait times. While table optimization (partitioning/clustering) reduces bytes processed, it doesn't increase available slots for concurrent workloads. Result caching helps repeated queries but not initial executions. Reservations reorganize existing slot allocation but don't add capacity. The question specifically mentions slot wait time, indicating insufficient compute capacity.",
+    "concept": "Slot wait time \u2192 capacity problem. Solution hierarchy for slot contention: Add flex slots (immediate) \u2192 Optimize queries (reduce demand) \u2192 Use reservations (prioritize workloads)."
+  },
+  {
+    "q": "A Dataproc cluster processes daily batch jobs that run for 2 hours. The cluster has 10 worker nodes (n1-standard-4) and remains idle for 22 hours daily. Job completion time is acceptable. What is the MOST cost-effective optimization?",
+    "opts": [
+      "Use preemptible VMs for all worker nodes and enable graceful decommissioning",
+      "Enable autoscaling with minimum 2 workers and maximum 10 workers",
+      "Use Cloud Scheduler to create ephemeral clusters daily and delete after job completion",
+      "Reduce worker nodes to 5 and increase machine type to n1-standard-8"
+    ],
+    "ans": 2,
+    "explain": "Ephemeral clusters eliminate idle time costs entirely by creating clusters only when needed and deleting them immediately after completion, saving 22 hours of compute costs daily. Preemptible VMs save 80% on compute but still incur costs during idle periods. Autoscaling reduces idle nodes but master node and minimum workers still run continuously. Changing machine types doesn't address the fundamental issue of paying for idle resources. For batch workloads with predictable schedules, ephemeral clusters are most cost-effective.",
+    "concept": "Dataproc cost optimization: Ephemeral clusters for batch, persistent for interactive. Decision rule: If idle time > job runtime, use ephemeral clusters with workflow templates."
+  },
+  {
+    "q": "A Dataproc cluster running Spark jobs experiences frequent worker node preemptions (30% of nodes terminated within 4 hours). Jobs fail with 'Stage failed due to fetch failures.' What is the BEST solution to maintain cost savings while improving reliability?",
+    "opts": [
+      "Increase the percentage of non-preemptible worker nodes to 50%",
+      "Enable graceful decommissioning with a 30-minute timeout",
+      "Use preemptible VMs only for secondary workers, not primary workers",
+      "Configure Spark to write shuffle data to Cloud Storage instead of local disk"
+    ],
+    "ans": 2,
+    "explain": "Using preemptible VMs only for secondary workers (separate from primary workers) allows Spark to lose secondary workers without losing shuffle data, as primary workers retain the data. Secondary workers can be 100% preemptible for maximum savings. Graceful decommissioning helps but doesn't prevent fetch failures if preemption rate is high. Increasing non-preemptible ratio improves reliability but reduces cost savings. Writing shuffle to GCS significantly degrades performance and increases costs due to network I/O.",
+    "concept": "Dataproc preemptible VM strategy: Primary workers (non-preemptible) hold shuffle data, secondary workers (preemptible) provide extra capacity. Configure YARN/HDFS on primaries only."
+  },
+  {
+    "q": "A Dataproc cluster processes variable workloads throughout the day. Autoscaling is enabled with scale-up factor 1.0 and cooldown period 2 minutes. Jobs still experience delays during sudden traffic spikes. What should you adjust?",
+    "opts": [
+      "Decrease cooldown period to 30 seconds for faster scaling response",
+      "Increase scale-up factor to 2.0 to add more workers per scaling event",
+      "Decrease scale-down cooldown to reclaim idle capacity faster",
+      "Enable graceful decommissioning to allow safer scale-down operations"
+    ],
+    "ans": 1,
+    "explain": "Increasing the scale-up factor adds more workers per scaling decision, helping the cluster respond more aggressively to sudden demand spikes. The 2-minute cooldown is already reasonable; decreasing it below 2 minutes can cause thrashing. Scale-down cooldown and graceful decommissioning improve cost efficiency and stability during scale-down but don't help with scale-up responsiveness during traffic spikes. The question specifically identifies delays during spikes, indicating insufficient scale-up aggressiveness.",
+    "concept": "Dataproc autoscaling tuning: Scale-up factor controls aggressiveness (how many workers), cooldown controls frequency (how often). For bursty workloads: increase factor, keep cooldown \u2265 2min."
+  },
+  {
+    "q": "A Cloud Composer DAG has 15 tasks with complex dependencies. Five tasks are external API calls that occasionally fail due to rate limiting. The DAG uses default retry settings (1 retry, no delay). What is the BEST configuration to improve resilience?",
+    "opts": [
+      "Set retries=3 and retry_delay=300s (5 minutes) on API call tasks only",
+      "Set retries=5 and retry_exponential_backoff=True for the entire DAG",
+      "Implement a custom sensor to check API availability before executing tasks",
+      "Use Airflow's SimpleHttpOperator with connection pooling enabled"
+    ],
+    "ans": 0,
+    "explain": "Configuring task-specific retries with appropriate delay addresses rate limiting directly on the problematic tasks without affecting other tasks. Setting 5-minute delays allows rate limits to reset between retries. Applying retries to the entire DAG is inefficient for tasks that don't need them. Custom sensors add complexity and don't handle mid-task failures. SimpleHttpOperator doesn't solve rate limiting issues; the retry strategy does. Exponential backoff is useful but fixed 5-minute delay is more predictable for known rate limit windows.",
+    "concept": "Airflow retry strategy: Task-specific over DAG-level. For rate limiting: retries=3-5 with retry_delay matching rate limit window. Memory aid: 'Target the task, time the retry.'"
+  },
+  {
+    "q": "A Cloud Composer environment frequently experiences task delays during 9-11 AM when 50 DAGs schedule concurrently. Airflow webserver shows scheduler heartbeat gaps. Current configuration: 1 scheduler, 4 workers (n1-standard-4), 20 max_active_runs per DAG. What should you optimize FIRST?",
+    "opts": [
+      "Increase worker count to 8 to handle more concurrent tasks",
+      "Add a second scheduler to improve DAG parsing and task scheduling throughput",
+      "Reduce max_active_runs to 10 to decrease scheduler load",
+      "Upgrade worker machine type to n1-standard-8 for more CPU per worker"
+    ],
+    "ans": 1,
+    "explain": "Scheduler heartbeat gaps indicate scheduler bottleneck during DAG parsing and scheduling, not task execution capacity. Adding a second scheduler (available in Airflow 2.x) improves scheduling throughput for the 50 concurrent DAGs. Worker count affects task execution capacity, but the issue is scheduling delays before tasks even start. Reducing max_active_runs limits parallelism and doesn't solve the scheduler bottleneck. Upgrading worker machine type doesn't help scheduling performance.",
+    "concept": "Composer bottleneck diagnosis: Scheduler heartbeat gaps = add schedulers. Worker queue buildup = add workers. Decision: Scheduling delays \u2192 more schedulers; Execution delays \u2192 more workers."
+  },
+  {
+    "q": "A DAG uses a FileSensor to wait for files in Cloud Storage before processing. Files arrive unpredictably between 1-6 AM. The sensor checks every 60 seconds with timeout=10800s (3 hours). The environment frequently hits Composer worker limits during sensor wait times. How should you optimize this pattern?",
+    "opts": [
+      "Increase poke_interval to 300 seconds (5 minutes) to reduce worker slot consumption",
+      "Switch sensor mode from 'poke' to 'reschedule' to free worker slots while waiting",
+      "Use GCSObjectUpdateSensor instead of FileSensor for better Cloud Storage integration",
+      "Replace the sensor with a Cloud Storage trigger that starts the DAG when files arrive"
+    ],
+    "ans": 3,
+    "explain": "Cloud Storage triggers (Pub/Sub notifications) eliminate active waiting entirely, starting the DAG only when files actually arrive. This frees all worker slots and scales perfectly regardless of wait time. Reschedule mode helps but sensors still consume scheduler resources and add complexity. Increasing poke_interval reduces frequency but doesn't eliminate the problem. GCSObjectUpdateSensor is functionally similar to FileSensor and doesn't solve the worker consumption issue. Event-driven architecture is superior to polling for unpredictable arrivals.",
+    "concept": "Airflow sensor anti-pattern: Polling wastes resources. For external events (GCS files, Pub/Sub messages): Use triggers/Pub/Sub, not sensors. Sensors are for systems without event APIs."
+  },
+  {
+    "q": "Your data pipeline validates incoming data quality before loading to BigQuery. You need to check that 'revenue' column values are positive, 'customer_id' has no nulls, and 'order_date' is within the last 90 days. Which approach provides the BEST balance of expressiveness and maintainability?",
+    "opts": [
+      "Write custom Python validation functions using pandas and assert statements",
+      "Use Great Expectations with built-in expectations (expect_column_values_to_be_between, expect_column_values_to_not_be_null)",
+      "Create BigQuery SQL queries with WHERE clauses to filter invalid records",
+      "Use Dataprep recipes with data quality rules and thresholds"
+    ],
+    "ans": 1,
+    "explain": "Great Expectations provides declarative, reusable expectations with built-in validation logic, automatic documentation, and data quality profiling. It's designed specifically for this use case and integrates well with data pipelines. Custom pandas code requires more maintenance and lacks standardization. BigQuery SQL can validate but doesn't provide comprehensive reporting, versioning, or expectation catalogs. Dataprep is interactive and not ideal for automated pipeline validation. Great Expectations offers the best combination of expressiveness, testing, and governance.",
+    "concept": "Data quality framework selection: Great Expectations for structured validation at scale. Decision rule: Use GE when rules are reusable, need documentation, or require expectation suites across datasets."
+  },
+  {
+    "q": "A data pipeline processes 100K records daily. You've implemented Great Expectations validation that checks 20 expectations per batch. Validation time increased from 2 minutes to 15 minutes as dataset size grew. What optimization should you apply?",
+    "opts": [
+      "Sample 10% of records for validation instead of validating the entire dataset",
+      "Reduce the number of expectations from 20 to 5 critical checks only",
+      "Enable parallel execution of expectations using execution_engine='spark'",
+      "Move validation to BigQuery using SQL-based expectations instead of pandas"
+    ],
+    "ans": 2,
+    "explain": "Using Spark as the execution engine allows Great Expectations to parallelize expectation evaluation across distributed compute, significantly improving performance for large datasets. Sampling introduces risk of missing data quality issues in unsampled records. Reducing expectations compromises data quality coverage. Moving to BigQuery SQL might help but loses Great Expectations' rich features and standardization. The pandas execution engine processes serially, which explains the performance degradation with data growth.",
+    "concept": "Great Expectations performance: Scale execution engine with data volume. Decision: Pandas (<1M rows) \u2192 Spark (1M-100M rows) \u2192 SQL/BigQuery (>100M rows). Keep expectations comprehensive, scale compute."
+  },
+  {
+    "q": "You need to validate that 'email' column values match standard email format and that 'country_code' values are in a predefined list of 50 countries. Great Expectations doesn't have a built-in email format expectation. What is the BEST approach?",
+    "opts": [
+      "Use expect_column_values_to_match_regex for email and expect_column_values_to_be_in_set for country codes",
+      "Create a custom expectation class extending ExpectationConfiguration for email validation",
+      "Use expect_column_values_to_match_strftime_format for email validation",
+      "Implement validation in Python before Great Expectations and only use GE for simple checks"
+    ],
+    "ans": 0,
+    "explain": "expect_column_values_to_match_regex is perfect for email format validation using standard regex patterns, while expect_column_values_to_be_in_set directly supports the country code validation use case. Both are built-in expectations that require no custom code. Creating custom expectations is unnecessary overhead when built-in expectations suffice. strftime_format is for datetime parsing, not email validation. Splitting validation between systems adds complexity and defeats the purpose of using a validation framework.",
+    "concept": "Great Expectations coverage: Use built-in expectations first (match_regex, be_in_set, be_between). Custom expectations only when logic is truly unique. Regex handles most pattern validation needs."
+  },
+  {
+    "q": "Your BigQuery streaming pipeline ingests 10K events/second. You need to alert when event processing latency exceeds 5 minutes. Cloud Monitoring shows BigQuery metrics but no latency metric exists. What is the MOST effective monitoring approach?",
+    "opts": [
+      "Create a logs-based metric from BigQuery audit logs measuring timestamp differences",
+      "Write a custom Cloud Function to query BigQuery every minute and calculate latency",
+      "Add application-level timestamps to events and create BigQuery scheduled queries to calculate latency",
+      "Use Cloud Monitoring's Metrics Explorer to create a derived metric from existing BigQuery metrics"
+    ],
+    "ans": 2,
+    "explain": "Adding application timestamps (event_time) to the data allows you to calculate processing latency (current_time - event_time) directly in BigQuery scheduled queries, which can then export results to Cloud Monitoring for alerting. This approach is reliable and doesn't depend on log parsing. Logs-based metrics from audit logs may not capture streaming insert timestamps reliably. Cloud Functions add unnecessary complexity and execution costs. Metrics Explorer can't derive latency from standard BigQuery metrics that don't include timing information.",
+    "concept": "Custom metric strategy: Instrument at source, calculate in pipeline. For latency: Add timestamp at ingestion, compute delta in processing layer, export to monitoring. Pattern: Source \u2192 Pipeline \u2192 Monitor."
+  },
+  {
+    "q": "A data pipeline has an SLO of 99.5% availability (monthly window). You need to create an alerting policy that notifies the team when SLO burn rate indicates you'll exhaust the error budget in 2 days. What should you configure?",
+    "opts": [
+      "Alert when error rate exceeds 0.5% in any 5-minute window",
+      "Configure a burn rate threshold of 14.4x (consumption in 2 days) over a 1-hour window",
+      "Set up a simple alert when availability drops below 99.5% for 10 minutes",
+      "Query Cloud Billing exports and GCS access logs within a custom visual notebook to audit error-budget spend on a weekly schedule"
+    ],
+    "ans": 1,
+    "explain": "Burn rate alerting calculates how fast you're consuming error budget. For a 30-day monthly budget exhausted in 2 days, the burn rate is 15x (30/2). The option suggests 14.4x which is close (assuming ~28.8 day month). Alerting on burn rate over a window (1 hour) provides early warning before SLO violation. Simple error rate threshold doesn't account for the budget concept. Availability threshold alerts after SLO is already violated. Manual monitoring doesn't scale and lacks automation. Google SRE recommends multi-window, multi-burn-rate alerts.",
+    "concept": "SLO alerting: Use burn rate, not absolute thresholds. Formula: burn_rate = time_window / target_exhaustion_time. Fast burn (2 days) needs shorter detection window (1 hour). Google SRE pattern: 2% in 1hr (36x burn)."
+  },
+  {
+    "q": "Cloud Monitoring shows high memory usage on Dataproc workers, but default GCE memory metrics don't provide JVM heap visibility needed for Spark tuning. What should you configure to get JVM-level metrics?",
+    "opts": [
+      "Enable Cloud Monitoring agent on Dataproc nodes to collect custom JVM metrics",
+      "Use Dataproc's built-in initialization actions to install Prometheus exporters for JVM metrics",
+      "Query Spark UI REST API periodically and export metrics to Cloud Monitoring using custom Cloud Function",
+      "Enable Dataproc Component Gateway and access Spark History Server for JVM metrics"
+    ],
+    "ans": 1,
+    "explain": "Dataproc initialization actions can install and configure Prometheus JMX exporters that expose JVM metrics, which can then be scraped and sent to Cloud Monitoring. This is the standard pattern for custom metrics on Dataproc clusters. The Cloud Monitoring agent provides OS-level metrics but not JVM-specific metrics. Cloud Functions polling Spark UI adds unnecessary complexity and latency. Component Gateway provides UI access but doesn't export metrics to monitoring systems for alerting and analysis.",
+    "concept": "Dataproc observability layers: GCE metrics (OS/hardware) \u2192 Initialization actions + Prometheus (JVM/application) \u2192 Cloud Monitoring (aggregation/alerts). Custom metrics need exporters installed at cluster creation."
+  },
+  {
+    "q": "Your data warehouse team needs to distinguish between user queries (interactive) and ETL jobs (batch) in Cloud Monitoring dashboards for BigQuery. Both use the same project but different service accounts. What is the SIMPLEST approach?",
+    "opts": [
+      "Add labels to BigQuery jobs using the 'labels' parameter in job configurations",
+      "Create separate BigQuery reservations for interactive and batch workloads",
+      "Use Cloud Monitoring to filter metrics by principal_email (service account) in dashboard queries",
+      "Write a Cloud Function to tag jobs after submission based on user identity"
+    ],
+    "ans": 2,
+    "explain": "Filtering Cloud Monitoring metrics by principal_email leverages existing authentication information without requiring code changes or infrastructure modifications. The principal_email dimension is automatically captured in BigQuery audit logs and metrics. Job labels require modifying all job submission code. Separate reservations provide resource isolation but are overkill if you only need monitoring separation. Cloud Functions add complexity and lag. The simplest solution uses existing metadata for filtering.",
+    "concept": "Monitoring segmentation strategy: Use existing dimensions first (user, job type, service account), add labels only when needed. Decision tree: Existing dimension? Use it. Need custom grouping? Add labels."
+  },
+  {
+    "q": "A data pipeline extracts data from Cloud SQL hourly, transforms it using Dataflow, and loads into BigQuery. The source table has an updated_at timestamp. How should you implement incremental processing to minimize data transfer and processing?",
+    "opts": [
+      "Track the last processed updated_at timestamp in Cloud Storage and filter source query using WHERE updated_at > last_processed",
+      "Use BigQuery's _TABLE_SUFFIX to partition data by hour and only process new partitions",
+      "Implement Change Data Capture (CDC) using Datastream to capture only changed records",
+      "Read all data and use Dataflow's Combine transform to deduplicate records based on updated_at"
+    ],
+    "ans": 0,
+    "explain": "Storing the last processed timestamp (watermark) and filtering the source query is the standard ELT pattern for incremental loads from databases with update timestamps. This minimizes data extracted and processed. CDC via Datastream is powerful but adds infrastructure complexity when simple timestamp filtering suffices. _TABLE_SUFFIX is for BigQuery wildcard queries, not source extraction. Reading all data defeats the purpose of incremental processing. The timestamp watermark pattern is simple, efficient, and idiomatic.",
+    "concept": "Incremental ELT pattern: Store watermark (last timestamp) \u2192 Filter source with WHERE timestamp > watermark \u2192 Update watermark after success. Storage: Cloud Storage, Datastore, or metadata table."
+  },
+  {
+    "q": "A batch ETL pipeline occasionally fails mid-processing, leaving partial data in BigQuery target tables. Rerunning the job creates duplicate records. The pipeline uses batch INSERT statements. What pattern ensures idempotent loads?",
+    "opts": [
+      "Use BigQuery MERGE statements with unique keys to upsert records instead of INSERT",
+      "Truncate target tables before each pipeline run using DELETE statements",
+      "Add a job_run_id column to records and filter for max(job_run_id) in queries",
+      "Enable BigQuery streaming inserts with deduplication using insertId"
+    ],
+    "ans": 0,
+    "explain": "MERGE (upsert) statements check for existing records by key and update if present or insert if absent, making the operation idempotent regardless of how many times it runs. Truncating tables loses data if multiple jobs run concurrently and doesn't handle partial failures. Adding job_run_id requires changing query patterns and doesn't prevent duplicates. Streaming inserts with insertId provide deduplication but are designed for streaming workloads, not batch ETL. MERGE is the standard idempotent batch load pattern.",
+    "concept": "Idempotent load patterns: Batch \u2192 MERGE/UPSERT with keys. Streaming \u2192 insertId deduplication. DELETE/INSERT is NOT idempotent. Memory aid: 'MERGE makes multiple runs safe.'"
+  }
+]

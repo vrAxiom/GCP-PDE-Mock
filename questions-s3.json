@@ -1442,13 +1442,13 @@
   {
     "q": "Bigtable and Cloud Spanner are both massively scalable databases with low latency. What is the key difference between the data stored in them?",
     "opts": [
-      "Bigtable data is non-relational; Cloud Spanner data is relational",
-      "Bigtable data is relational; Cloud Spanner data is non-relational",
-      "Bigtable data is multidimensional; Cloud Spanner data is not multidimensional",
-      "There is no meaningful difference between the two"
+      "Bigtable is a wide-column NoSQL database with single-row transactions; Cloud Spanner is an enterprise relational database with global ACID transactions and SQL support",
+      "Bigtable stores relational data with foreign key enforcement; Cloud Spanner handles unindexed document-based storage",
+      "Bigtable uses multi-master write replication across regions with strong consistency; Cloud Spanner uses asynchronous replication with eventual consistency",
+      "Bigtable enforces dynamic schema modifications across multi-dimensional document models; Cloud Spanner supports schema-free NoSQL structures"
     ],
     "ans": 0,
-    "explain": "Bigtable is a NoSQL wide-column store — data is non-relational and accessed via a single composite row key. Cloud Spanner is a globally distributed, strongly consistent relational database that supports full SQL and ACID transactions across regions. The distinction is critical for service selection: use Bigtable for key-value/time-series at scale; use Spanner for relational data requiring global consistency.",
+    "explain": "Bigtable is a NoSQL wide-column store optimized for high-throughput, low-latency key-value and time-series data, accessed via a single row key. Cloud Spanner is a relational database providing external consistency, ACID transactions, and full SQL across regions. The other options are incorrect: Spanner is relational while Bigtable is NoSQL; Bigtable uses Paxos groups per tablet and single-row transactions, whereas Spanner handles cross-region distributed transactions.",
     "concept": "Bigtable, Cloud Spanner, NoSQL vs relational, storage selection"
   },
   {
@@ -1538,13 +1538,13 @@
   {
     "q": "A developer is planning a mobile application for company customers to track information about their accounts. The developer wants to write messages each time a significant event occurs (opening, viewing, or deleting an account) for compliance reasons and wants to minimize administrative overhead. What system would you recommend for storing this data?",
     "opts": [
-      "Cloud SQL using MySQL",
-      "Cloud SQL using PostgreSQL",
-      "Cloud Datastore",
-      "Stackdriver Logging"
+      "Provision a high-availability Cloud SQL MySQL instance and create an active_audit_log table",
+      "Deploy a PostgreSQL instance on Compute Engine with automatic local disk backups enabled",
+      "Migrate account event schemas to Firestore in Datastore mode due to its flexible subcollection support",
+      "Write audit events directly to standard output or stderr to be automatically ingested by Google Cloud Logging"
     ],
     "ans": 3,
-    "explain": "Stackdriver Logging is the best option because it is a managed service designed for storing logging data. Using relational databases (Options A and B) would require designing and maintaining a data model and user interface. Cloud Datastore would not require a fixed data model but would still need a custom UI to manage log events.",
+    "explain": "Cloud Logging is a fully managed service that automatically collects stdout/stderr from containerized or VM workloads, providing secure, compliant, zero-overhead storage with options for log locks and long-term retention sinks. Managing this in databases like Cloud SQL or Firestore requires custom schema design and application-level scaling.",
     "concept": "Stackdriver Logging, compliance, managed logging"
   },
   {
@@ -1574,25 +1574,25 @@
   {
     "q": "A startup developing self-driving vehicle software currently stores IoT data from 20 vehicles in a MySQL database on Compute Engine (n2-standard-8). They want to scale to tens of thousands of vehicles transmitting IoT data every second across North America and Europe (~4 KB per transmission). What storage architecture change would you recommend?",
     "opts": [
-      "No change; the current architecture is well suited.",
-      "Replace Cloud SQL with Cloud Spanner.",
-      "Replace Cloud SQL with Bigtable.",
-      "Replace Cloud SQL with Cloud Datastore."
+      "Scale up the Compute Engine disk capacity using local SSDs and set up write master-replica mirroring in MySQL",
+      "Replace Cloud SQL with Cloud Spanner to leverage its global read/write relational transaction capabilities",
+      "Replace the self-managed MySQL database with Cloud Bigtable to handle high-throughput, low-latency time-series write workloads",
+      "Replace Cloud SQL with Firestore in Datastore mode to automatically index all fields for ad-hoc search"
     ],
     "ans": 2,
-    "explain": "Bigtable is the best storage service for IoT data, especially when large numbers of devices send data at short intervals. Cloud SQL is designed for regional OLTP and cannot scale to this level. Cloud Spanner is for globally scalable OLTP, not IoT time-series. Cloud Datastore is a document database not optimized for this pattern.",
+    "explain": "Cloud Bigtable is Google Cloud's premier choice for high-throughput, low-latency NoSQL data, particularly structured or semi-structured time-series data like IoT telemetry from tens of thousands of vehicles. Cloud SQL cannot scale to handle millions of write operations/sec; Spanner is built for relational OLTP transactions with ACID enforcement (which is overkill and cost-prohibitive for high-throughput, write-heavy sensor metrics); Firestore is not optimized for high-frequency writes on a single collection.",
     "concept": "Bigtable, IoT, global scale, time-series"
   },
   {
     "q": "A team of game developers wants to track players' possessions (purchased, traded, or awarded). Possessions include clothing, tools, books, and coins. Players can search for others by possession type to trade. New possession types and acquisition methods are expected in the future. What kind of data store would you recommend?",
     "opts": [
-      "Transactional database",
-      "Wide-column database",
-      "Document database",
-      "Analytic database"
+      "Cloud SQL PostgreSQL using a highly normalized relational schema with multiple table JOINs",
+      "Cloud Bigtable because it supports wide-column storage and high-throughput point writes",
+      "Cloud Firestore because of its document-based flexible schema and built-in indexing for nested structures",
+      "BigQuery using nested and repeated fields to store historical user profiles and inventory"
     ],
     "ans": 2,
-    "explain": "A document database supports semi-structured schemas. Players' possessions need to be searchable by content, not just a single key. Transactional databases have fixed schemas. Wide-column databases don't support indexed lookups across non-key attributes. Analytical databases are for structured analytics.",
+    "explain": "Firestore is a serverless NoSQL document database perfectly suited for semi-structured data like game inventories (where schemas change and structures are nested). It automatically indexes fields, allowing players to search for other players by possession type. Cloud SQL with rigid schemas makes adding fields hard. Bigtable doesn't support indexing on non-key attributes efficiently. BigQuery is for analytics, not low-latency real-time transactional inventory tracking.",
     "concept": "Firestore, document database, flexible schema, semi-structured"
   },
   {
@@ -1646,37 +1646,37 @@
   {
     "q": "A software developer has hundreds of thousands of 1 KB JSON objects that need to be accessed in sub-millisecond times. All objects are referenced by a key, and there is no need to look up values by the contents of the JSON structure. What kind of NoSQL database would you recommend?",
     "opts": [
-      "Key-value database",
-      "Analytical database",
-      "Wide-column database",
-      "Graph database"
+      "Cloud Memorystore for Redis as an in-memory key-value database",
+      "BigQuery with external tables querying JSON files from Cloud Storage",
+      "Cloud Bigtable with single-row schemas with multi-family columnar structures",
+      "Cloud Spanner with JSON columns and multi-region replicas"
     ],
     "ans": 0,
-    "explain": "A key-value database is appropriate because values are looked up by key only, and the value is a JSON structure. Analytical databases are not a type of NoSQL database. Wide-column databases work better for larger datasets in the terabyte range. Graph databases model nodes and relationships.",
+    "explain": "Cloud Memorystore for Redis provides fully managed in-memory cache services for sub-millisecond access of key-value operations like small JSON objects. BigQuery is for OLAP and has latencies of seconds. Bigtable is overkill for 1 KB objects in the hundreds of thousands range and has higher base latency than Memorystore. Cloud Spanner is built for relational global transactions, not cheap sub-millisecond key-value retrieval.",
     "concept": "NoSQL key-value store, JSON objects, single-key lookup, sub-millisecond"
   },
   {
     "q": "A software developer has hundreds of thousands of 10 KB JSON objects that need to be searchable by most attributes in the JSON structure. What kind of NoSQL database would you recommend?",
     "opts": [
-      "Key-value database",
-      "Analytical database",
-      "Wide-column database",
-      "Document database"
+      "Cloud Memorystore for Redis with active key expiration",
+      "BigQuery with federated queries on Cloud Storage JSON dumps",
+      "Cloud Bigtable with customized key prefix filtering",
+      "Cloud Firestore using hierarchical collections and multi-field indexing"
     ],
     "ans": 3,
-    "explain": "A document database provides indexing on columns other than a single key, enabling search by content. Key-value and wide-column databases do not support indexing on non-key attributes. Analytical is not a type of NoSQL database.",
+    "explain": "Cloud Firestore is a serverless document database that automatically indexes all document fields (attributes), enabling highly structured ad-hoc search and querying of complex JSON fields. Memorystore is a pure key-value store and does not support indexing by properties. Bigtable only indexes by row-key. BigQuery is analytical, not transactional.",
     "concept": "Firestore, document database, semi-structured, full indexing"
   },
   {
     "q": "A data modeler is designing a database to support ad hoc querying, including drilling down and slicing and dicing queries. What kind of data model is the data modeler likely to use?",
     "opts": [
-      "OLTP",
-      "OLAP",
-      "Normalized",
-      "Graph"
+      "A highly normalized third-normal-form (3NF) relational database schema for transactional systems",
+      "An OLAP dimensional model (such as a star or snowflake schema) designed for analytical processing",
+      "An unstructured key-value store targeting high-frequency temporal updates",
+      "A graph database model with node-edge relationships for behavioral path tracking"
     ],
     "ans": 1,
-    "explain": "OLAP data models are designed to support drilling down and slicing and dicing queries. OLTP models facilitate storing, searching, and retrieving individual records. Normalized data models are used in OLTP. Graph data models model nodes and relationships.",
+    "explain": "Online Analytical Processing (OLAP) dimensional modeling (using star or snowflake schemas with fact and dimension tables) is specifically optimized for ad hoc querying, slicing/dicing, and drilling down through large volumes of history. OLTP (Online Transaction Processing) models facilitate storing, searching, and retrieving individual records. Normalized data models are typically used in OLTP. Graph models map complex network relationships rather than aggregate metrics.",
     "concept": "OLAP, data warehouse modeling, dimensional modeling"
   },
   {
@@ -1778,13 +1778,13 @@
   {
     "q": "You are running a Redis cache using Cloud Memorystore. You receive an alert that memory usage is exceeding 80 percent. You do not want to scale up the instance but need to reduce memory usage. What could you try?",
     "opts": [
-      "Setting shorter TTLs and trying a different eviction policy.",
-      "Switching from Basic Tier to Standard Tier.",
-      "Exporting the cache.",
-      "There is no other option—you must scale the instance."
+      "Configure shorter TTLs for existing keys and utilize an allkeys-lru or volatile-lru eviction policy",
+      "Switch the instance from Basic Tier to Standard Tier to enable cross-zone failover and automatic replication",
+      "Initiate a scheduled database export of dirty keys to Cloud Storage to free up internal memory",
+      "Deploy a Cloud Memorystore for Memcached sidecar instance to load-balance active read queries from Redis"
     ],
     "ans": 0,
-    "explain": "Setting shorter TTLs makes keys eligible for eviction sooner. Switching to an eviction policy that targets all keys (not just TTL-keyed ones) may also reduce memory pressure. Switching tiers or exporting the cache does not reduce memory usage.",
+    "explain": "Configuring shorter TTLs ensures keys age out and free up space sooner. Choosing an aggressive eviction policy like allkeys-lru allows Redis to automatically remove least-recently-used keys when the memory limit is reached. Standard Tier provides high availability (not more memory). Exporting the cache does not reduce RAM usage. Adding Memcached does not free up memory on the Redis instance itself.",
     "concept": "Cloud Memorystore, Redis, eviction policy, TTL, memory pressure"
   },
   {
@@ -1814,13 +1814,13 @@
   {
     "q": "As a DBA migrating a MongoDB instance to Google Cloud, you want to collect metrics at both the instance level and the database server level. What should you do in addition to creating an instance and installing MongoDB?",
     "opts": [
-      "Install Stackdriver Logging agent.",
-      "Install Stackdriver Monitoring agent.",
-      "Install Stackdriver Debug agent.",
-      "Nothing. By default, the database instance will send metrics to Stackdriver."
+      "Install the Cloud Logging agent on the virtual machine instance to monitor system-level log records",
+      "Install the Cloud Monitoring agent (or Ops Agent) on the virtual machine instance and configure the MongoDB integration",
+      "Deploy the Cloud Debugger agent into the MongoDB running daemon to collect performance traces",
+      "Do nothing; GCP Compute Engine instances automatically collect database-level application metrics out-of-the-box"
     ],
     "ans": 1,
-    "explain": "Installing the Stackdriver Monitoring agent collects application-level metrics (including database server metrics) and sends them to Stackdriver. The Logging agent collects logs, not metrics. The Debug agent is for analyzing running programs. By default, only instance-level metrics and audit logs are sent.",
+    "explain": "The Cloud Monitoring Agent (or modern Google Cloud Ops Agent) collects system and application-level metrics, such as database-specific throughput, directly from VM environments. The Cloud Logging agent collects log files, not telemetry metrics. Debugger is for source code inspection. Compute Engine's default hypervisor monitoring only registers VM-level CPU/RAM/disk/network, not internal MongoDB process-level details.",
     "concept": "Stackdriver Monitoring, database metrics, agent, unmanaged database"
   },
   {
@@ -1850,13 +1850,13 @@
   {
     "q": "Your department is expanding use of BigQuery, and the CFO wants to investigate flat-rate billing. What tools and data would you use to help answer that question?",
     "opts": [
-      "Stackdriver Logging and audit log data",
-      "Stackdriver Logging and CPU utilization metrics",
-      "Stackdriver Monitoring and CPU utilization metrics",
-      "Stackdriver Monitoring and slot utilization metrics"
+      "Cloud Logging and audit log data",
+      "Cloud Logging and CPU utilization metrics",
+      "Cloud Monitoring and CPU utilization metrics",
+      "Cloud Monitoring and slot utilization metrics"
     ],
     "ans": 3,
-    "explain": "Stackdriver Monitoring collects slot utilization metrics that show BigQuery resource consumption. Logging captures events but not performance metrics. CPU utilization is not a BigQuery metric (it is serverless). Slot utilization data tells you whether flat-rate billing would be cost-effective.",
+    "explain": "Cloud Monitoring collects slot utilization metrics that show BigQuery resource consumption. Cloud Logging captures events but not performance metrics. CPU utilization is not a BigQuery metric (it is serverless). Slot utilization data tells you whether flat-rate billing would be cost-effective.",
     "concept": "BigQuery, slots, Stackdriver Monitoring, flat-rate billing"
   },
   {
@@ -1886,13 +1886,13 @@
   {
     "q": "An IoT startup's Bigtable database stores data from 100,000 sensors. Each row contains all sensor data for one hour; the row-key is sensor ID + hour of day + date. What change would you recommend to this design?",
     "opts": [
-      "Use one row per sensor per 60-second dataset instead of storing multiple datasets in a single row.",
-      "Start the row-key with the day and hour instead of the sensor ID.",
-      "Allow hours to start at any arbitrary time to accommodate sensor clock differences.",
-      "No change is recommended."
+      "Store one row per sensor per 60-second measurement interval (tall and narrow structure) to exploit sequential row scan efficiency",
+      "Start the row-key with the date and hour prefixed, followed by the sensor ID, to simplify global chronological lookups",
+      "Configure arbitrary hour offsets in the row-keys to balance sensor timing deviations over multiple partition blocks",
+      "Promote all metric fields to schema-defined Bigtable secondary indexes to avoid scanning row keys"
     ],
     "ans": 0,
-    "explain": "This table should be designed tall and narrow with one dataset per row. Starting the row-key with day and hour would lead to hotspotting since sequential timestamps create hotspots. Arbitrary hour starts would not fix the wide-table problem.",
+    "explain": "Bigtable performs best with tall and narrow tables (fewer columns per row, more rows). Storing an entire hour of high-frequency data in a single row leads to very wide rows, degrading query and write performance. Suffixing the timestamp prevents scan hotspotting compared to prefixing by date/hour, which would concentrate all active writes on a single table partition (tablet server). Bigtable does not natively support secondary indexes.",
     "concept": "Bigtable, tall and narrow table, row-key design, hotspot avoidance"
   },
   {
