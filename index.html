@@ -4,20 +4,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GCP Professional Data Engineer – Mock Quiz 2026</title>
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>GCP PDE Mastery Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --blue: #1a73e8;
-      --blue-dark: #1557b0;
-      --green: #1e8e3e;
-      --red: #c5221f;
-      --yellow: #f9ab00;
-      --bg: #f8f9fa;
-      --card: #fff;
-      --border: #dadce0;
-      --text: #202124;
-      --muted: #5f6368;
-      --radius: 12px;
+      --bg: #04111f;
+      --bg-soft: #0b1a32;
+      --panel: rgba(10, 24, 45, 0.78);
+      --panel-strong: rgba(9, 20, 38, 0.92);
+      --line: rgba(193, 211, 234, 0.24);
+      --text: #e8f1ff;
+      --muted: #c1d3ea;
+      --blue: #58a9ff;
+      --cyan: #78f7ff;
+      --green: #65e0b8;
+      --amber: #ffc86b;
+      --shadow: 0 24px 60px rgba(1, 8, 20, 0.45);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --max: 1280px;
+      --shell-gutter: 12px;
     }
 
     * {
@@ -26,2239 +36,1509 @@
       padding: 0;
     }
 
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 104px;
+      overflow-x: clip;
+      overscroll-behavior-x: none;
+    }
+
     body {
-      font-family: 'Google Sans', 'Segoe UI', sans-serif;
-      background: var(--bg);
+      font-family: 'Manrope', sans-serif;
       color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(102, 184, 255, 0.18), transparent 32%),
+        radial-gradient(circle at 85% 12%, rgba(120, 247, 255, 0.12), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(101, 224, 184, 0.12), transparent 28%),
+        linear-gradient(180deg, #071427 0%, #04111f 56%, #07101c 100%);
       min-height: 100vh;
+      line-height: 1.5;
+      width: 100%;
+      overflow-x: clip;
+      overscroll-behavior-x: none;
+      touch-action: pan-y pinch-zoom;
     }
 
-    .screen {
-      display: none;
-    }
-
-    .screen.active {
+    img {
       display: block;
+      max-width: 100%;
     }
 
-    /* ── HOME ── */
-    #home {
-      max-width: 860px;
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    a,
+    summary {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: -56px;
+      z-index: 60;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: #f8fbff;
+      color: #04111f;
+      font-size: 14px;
+      font-weight: 800;
+      transition: top .18s ease;
+    }
+
+    .skip-link:focus-visible {
+      top: 16px;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    summary:focus-visible,
+    [role="button"]:focus-visible {
+      outline: 3px solid var(--cyan);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 6px rgba(120, 247, 255, 0.18);
+    }
+
+    .shell {
+      width: min(calc(100% - (2 * var(--shell-gutter))), var(--max));
       margin: 0 auto;
-      padding: 32px 20px;
     }
 
-    .hero {
-      text-align: center;
-      padding: 40px 0 32px;
-    }
-
-    .hero h1 {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--blue);
-    }
-
-    .hero p {
-      color: var(--muted);
-      margin-top: 8px;
-      font-size: 15px;
-    }
-
-    .blueprint-badge {
-      display: inline-block;
-      background: #e8f0fe;
-      color: var(--blue);
-      border-radius: 20px;
-      padding: 4px 14px;
-      font-size: 13px;
-      font-weight: 500;
-      margin-top: 10px;
-    }
-
-    .sections-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 24px;
-    }
-
-    @media(max-width:600px) {
-      .sections-grid {
-        grid-template-columns: 1fr;
+    @media (min-width: 768px) {
+      :root {
+        --shell-gutter: 20px;
       }
     }
 
-    .section-card {
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      cursor: pointer;
-      transition: box-shadow .2s, border-color .2s;
+    @media (min-width: 1200px) {
+      :root {
+        --shell-gutter: 24px;
+      }
+    }
+
+    section[id],
+    main[id] {
+      scroll-margin-top: 104px;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(4, 17, 31, 0.72);
+      border-bottom: 1px solid rgba(151, 168, 194, 0.12);
+    }
+
+    .nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 0;
+      gap: 20px;
       position: relative;
-      overflow: hidden;
     }
 
-    .section-card:hover {
-      box-shadow: 0 4px 18px rgba(26, 115, 232, .13);
-      border-color: var(--blue);
-    }
-
-    .section-card .sec-num {
-      font-size: 11px;
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--blue);
+      letter-spacing: 0.02em;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #03111e;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      box-shadow: 0 10px 30px rgba(102, 184, 255, 0.34);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .brand-copy small {
+      display: block;
+      color: #d0def2;
+      font-family: 'Manrope', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
     }
 
-    .section-card h3 {
-      font-size: 15px;
-      font-weight: 600;
-      margin: 6px 0 4px;
-    }
-
-    .section-card .sec-weight {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .section-card .sec-progress {
-      margin-top: 12px;
-    }
-
-    .progress-bar {
-      height: 6px;
-      background: #e8eaed;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: var(--blue);
-      border-radius: 3px;
-      transition: width .4s;
-    }
-
-    .sec-score-label {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    /* ── HISTORY ── */
-    .history-toggle {
-      font-size: 12px;
-      color: var(--blue);
-      cursor: pointer;
-      background: none;
-      border: none;
-      padding: 0;
-      margin-top: 8px;
-      font-weight: 600;
-      display: block;
-    }
-
-    .history-table {
-      margin-top: 8px;
+    .menu-toggle {
       display: none;
-      border-top: 1px solid var(--border);
-      padding-top: 8px;
-    }
-
-    .history-table.open {
-      display: block;
-    }
-
-    .history-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      padding: 3px 0;
-      color: var(--muted);
-      border-bottom: 1px solid #f1f3f4;
-    }
-
-    .history-row:last-child {
-      border-bottom: none;
-    }
-
-    .history-row .hr-pct {
-      font-weight: 700;
-    }
-
-    .history-row .hr-pct.pass {
-      color: var(--green);
-    }
-
-    .history-row .hr-pct.fail {
-      color: var(--red);
-    }
-
-    .best-badge {
-      display: inline-block;
-      background: #fff3cd;
-      border: 1px solid #f9ab00;
-      color: #7a5200;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 1px 5px;
-      margin-left: 4px;
-    }
-
-    .sec-meta-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-
-    .sec-meta-pill {
-      font-size: 11px;
-      color: var(--muted);
-      background: #f1f3f4;
-      border-radius: 10px;
-      padding: 2px 8px;
-    }
-
-    .clear-btn {
-      font-size: 11px;
-      color: var(--red);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      margin-top: 6px;
-    }
-
-    .global-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: 12px;
-    }
-
-    .global-clear-btn {
-      font-size: 13px;
-      color: var(--red);
-      background: none;
-      border: 1.5px solid var(--red);
-      border-radius: 8px;
-      padding: 5px 14px;
-      cursor: pointer;
-      transition: .15s;
-    }
-
-    .global-clear-btn:hover {
-      background: #fce8e6;
-    }
-
-    .sec-badge {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      font-size: 11px;
-      border-radius: 10px;
-      padding: 2px 8px;
-      font-weight: 600;
-    }
-
-    .badge-done {
-      background: #e6f4ea;
-      color: var(--green);
-    }
-
-    .badge-new {
-      background: #e8f0fe;
-      color: var(--blue);
-    }
-
-    .full-test-btn {
-      display: block;
-      width: 100%;
-      margin-top: 20px;
-      padding: 14px;
-      background: var(--blue);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: background .2s;
-    }
-
-    .full-test-btn:hover {
-      background: var(--blue-dark);
-    }
-
-    .home-guide {
-      margin-top: 12px;
-      background: #fff;
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 14px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    /* ── QUIZ ── */
-    #quiz {
-      width: 100%;
-      max-width: none;
-      margin: 0;
-      padding: 24px 4%;
-    }
-
-    @media(max-width:900px) {
-      #quiz {
-        padding: 16px 3%;
-      }
-    }
-
-    .quiz-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .quiz-head-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-      flex: 1;
-    }
-
-    .quiz-title-wrap {
-      min-width: 0;
-    }
-
-    .quiz-context {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .2px;
-      color: var(--blue);
-      margin-bottom: 2px;
-    }
-
-    .quiz-head-tools {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .fullscreen-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #fff;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 7px 12px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--blue);
-      cursor: pointer;
-      transition: .15s;
-      white-space: nowrap;
-    }
-
-    .fullscreen-btn:hover {
-      border-color: var(--blue);
-      background: #e8f0fe;
-    }
-
-    .fullscreen-icon {
-      font-size: 16px;
-      line-height: 1;
-    }
-
-    .countdown-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #f1f3f4;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 13px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .countdown-chip.warn {
-      color: #7a5200;
-      background: #fffde7;
-      border-color: #f9ab00;
-    }
-
-    .countdown-chip.alert {
-      color: var(--red);
-      background: #fce8e6;
-      border-color: var(--red);
-    }
-
-    .back-btn {
-      background: none;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      padding: 6px 14px;
-      cursor: pointer;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(193, 211, 234, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
       font-size: 14px;
-      color: var(--muted);
-      transition: border-color .2s;
-      flex-shrink: 0;
+      font-weight: 800;
+      cursor: pointer;
     }
 
-    .back-btn:hover {
-      border-color: var(--blue);
-      color: var(--blue);
-    }
-
-    .quiz-title {
-      font-size: 16px;
-      font-weight: 700;
-      min-width: 0;
-    }
-
-    /* ── TIMER BAR ── */
-    .timer-bar {
+    .nav-group {
       display: flex;
       align-items: center;
+      gap: 16px;
+    }
+
+    .brand-copy strong {
+      font-size: 18px;
+    }
+
+    .nav-links {
+      display: flex;
       gap: 18px;
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 18px;
-      margin-bottom: 14px;
-      font-size: 13px;
-    }
-
-    .timer-item {
-      display: flex;
       align-items: center;
-      gap: 7px;
-    }
-
-    .timer-icon {
-      font-size: 16px;
-    }
-
-    .timer-label {
-      color: var(--muted);
-    }
-
-    .timer-val {
-      font-weight: 700;
+      color: #d0def2;
       font-size: 15px;
-      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    .nav-links a:hover {
       color: var(--text);
     }
 
-    .timer-val.warn {
-      color: var(--yellow);
+    .nav-cta {
+      padding: 12px 18px;
+      min-height: 44px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #1f6ed8, #46a3ff);
+      color: #f8fbff;
+      font-weight: 800;
+      box-shadow: 0 14px 34px rgba(102, 184, 255, 0.24);
     }
 
-    .timer-val.alert {
-      color: var(--red);
+    .hero {
+      padding: 56px 0 28px;
     }
 
-    .timer-divider {
-      width: 1px;
-      height: 28px;
-      background: var(--border);
-    }
-
-    .q-time-log {
-      font-size: 11px;
-      color: var(--muted);
-      margin-left: auto;
-    }
-
-    .progress-track {
-      background: #e8eaed;
-      height: 6px;
-      border-radius: 3px;
-      margin-bottom: 20px;
+    .hero-grid {
+      position: relative;
       overflow: hidden;
+      border-radius: var(--radius-xl);
+      padding: 34px;
+      min-height: 380px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto auto;
+      gap: 22px;
+      align-items: start;
+      background:
+        linear-gradient(90deg, rgba(4, 17, 31, 0.94) 0%, rgba(4, 17, 31, 0.88) 42%, rgba(4, 17, 31, 0.58) 72%, rgba(4, 17, 31, 0.28) 100%),
+        url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=80') center right / cover no-repeat;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
     }
 
-    .progress-track-fill {
-      height: 100%;
-      background: var(--blue);
-      border-radius: 3px;
-      transition: width .3s;
+    .hero-copy,
+    .path-card,
+    .domain-card,
+    .wellness-card,
+    .reset-panel,
+    .cadence-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
     }
 
-    .question-card {
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
-    }
-
-    .q-number {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 600;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .q-answered-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 4px;
-    }
-
-    .q-text {
-      font-size: 16px;
-      line-height: 1.6;
-      font-weight: 500;
-      margin-bottom: 22px;
-    }
-
-    .q-text code {
-      background: #f1f3f4;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-
-    .options {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .option {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 14px 16px;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      cursor: pointer;
-      transition: border-color .15s, background .15s;
-      font-size: 15px;
-      line-height: 1.5;
-    }
-
-    .option:hover:not(.disabled) {
-      border-color: var(--blue);
-      background: #f0f6ff;
-    }
-
-    .option.selected {
-      border-color: var(--blue);
-      background: #e8f0fe;
-    }
-
-    .option.correct {
-      border-color: var(--green);
-      background: #e6f4ea;
-    }
-
-    .option.wrong {
-      border-color: var(--red);
-      background: #fce8e6;
-    }
-
-    .option.disabled {
-      cursor: default;
-    }
-
-    .opt-letter {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: #e8eaed;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 13px;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .option.selected .opt-letter {
-      background: var(--blue);
-      color: #fff;
-    }
-
-    .option.correct .opt-letter {
-      background: var(--green);
-      color: #fff;
-    }
-
-    .option.wrong .opt-letter {
-      background: var(--red);
-      color: #fff;
-    }
-
-    .explanation {
-      margin-top: 20px;
-      padding: 16px;
-      background: #f8f9fa;
-      border-left: 4px solid var(--blue);
-      border-radius: 0 8px 8px 0;
-      font-size: 14px;
-      line-height: 1.65;
-      display: none;
-    }
-
-    .explanation.show {
-      display: block;
-    }
-
-    .explanation strong {
-      color: var(--blue);
-    }
-
-    .concept-link {
-      margin-top: 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .study-tag {
-      display: inline-block;
-      background: #fff3cd;
-      border: 1px solid #f9ab00;
-      color: #7a5200;
-      border-radius: 6px;
-      padding: 2px 8px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .q-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 20px;
-      gap: 10px;
-    }
-
-    .q-nav-center {
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn {
-      padding: 10px 22px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: .15s;
+    .hero-copy {
+      width: 100%;
+      padding: 0;
+      position: relative;
+      z-index: 1;
+      background: transparent;
       border: none;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(120, 247, 255, 0.08);
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      line-height: 1.05;
+    }
+
+    h1 {
+      font-size: clamp(28px, 3.6vw, 46px);
+      margin-bottom: 16px;
+      max-width: 18ch;
+      line-height: 1.08;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #ffffff 10%, var(--cyan) 55%, var(--blue) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-copy p {
+      font-size: 17px;
+      color: #d2e0f5;
+      max-width: 56ch;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin: 28px 0 24px;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      border-radius: 999px;
+      font-weight: 800;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .btn-primary:hover,
+    .btn-secondary:hover,
+    .btn-text:hover {
+      transform: translateY(-1px);
     }
 
     .btn-primary {
-      background: var(--blue);
-      color: #fff;
+      padding: 15px 24px;
+      color: #f8fbff;
+      background: linear-gradient(135deg, #1f6ed8, #46a3ff);
+      box-shadow: 0 16px 38px rgba(102, 184, 255, 0.28);
     }
 
-    .btn-primary:hover {
-      background: var(--blue-dark);
+    .btn-secondary {
+      padding: 15px 24px;
+      border: 1px solid rgba(151, 168, 194, 0.22);
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.08);
     }
 
-    .btn-outline {
-      background: #fff;
-      color: var(--blue);
-      border: 1.5px solid var(--blue);
+    .btn-text {
+      padding: 0 2px;
+      color: var(--cyan);
     }
 
-    .btn-outline:hover {
-      background: #e8f0fe;
-    }
-
-    .btn-green {
-      background: var(--green);
-      color: #fff;
-    }
-
-    .btn-green:hover {
-      background: #1a7a35;
-    }
-
-    .btn:disabled {
-      opacity: .4;
-      cursor: default;
-    }
-
-    .btn-sm {
-      padding: 7px 14px;
-      font-size: 13px;
-    }
-
-    .quiz-layout {
+    .hero-stats {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 380px;
-      gap: 16px;
-      align-items: start;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
     }
 
-    .quiz-main {
-      min-width: 0;
+    .hero-stat {
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(151, 168, 194, 0.14);
+      background: rgba(255, 255, 255, 0.08);
+      padding: 16px;
     }
 
-    .review-panel {
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      padding: 18px;
-      position: sticky;
-      top: 14px;
+    .hero-stat strong {
+      display: block;
+      font-size: 26px;
+      color: var(--text);
+      margin-bottom: 4px;
     }
 
-    .review-panel-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #5f6368;
-      text-align: center;
-      margin-bottom: 10px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      background: #ede7ff;
-      color: #6b5bd2;
-    }
-
-    .review-panel-meta {
+    .hero-stat span {
+      color: #d2e0f5;
       font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 10px;
-      text-align: center;
-    }
-
-    .review-legend {
-      margin-top: 12px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 10px;
-      justify-content: center;
-    }
-
-    .legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--muted);
-      background: #f8f9fa;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 3px 8px;
-    }
-
-    .legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      border: 1px solid transparent;
-      display: inline-block;
-    }
-
-    .legend-dot.current {
-      background: var(--blue);
-      border-color: var(--blue);
-    }
-
-    .legend-dot.answered {
-      background: #e6f4ea;
-      border-color: var(--green);
-    }
-
-    .legend-dot.marked {
-      background: #fff4d6;
-      border-color: #f9ab00;
-    }
-
-    @media(max-width:1024px) {
-      .quiz-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .review-panel {
-        position: static;
-      }
-    }
-
-    /* ── QUESTION NAV DOTS ── */
-    .q-dots {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 0;
-    }
-
-    .q-dot {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 1.5px solid var(--border);
-      background: #fff;
-      font-size: 14px;
       font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--muted);
-      transition: .15s;
     }
 
-    .q-dot:hover {
-      border-color: var(--blue);
-      color: var(--blue);
-    }
-
-    .q-dot.active {
-      border-color: var(--blue);
-      background: var(--blue);
-      color: #fff;
-    }
-
-    .q-dot.answered {
-      border-color: var(--green);
-      background: #e6f4ea;
-      color: var(--green);
-    }
-
-    .q-dot.answered.active {
-      background: var(--green);
-      color: #fff;
-    }
-
-    .q-dot.skipped {
-      border-color: var(--yellow);
-      background: #fffde7;
-      color: #7a5200;
-    }
-
-    .q-dot.locked {
-      opacity: .5;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .q-dot.marked {
-      border-color: #f9ab00;
-      background: #fff4d6;
-      color: #8a5b00;
-    }
-
-    .q-dot.marked.active {
-      border-color: #f9ab00;
-      background: #f9ab00;
-      color: #fff;
-    }
-
-    /* ── RESULTS ── */
-    #results {
-      max-width: 820px;
-      margin: 0 auto;
-      padding: 24px 20px;
-    }
-
-    .results-hero {
-      text-align: center;
-      padding: 28px 20px;
-      background: var(--card);
-      border-radius: var(--radius);
-      border: 1.5px solid var(--border);
-    }
-
-    .score-wrapper {
+    .hero-side {
       position: relative;
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 16px;
-    }
-
-    .score-ring {
-      width: 120px;
-      height: 120px;
-    }
-
-    .score-ring svg {
-      transform: rotate(-90deg);
-    }
-
-    .ring-bg {
-      fill: none;
-      stroke: #e8eaed;
-      stroke-width: 10;
-    }
-
-    .ring-val {
-      fill: none;
-      stroke-width: 10;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 1s ease;
-    }
-
-    .score-center {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-    }
-
-    .score-big {
-      font-size: 30px;
-      font-weight: 800;
-    }
-
-    .score-lbl {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .results-title {
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    .results-sub {
-      color: var(--muted);
-      font-size: 14px;
-      margin-top: 6px;
-    }
-
-    .pass-indicator {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 5px 16px;
-      border-radius: 20px;
-      font-weight: 700;
-      font-size: 14px;
-    }
-
-    .pass {
-      background: #e6f4ea;
-      color: var(--green);
-    }
-
-    .fail {
-      background: #fce8e6;
-      color: var(--red);
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    @media(max-width:600px) {
-      .stats-row {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    .stat-box {
-      background: #f8f9fa;
-
-      .q-dot {
-        width: 32px;
-        height: 32px;
-        font-size: 13px;
-      }
-      border-radius: 10px;
-      padding: 12px 8px;
-      text-align: center;
-    }
-
-    .stat-box .sv {
-      font-size: 20px;
-      font-weight: 800;
-    }
-
-    .stat-box .sl {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    .sv.green {
-      color: var(--green);
-    }
-
-    .sv.red {
-      color: var(--red);
-    }
-
-    .sv.blue {
-      color: var(--blue);
-    }
-
-    .sv.yellow {
-      color: var(--yellow);
-    }
-
-    /* ── REVIEW TABS ── */
-    .review-section {
-      margin-top: 28px;
-    }
-
-    .review-header {
+      z-index: 1;
+      align-self: start;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
+      align-items: stretch;
+      justify-content: flex-start;
+    }
+
+    .hero-side-card {
+      width: 100%;
+      max-width: 780px;
+      border-radius: 22px;
+      padding: 22px;
+      background: rgba(5, 15, 28, 0.64);
+      border: 1px solid rgba(151, 168, 194, 0.18);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-side-card h3 {
+      font-size: 24px;
+      margin-bottom: 14px;
+    }
+
+    .hero-side-list {
+      list-style: none;
+      display: grid;
+      gap: 12px;
       margin-bottom: 16px;
     }
 
-    .review-header h2 {
-      font-size: 17px;
-      font-weight: 700;
-    }
-
-    .tab-bar {
-      display: flex;
-      gap: 6px;
-    }
-
-    .tab-btn {
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1.5px solid var(--border);
-      background: #fff;
-      color: var(--muted);
-      transition: .15s;
-    }
-
-    .tab-btn.active {
-      background: var(--blue);
-      color: #fff;
-      border-color: var(--blue);
-    }
-
-    .tab-btn.tab-wrong.active {
-      background: var(--red);
-      border-color: var(--red);
-    }
-
-    /* ── STUDY / REVIEW CARDS ── */
-    .review-card {
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 14px;
+    .hero-side-list li {
+      color: var(--text);
+      font-size: 14px;
+      padding-left: 16px;
       position: relative;
     }
 
-    .review-card.rc-correct {
-      border-left: 4px solid var(--green);
-    }
-
-    .review-card.rc-wrong {
-      border-left: 4px solid var(--red);
-    }
-
-    .review-card.rc-skipped {
-      border-left: 4px solid var(--yellow);
-    }
-
-    .rc-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-
-    .rc-badge.correct {
-      background: #e6f4ea;
-      color: var(--green);
-    }
-
-    .rc-badge.wrong {
-      background: #fce8e6;
-      color: var(--red);
-    }
-
-    .rc-badge.skipped {
-      background: #fffde7;
-      color: #7a5200;
-    }
-
-    .rc-q {
-      font-size: 15px;
-      font-weight: 500;
-      margin-bottom: 10px;
-      line-height: 1.5;
-    }
-
-    .rc-time {
+    .hero-side-list li::before {
+      content: '';
       position: absolute;
-      top: 14px;
-      right: 16px;
-      font-size: 12px;
-      color: var(--muted);
+      left: 0;
+      top: 8px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
     }
 
-    .answer-row {
-      display: flex;
-      gap: 8px;
-      font-size: 13px;
-      margin-bottom: 5px;
-      align-items: flex-start;
-    }
-
-    .answer-row .ar-label {
-      font-weight: 700;
-      min-width: 100px;
-      flex-shrink: 0;
-    }
-
-    .ar-wrong {
-      color: var(--red);
-    }
-
-    .ar-correct {
-      color: var(--green);
-    }
-
-    .rc-explain {
-      margin-top: 12px;
-      padding: 12px 14px;
-      background: #f8f9fa;
-      border-left: 4px solid var(--blue);
-      border-radius: 0 6px 6px 0;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .concept-box {
-      margin-top: 10px;
-      background: #fffde7;
-      border: 1px solid #f9ab00;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 13px;
-    }
-
-    .concept-box strong {
-      color: #7a5200;
-    }
-
-    .rc-expand-btn {
-      font-size: 12px;
-      color: var(--blue);
-      cursor: pointer;
-      background: none;
-      border: none;
-      padding: 0;
-      margin-top: 8px;
-      font-weight: 600;
-    }
-
-    .results-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 24px;
-      flex-wrap: wrap;
-    }
-
-    .results-actions .btn {
-      flex: 1;
-      min-width: 140px;
-      text-align: center;
-    }
-
-    /* ── TIME SUMMARY ── */
-    .time-summary {
-      display: flex;
-      gap: 12px;
-      margin-top: 16px;
-      flex-wrap: wrap;
-    }
-
-    .time-box {
-      flex: 1;
-      min-width: 140px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
+    .hero-side-meta {
+      display: grid;
       gap: 10px;
     }
 
-    .time-box-icon {
+    .hero-side-pill {
+      display: block;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(151, 168, 194, 0.12);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .hero-side-pill strong {
+      display: block;
       font-size: 22px;
+      line-height: 1;
+      margin-bottom: 6px;
     }
 
-    .time-box-label {
-      font-size: 12px;
-      color: var(--muted);
+    .hero-side-pill span {
+      display: block;
+      color: #d2e0f5;
+      text-align: left;
     }
 
-    .time-box-val {
-      font-size: 17px;
-      font-weight: 800;
+    section {
+      padding: 34px 0 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .section-head h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      margin-bottom: 8px;
+    }
+
+    .section-head p {
+      max-width: 60ch;
+      color: #d2e0f5;
+    }
+
+    .paths-grid,
+    .domains-grid,
+    .wellness-grid,
+    .cadence-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .paths-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .domains-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .wellness-grid,
+    .cadence-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .path-card,
+    .domain-card,
+    .wellness-card,
+    .cadence-card,
+    .reset-panel {
+      border-radius: 22px;
+      padding: 22px;
+    }
+
+    .path-card h3,
+    .wellness-card h3,
+    .cadence-card h3,
+    .reset-panel h3 {
+      font-size: 22px;
+      margin: 12px 0 10px;
+    }
+
+    .path-card p,
+    .wellness-card p,
+    .cadence-card p,
+    .reset-panel p,
+    .domain-card p {
+      color: #d2e0f5;
+      font-size: 15px;
+    }
+
+    .path-icon,
+    .wellness-icon,
+    .cadence-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      background: rgba(120, 247, 255, 0.08);
+      border: 1px solid rgba(120, 247, 255, 0.16);
+      color: var(--cyan);
+    }
+
+    .path-card ul,
+    .reset-panel ul {
+      list-style: none;
+      margin-top: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .path-card li,
+    .reset-panel li {
+      padding-left: 18px;
+      position: relative;
       color: var(--text);
+      font-size: 14px;
     }
 
-    @media print {
-      body * {
-        visibility: hidden !important;
+    .path-card li::before,
+    .reset-panel li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+    }
+
+    .panel-strap {
+      display: inline-block;
+      color: var(--amber);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .domain-card {
+      min-height: 190px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .domain-card strong {
+      color: var(--cyan);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .domain-card h3 {
+      font-size: 22px;
+      margin: 12px 0;
+    }
+
+    .domain-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 18px;
+      font-size: 13px;
+      color: #d2e0f5;
+      font-weight: 700;
+    }
+
+    .break-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .reset-panel {
+      background: linear-gradient(180deg, rgba(11, 26, 50, 0.94), rgba(7, 17, 31, 0.96));
+    }
+
+    .puzzle-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 14px 18px;
+      min-height: 44px;
+      border-radius: 16px;
+      color: #03111e;
+      background: linear-gradient(135deg, var(--amber), #fff09d);
+      font-weight: 800;
+      box-shadow: 0 16px 34px rgba(255, 200, 107, 0.2);
+    }
+
+    /* ── STUDY MODAL ── */
+    .sm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(1, 8, 20, 0.86);
+      backdrop-filter: blur(6px);
+      overflow-y: auto;
+      padding: 24px 16px;
+    }
+
+    .sm-overlay.open {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .sm-box {
+      background: rgba(9, 20, 40, 0.97);
+      border: 1px solid rgba(193, 211, 234, 0.24);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 920px;
+      box-shadow: 0 32px 80px rgba(0,0,0,.55);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sm-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 28px;
+      border-bottom: 1px solid rgba(193, 211, 234, 0.16);
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      background: rgba(9, 20, 40, 0.97);
+      border-radius: 28px 28px 0 0;
+      z-index: 1;
+    }
+
+    .sm-head .sec-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 4px;
+    }
+
+    .sm-head h2 { font-size: 22px; color: var(--text); }
+
+    .sm-close {
+      width: 40px; height: 40px; min-width: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(193,211,234,.2);
+      color: var(--text); font-size: 18px; cursor: pointer;
+      display: grid; place-items: center; flex-shrink: 0;
+    }
+
+    .sm-body {
+      padding: 28px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .sm-topic {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(193,211,234,.14);
+      border-radius: 18px;
+      padding: 20px;
+    }
+
+    .sm-topic-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px; font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 12px;
+    }
+
+    .sm-topic p  { color: #d2e0f5; font-size: 14px; line-height: 1.65; margin-bottom: 10px; }
+    .sm-topic ul, .sm-topic ol { padding-left: 20px; display: grid; gap: 7px; }
+    .sm-topic li { color: #d2e0f5; font-size: 14px; line-height: 1.5; }
+    .sm-topic li strong { color: var(--text); }
+
+    .sm-chips {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;
+    }
+
+    .sm-chip {
+      padding: 5px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 800;
+      background: rgba(102,184,255,.1);
+      border: 1px solid rgba(102,184,255,.24);
+      color: #d7f2ff;
+    }
+
+    .sm-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px; margin-top: 10px;
+    }
+
+    .sm-table th {
+      background: rgba(102,184,255,.1); color: var(--cyan);
+      padding: 8px 10px; text-align: left; font-weight: 800;
+      border-bottom: 1px solid rgba(193,211,234,.18);
+    }
+
+    .sm-table td {
+      padding: 8px 10px; color: #d2e0f5;
+      border-bottom: 1px solid rgba(193,211,234,.1);
+      vertical-align: top;
+    }
+
+    .sm-table tr:last-child td { border-bottom: none; }
+
+    .hack-box {
+      background: linear-gradient(135deg, rgba(255,200,107,.1), rgba(101,224,184,.06));
+      border: 1px solid rgba(255,200,107,.28) !important;
+    }
+
+    .hack-title {
+      color: var(--amber) !important;
+    }
+
+    .hack-box li { color: #ffe3af; }
+    .hack-box li strong { color: #fff; }
+
+    .domain-study-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      margin-top: 14px; padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(120,247,255,.28);
+      background: rgba(120,247,255,.07);
+      color: var(--cyan); font-size: 13px; font-weight: 800;
+      cursor: pointer;
+      transition: background .18s, transform .18s;
+    }
+
+    .domain-study-btn:hover {
+      background: rgba(120,247,255,.15);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 780px) {
+      .sm-head { padding: 18px 20px; }
+      .sm-body  { padding: 18px; gap: 14px; }
+    }
+
+    .site-footer {
+      padding: 40px 0 56px;
+      color: #d2e0f5;
+      font-size: 14px;
+    }
+
+    @media (min-width: 1081px) {
+      .hero-copy {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+        column-gap: 20px;
+        align-items: start;
       }
 
-      #results,
-      #results * {
-        visibility: visible !important;
+      .hero-copy > :not(.hero-stats) {
+        grid-column: 1;
       }
 
-      #results {
-        display: block !important;
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
+      .hero-stats {
+        grid-column: 2;
+        grid-row: 1 / span 4;
+        align-self: stretch;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 0;
+      }
+
+      .hero-side-card {
         max-width: none;
-        margin: 0;
-        padding: 0 10mm;
-        background: #fff;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+        column-gap: 20px;
+        row-gap: 12px;
+        align-items: start;
       }
 
-      .results-actions,
-      .tab-bar,
-      .rc-expand-btn,
-      .global-actions,
-      .history-toggle {
-        display: none !important;
+      .hero-side-card h3,
+      .hero-side-list {
+        grid-column: 1;
       }
 
-      .review-card,
-      .results-hero,
-      .stat-box,
-      .time-box {
-        break-inside: avoid;
-        page-break-inside: avoid;
+      .hero-side-list {
+        margin-bottom: 0;
+      }
+
+      .hero-side-meta {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        align-self: start;
+        gap: 12px;
+      }
+
+      .hero-side-pill {
+        min-height: 96px;
+      }
+    }
+
+    .site-footer .shell {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(151, 168, 194, 0.12);
+      padding-top: 22px;
+    }
+
+    .footer-note a {
+      color: var(--cyan);
+    }
+
+    @media (max-width: 1080px) {
+      .hero-grid,
+      .break-layout,
+      .paths-grid,
+      .domains-grid,
+      .wellness-grid,
+      .cadence-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy {
+        display: block;
+      }
+    }
+
+    @media (max-width: 780px) {
+      .nav-row {
+        flex-wrap: wrap;
+      }
+
+      .menu-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: auto;
+      }
+
+      .nav-group {
+        display: none;
+        order: 3;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding-top: 12px;
+      }
+
+      .nav-group.open {
+        display: flex;
+      }
+
+      .nav-links {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+
+      .nav-links a,
+      .nav-cta {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .hero {
+        padding-top: 32px;
+      }
+
+      .hero-grid {
+        min-height: auto;
+        padding: 24px 20px;
+        gap: 18px;
+        background:
+          linear-gradient(180deg, rgba(4, 17, 31, 0.94) 0%, rgba(4, 17, 31, 0.84) 52%, rgba(4, 17, 31, 0.7) 100%),
+          url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80') center / cover no-repeat;
+      }
+
+      .hero-copy,
+      .path-card,
+      .domain-card,
+      .wellness-card,
+      .cadence-card,
+      .reset-panel {
+        padding: 20px;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-side {
+        display: block;
+      }
+
+      .hero-side-card {
+        width: 100%;
+      }
+
+      h1 {
+        max-width: none;
+      }
+
+      .hero-copy p {
+        max-width: none;
       }
     }
   </style>
 </head>
 
 <body>
-
-  <!-- ═══ HOME ═══ -->
-  <div id="home" class="screen active">
-    <div class="hero">
-      <h1>GCP Professional Data Engineer</h1>
-      <p>Graded Mock Quiz · Section-by-Section · Guided Learning</p>
-      <span class="blueprint-badge" id="blueprint-badge">2026 Official Exam Blueprint</span>
-    </div>
-    <button class="full-test-btn" id="full-test-btn" onclick="startFullTest()"></button>
-    <div class="home-guide">
-      Tip: Start section-wise to focus on specific domains, then use past attempts to review and learn from previous questions before taking the full mock exam.
-    </div>
-    <div class="global-actions">
-      <button class="global-clear-btn" onclick="clearAllHistory()">🗑 Clear All History</button>
-    </div>
-    <div id="sections-grid" class="sections-grid"></div>
-  </div>
-
-  <!-- ═══ QUIZ ═══ -->
-  <div id="quiz" class="screen">
-    <div class="quiz-header">
-      <div class="quiz-head-left">
-        <button class="back-btn" title="Go to Home" onclick="goHome()">⌂ Home</button>
-        <div class="quiz-title-wrap">
-          <div class="quiz-context">GCP Professional Data Engineer</div>
-          <div class="quiz-title" id="quiz-title"></div>
-        </div>
-      </div>
-      <div class="quiz-head-tools">
-        <button class="fullscreen-btn" id="btn-fullscreen" onclick="toggleFullscreen()">
-          <span class="fullscreen-icon" id="fullscreen-icon">⛶</span>
-          <span id="fullscreen-label">Fullscreen</span>
-        </button>
-        <span class="countdown-chip" id="exam-left-chip" style="display:none;">
-          ⏱ <span id="exam-left">02:00:00</span> left
+  <a class="skip-link" href="#top">Skip to main content</a>
+  <header class="site-header">
+    <div class="shell nav-row">
+      <a class="brand" href="#top">
+        <span class="brand-mark">DE</span>
+        <span class="brand-copy">
+          <small>Google Cloud Certification</small>
+          <strong>PDE Mastery Portal</strong>
         </span>
-        <button class="btn btn-outline btn-sm" id="btn-pause" style="display:none" onclick="togglePause()">⏸ Pause</button>
+      </a>
+      <button class="menu-toggle" id="landing-menu-btn" type="button" aria-expanded="false" aria-controls="landing-nav-group" onclick="toggleHeaderMenu('landing-nav-group','landing-menu-btn')">Menu</button>
+      <div class="nav-group" id="landing-nav-group">
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="#practice-hub">Practice Hub</a>
+          <a href="#study-map">Study Map</a>
+          <a href="#recovery">Mental Reset</a>
+        </nav>
+        <a class="nav-cta" href="./practice-exam.html">Launch Practice Exam</a>
       </div>
     </div>
+  </header>
 
-    <!-- Timer Bar -->
-    <div class="timer-bar">
-      <div class="timer-item">
-        <span class="timer-icon">⏱</span>
-        <span class="timer-label" id="timer-main-label">Section</span>
-        <span class="timer-val" id="timer-total">00:00</span>
-      </div>
-      <div class="timer-divider"></div>
-      <div class="timer-item">
-        <span class="timer-icon">❓</span>
-        <span class="timer-label">This Q</span>
-        <span class="timer-val" id="timer-q">00:00</span>
-      </div>
-      <div class="timer-divider"></div>
-      <div class="timer-item">
-        <span class="timer-icon">📊</span>
-        <span class="timer-label">Avg/Q</span>
-        <span class="timer-val" id="timer-avg">—</span>
-      </div>
-      <div class="q-time-log" id="q-answered-info"></div>
-    </div>
-
-    <div class="quiz-layout">
-      <div class="quiz-main">
-        <div class="progress-track">
-          <div class="progress-track-fill" id="quiz-progress"></div>
-        </div>
-
-        <div class="question-card">
-          <div class="q-number">
-            <span id="q-number-text"></span>
-            <span id="q-status-dot"></span>
+  <main id="top">
+    <section class="hero">
+      <div class="shell hero-grid">
+        <div class="hero-copy">
+          <div class="eyebrow">2026 Blueprint Training System</div>
+          <h1>Train for the <span class="gradient-text">GCP Professional Data Engineer</span> exam with structure, pace, and recovery.</h1>
+          <p>
+            Use this portal as your front door: jump into the live practice exam, review all eight study tracks,
+            and keep your prep sustainable with built-in recovery habits so quality stays high during long sessions.
+          </p>
+          <div class="hero-actions">
+            <a class="btn-primary" href="./practice-exam.html">Open Practice Exam</a>
+            <a class="btn-secondary" href="#study-map">View Study Map</a>
+            <a class="btn-text" href="#recovery">Why breaks matter</a>
           </div>
-          <div class="q-text" id="q-text"></div>
-          <div class="options" id="options"></div>
-          <div class="explanation" id="explanation"></div>
-        </div>
-
-        <div class="q-nav">
-          <button class="btn btn-outline" id="btn-prev" onclick="prevQ()">← Prev</button>
-          <div class="q-nav-center">
-            <button class="btn btn-outline btn-sm" id="btn-review" onclick="showResults()" style="display:none">📋 Finish
-              &amp; Review</button>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <strong id="practice-total-chip">1118</strong>
+              <span>Practice questions across all banks</span>
+            </div>
+            <div class="hero-stat">
+              <strong>50</strong>
+              <span>Randomized questions in the full mock exam</span>
+            </div>
+            <div class="hero-stat">
+              <strong>2h</strong>
+              <span>Timed exam mode with final review before submit</span>
+            </div>
           </div>
-          <button class="btn btn-primary" id="btn-next" onclick="nextOrSubmit()">Next →</button>
         </div>
+        <aside class="hero-side">
+          <div class="hero-side-card">
+            <h3>What you get</h3>
+            <ul class="hero-side-list">
+              <li>Eight focused tracks covering architecture, analytics, MLOps, and governance.</li>
+              <li>Section drills for weak areas plus a timed 50-question full mock.</li>
+              <li>Review-first explanations designed for PDE service-selection reasoning.</li>
+            </ul>
+            <div class="hero-side-meta">
+              <div class="hero-side-pill">
+                <strong id="practice-total-card">1118</strong>
+                <span id="practice-total-copy">live practice questions across all section banks</span>
+              </div>
+              <div class="hero-side-pill">
+                <strong>2h</strong>
+                <span>full mock exam with review before final submit</span>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
+    </section>
 
-      <aside class="review-panel">
-        <div class="review-panel-title">Review Attempt</div>
-        <div class="review-panel-meta" id="review-panel-meta">0/0 answered</div>
-        <div class="q-dots" id="q-dots"></div>
-        <div class="review-legend">
-          <span class="legend-item"><span class="legend-dot current"></span>Current</span>
-          <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
-          <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
-        </div>
-      </aside>
-    </div>
-  </div>
-
-  <!-- ═══ RESULTS ═══ -->
-  <div id="results" class="screen">
-    <div class="results-hero">
-      <div class="score-wrapper">
-        <svg class="score-ring" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-          <circle class="ring-bg" cx="60" cy="60" r="50" />
-          <circle class="ring-val" cx="60" cy="60" r="50" id="ring-circle"
-            style="stroke-dasharray:314;stroke-dashoffset:314;transform:rotate(-90deg);transform-origin:60px 60px;" />
-        </svg>
-        <div class="score-center">
-          <div class="score-big" id="score-pct">0%</div>
-          <div class="score-lbl">Score</div>
-        </div>
-      </div>
-      <div class="results-title" id="results-title"></div>
-      <div class="results-sub" id="results-sub"></div>
-      <div class="pass-indicator" id="pass-indicator"></div>
-
-      <div class="stats-row" style="margin-top:16px;">
-        <div class="stat-box">
-          <div class="sv green" id="st-correct">0</div>
-          <div class="sl">Correct</div>
-        </div>
-        <div class="stat-box">
-          <div class="sv red" id="st-wrong">0</div>
-          <div class="sl">Wrong</div>
-        </div>
-        <div class="stat-box">
-          <div class="sv yellow" id="st-skipped">0</div>
-          <div class="sl">Skipped</div>
-        </div>
-        <div class="stat-box">
-          <div class="sv blue" id="st-total">0</div>
-          <div class="sl">Total</div>
-        </div>
-        <div class="stat-box">
-          <div class="sv blue" id="st-pct">0%</div>
-          <div class="sl">Accuracy</div>
-        </div>
-      </div>
-
-      <!-- Time summary -->
-      <div class="time-summary">
-        <div class="time-box"><span class="time-box-icon">⏱</span>
+    <section id="practice-hub">
+      <div class="shell">
+        <div class="section-head">
           <div>
-            <div class="time-box-label">Total Time</div>
-            <div class="time-box-val" id="res-total-time">—</div>
+            <h2>Practice Hub</h2>
+            <p>
+              The quiz app remains the core engine. This portal simply makes it easier to decide what to do next,
+              whether you want a realistic mock, fast section drilling, or a recovery-first study loop.
+            </p>
           </div>
         </div>
-        <div class="time-box"><span class="time-box-icon">⚡</span>
-          <div>
-            <div class="time-box-label">Avg per Question</div>
-            <div class="time-box-val" id="res-avg-time">—</div>
-          </div>
-        </div>
-        <div class="time-box"><span class="time-box-icon">🐢</span>
-          <div>
-            <div class="time-box-label">Slowest Question</div>
-            <div class="time-box-val" id="res-slow-q">—</div>
-          </div>
-        </div>
-        <div class="time-box"><span class="time-box-icon">⚡</span>
-          <div>
-            <div class="time-box-label">Fastest Question</div>
-            <div class="time-box-val" id="res-fast-q">—</div>
-          </div>
+        <div class="paths-grid">
+          <article class="path-card">
+            <span class="panel-strap">Hero path</span>
+            <h3>Timed Full Practice Exam</h3>
+            <p>Start with the 50-question randomized mock when you want exam pressure, pacing discipline, and final-review behavior.</p>
+            <ul>
+              <li>Weighted pulls across all eight sections</li>
+              <li>Two-hour countdown with pause safeguards</li>
+              <li>Review answers before final submission</li>
+            </ul>
+            <div class="hero-actions">
+              <a class="btn-primary" href="./practice-exam.html">Launch Full Mock</a>
+            </div>
+          </article>
+          <article class="path-card">
+            <div class="path-icon">Q</div>
+            <h3>Section-by-Section Drills</h3>
+            <p>Use section cards to attack weak areas directly. Each section draws 20 randomized questions from its own bank.</p>
+            <ul>
+              <li>Best for BigQuery IAM, orchestration boundaries, and storage tradeoffs</li>
+              <li>Past-attempt tracking helps you see pattern-level weakness</li>
+              <li>Explanations are built for exam reasoning, not just answer recall</li>
+            </ul>
+          </article>
+          <article class="path-card">
+            <div class="path-icon">R</div>
+            <h3>Review, Reflect, Retake</h3>
+            <p>Use the explanation-first loop after each session so misses turn into reusable mental models instead of isolated corrections.</p>
+            <ul>
+              <li>Track time spent, correct rate, and section breakdowns</li>
+              <li>Review wrong answers and concepts immediately</li>
+              <li>Retake the same domain after a short reset, not back-to-back fatigue</li>
+            </ul>
+          </article>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Review Section -->
-    <div class="results-actions">
-      <button class="btn btn-outline" onclick="printReport()">🖨 Print Report</button>
-      <button class="btn btn-outline" onclick="retakeSection()">↺ Retake This Section</button>
-      <button class="btn btn-primary" onclick="goHome()">⌂ All Sections</button>
-    </div>
-
-    <div class="review-section">
-      <div class="review-header">
-        <h2>📋 Question Review</h2>
-        <div class="tab-bar">
-          <button class="tab-btn active" id="tab-all" onclick="setTab('all')">All Questions</button>
-          <button class="tab-btn tab-wrong" id="tab-wrong" onclick="setTab('wrong')">Wrong / Skipped <span
-              id="wrong-count-badge" style="margin-left:4px;"></span></button>
+    <section id="study-map">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <h2>Study Map</h2>
+            <p>These are the tracks surfaced by the current app so you can choose focused practice instead of studying the whole blueprint every time.</p>
+          </div>
+        </div>
+        <div class="domains-grid">
+          <article class="domain-card">
+            <strong>Section 1</strong>
+            <h3>Designing Data Processing Systems</h3>
+            <p>Architecture patterns, service selection, HA/DR, and operational tradeoffs.</p>
+            <div class="domain-foot"><span>Architecture lens</span><span>22% blueprint</span></div>
+            <button class="domain-study-btn" onclick="openStudyModal('s1')">📖 Study Notes</button>
+          </article>
+          <article class="domain-card">
+            <strong>Section 2</strong>
+            <h3>Ingesting and Processing Data</h3>
+            <p>Streaming versus batch, Pub/Sub, Dataflow, and ingestion cost-performance choices.</p>
+            <div class="domain-foot"><span>Pipeline lens</span><span>25% blueprint</span></div>
+            <button class="domain-study-btn" onclick="openStudyModal('s2')">📖 Study Notes</button>
+          </article>
+          <article class="domain-card">
+            <strong>Section 3</strong>
+            <h3>Storing the Data</h3>
+            <p>Bigtable, Spanner, BigQuery storage design, lifecycle, and recovery behaviors.</p>
+            <div class="domain-foot"><span>Storage lens</span><span>20% blueprint</span></div>
+            <button class="domain-study-btn" onclick="openStudyModal('s3')">📖 Study Notes</button>
+          </article>
+          <article class="domain-card">
+            <strong>Section 4</strong>
+            <h3>Preparing and Using Data</h3>
+            <p>Analytics workflows, semantic design, data quality, BI integrations, and governed access.</p>
+            <div class="domain-foot"><span>Analytics lens</span><span>15% blueprint</span></div>
+            <button class="domain-study-btn" onclick="openStudyModal('s4')">📖 Study Notes</button>
+          </article>
+          <article class="domain-card">
+            <strong>Section 5</strong>
+            <h3>Maintaining and Automating Workloads</h3>
+            <p>Cloud Composer, Dataform, schedulers, monitoring, and automation boundaries.</p>
+            <div class="domain-foot"><span>Operations lens</span><span>18% blueprint</span></div>
+            <button class="domain-study-btn" onclick="openStudyModal('s5')">📖 Study Notes</button>
+          </article>
+          <article class="domain-card">
+            <strong>Section 6</strong>
+            <h3>Core Data Engineering Fundamentals</h3>
+            <p>Foundational patterns and cross-service reasoning for recurring exam scenarios.</p>
+            <div class="domain-foot"><span>Concept bank</span><span>100+ questions</span></div>
+            <button class="domain-study-btn" onclick="openStudyModal('s6')">📖 Study Notes</button>
+          </article>
+          <article class="domain-card">
+            <strong>Section 7</strong>
+            <h3>ML and MLOps on GCP</h3>
+            <p>Vertex AI pipelines, distributed training, feature engineering, and deployment safety.</p>
+            <div class="domain-foot"><span>Advanced practice</span><span>180 questions</span></div>
+            <button class="domain-study-btn" onclick="openStudyModal('s7')">📖 Study Notes</button>
+          </article>
+          <article class="domain-card">
+            <strong>Section 8</strong>
+            <h3>Security, Governance, and Advanced Services</h3>
+            <p>IAM, governance boundaries, data protection, and managed-service decision quality.</p>
+            <div class="domain-foot"><span>Risk control</span><span>100 questions</span></div>
+            <button class="domain-study-btn" onclick="openStudyModal('s8')">📖 Study Notes</button>
+          </article>
         </div>
       </div>
-      <div id="review-cards"></div>
-    </div>
+    </section>
 
-    <div class="results-actions">
-      <button class="btn btn-outline" onclick="printReport()">🖨 Print Report</button>
-      <button class="btn btn-outline" onclick="retakeSection()">↺ Retake This Section</button>
-      <button class="btn btn-primary" onclick="goHome()">⌂ All Sections</button>
+    <section>
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <h2>Training Cadence</h2>
+            <p>High performers usually do better with deliberate cycles than with marathon memorization. Keep the rhythm predictable and measurable.</p>
+          </div>
+        </div>
+        <div class="cadence-grid">
+          <article class="cadence-card">
+            <div class="cadence-icon">1</div>
+            <h3>Warm up with a section</h3>
+            <p>Start with one weak domain, not the full exam. This lowers cognitive switching and improves explanation retention.</p>
+          </article>
+          <article class="cadence-card">
+            <div class="cadence-icon">2</div>
+            <h3>Promote to full-mock pressure</h3>
+            <p>Use the full 50-question exam after your weak area becomes stable enough to test cross-domain judgment and time management.</p>
+          </article>
+          <article class="cadence-card">
+            <div class="cadence-icon">3</div>
+            <h3>Recover before retakes</h3>
+            <p>Take a short break before repeating missed content so you train recall quality instead of fatigue-based guessing.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="recovery">
+      <div class="shell break-layout">
+        <div>
+          <div class="section-head">
+            <div>
+              <h2>Mental Health and Break Discipline</h2>
+              <p>Exam prep is better when you protect attention. Short resets improve accuracy, emotional control, and long-session endurance.</p>
+            </div>
+          </div>
+          <div class="wellness-grid">
+            <article class="wellness-card">
+              <div class="wellness-icon">B</div>
+              <h3>Breaks reduce answer drift</h3>
+              <p>When you stay in the chair too long, distractors start to look equally plausible. A five-minute reset restores discrimination.</p>
+            </article>
+            <article class="wellness-card">
+              <div class="wellness-icon">F</div>
+              <h3>Fresh attention improves review quality</h3>
+              <p>Explanations matter most right after a miss. Review them after a short pause and you will extract the actual service-selection rule faster.</p>
+            </article>
+            <article class="wellness-card">
+              <div class="wellness-icon">S</div>
+              <h3>Sustainable prep beats panic sprints</h3>
+              <p>Consistent sessions plus recovery usually outperform one-off cram marathons because recall becomes more stable under timed conditions.</p>
+            </article>
+          </div>
+        </div>
+        <aside class="reset-panel">
+          <span class="panel-strap">Reset ritual</span>
+          <h3>Use a short puzzle break when your focus drops.</h3>
+          <p>
+            If your review quality falls, step away for a few minutes. A contained visual puzzle can help interrupt fatigue without pulling you into endless scrolling.
+          </p>
+          <ul>
+            <li>Pause after a dense review set or after a full mock exam</li>
+            <li>Keep the break intentional: 5 to 10 minutes is enough</li>
+            <li>Return with one clear target, such as retaking a single weak section</li>
+          </ul>
+          <a class="puzzle-link" href="https://neonogram.daivanta.com" target="_blank" rel="noopener noreferrer">Open Neonogram puzzle break</a>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell">
+      <div>
+        <strong>PDE Mastery Portal</strong>
+        <div>Landing page for guided study, timed mocks, and recovery-aware practice.</div>
+      </div>
+      <div class="footer-note">
+        Practice engine: <a href="./practice-exam.html">open current quiz app</a><br>
+        Hero image source: Unsplash
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── STUDY NOTES MODAL ── -->
+  <div class="sm-overlay" id="sm-overlay" role="dialog" aria-modal="true" aria-labelledby="sm-title">
+    <div class="sm-box">
+      <div class="sm-head">
+        <div>
+          <span class="sec-label" id="sm-sec-label">Section</span>
+          <h2 id="sm-title">Study Notes</h2>
+        </div>
+        <button class="sm-close" onclick="closeStudyModal()" aria-label="Close study notes">&times;</button>
+      </div>
+      <div class="sm-body" id="sm-body"></div>
     </div>
   </div>
 
   <script>
-    // ═══════════════════════════════════════════════════════════
-    //  QUESTION BANK — 2026 GCP PDE Official Blueprint
-    // ═══════════════════════════════════════════════════════════
-    const SECTIONS = [
-      { id: 1, title: "Designing Data Processing Systems",        weight: "22%", color: "#1a73e8", questions: [] },
-      { id: 2, title: "Ingesting and Processing the Data",         weight: "25%", color: "#1e8e3e", questions: [] },
-      { id: 3, title: "Storing the Data",                          weight: "20%", color: "#e37400", questions: [] },
-      { id: 4, title: "Preparing and Using Data for Analysis",     weight: "15%", color: "#9334e6", questions: [] },
-      { id: 5, title: "Maintaining and Automating Data Workloads", weight: "18%", color: "#c5221f", questions: [] },
-      { id: 6, title: "Core Data Engineering Fundamentals",        weight: "100Q", color: "#d93025", questions: [] },
-      { id: 7, title: "ML/MLOps on GCP",                           weight: "180Q", color: "#188038", questions: [] },
-      { id: 8, title: "Security, Governance & Advanced Services",  weight: "100Q", color: "#ea8600", questions: [] }
-    ];
-
-      const SECTION_Q_COUNT = 20;
-    const FULL_TEST_DIST = [4, 4, 4, 4, 4, 10, 10, 10]; // 50 questions: balanced randomized sampling from all sections
-      const FULL_TEST_Q_COUNT = FULL_TEST_DIST.reduce((sum, n) => sum + n, 0);
-
-    function shuffle(arr) {
-      const a = arr.slice();
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
+    // ── CHEAT-SHEET STUDY DATA (Whizlabs GCP PDE 2026) ──────────────────────
+    var STUDY_DATA = {
+      s1: {
+        label: 'Section 1 · 22% of exam',
+        title: 'Designing Data Processing Systems',
+        topics: [
+          {
+            title: '🏛 Architecture Framework – Security, Privacy & Compliance',
+            content: '<p>Core pillar: <strong>defense-in-depth</strong> — multiple protective layers between threats and assets. Shared Responsibility: Google secures infrastructure; you manage data and access.</p><ul><li><strong>IAM:</strong> Single identity provider, SSO + MFA, least privilege, audit access, automate policy controls.</li><li><strong>Network security:</strong> Zero Trust networks, VPC Service Controls, Web Application Firewalls, disable default networks.</li><li><strong>Data security:</strong> Classify and encrypt data, use Secret Manager, control data location and residency requirements.</li><li><strong>Compute security:</strong> Hardened VM images, Confidential Computing, disable external IPs unless required.</li><li><strong>Compliance:</strong> Use Assured Workloads + compliance blueprints. Manage data, operational, and software sovereignty.</li><li><strong>Shift-left security:</strong> Integrate security early in the development lifecycle — scan containers, automate releases.</li></ul>',
+            chips: ['Defense-in-depth', 'Zero Trust', 'VPC Service Controls', 'Assured Workloads', 'Shift-left security']
+          },
+          {
+            title: '🔄 Database Migration Service (DMS)',
+            content: '<p>Serverless, managed tool for secure, low-downtime migration to Google Cloud.</p><ul><li><strong>Homogeneous Migration:</strong> Same engine (e.g., MySQL → Cloud SQL for MySQL). Uses native replication tools.</li><li><strong>Heterogeneous Migration:</strong> Different engines (e.g., Oracle → Cloud SQL for PostgreSQL). Uses CDC-based continuous replication.</li><li><strong>AI-Assisted:</strong> Gemini converts stored procedures, triggers, functions to PostgreSQL dialect with side-by-side comparison.</li><li><strong>Connectivity methods:</strong> IP allowlist, forward SSH tunnel, VPC peering network.</li><li><strong>Best practices:</strong> Assess DB size, validate timeline, monitor destination performance, ensure network bandwidth, backup post-migration.</li></ul>',
+            chips: ['CDC replication', 'Homogeneous', 'Heterogeneous', 'AlloyDB', 'Cloud SQL', 'Pre-migration validation']
+          },
+          {
+            title: '📋 Migration Strategies (7 Rs)',
+            content: '<table class="sm-table"><thead><tr><th>Strategy</th><th>Description</th></tr></thead><tbody><tr><td><strong>Rehost</strong></td><td>Lift &amp; shift — minimal changes</td></tr><tr><td><strong>Replatform</strong></td><td>Lift &amp; optimize after migration</td></tr><tr><td><strong>Refactor</strong></td><td>Re-engineer for cloud-native use</td></tr><tr><td><strong>Re-architect</strong></td><td>Modernize for scalability</td></tr><tr><td><strong>Rebuild</strong></td><td>Replace with new cloud-native apps</td></tr><tr><td><strong>Repurchase</strong></td><td>Move to SaaS-based solutions</td></tr></tbody></table><p style="margin-top:10px"><strong>Migration path:</strong> Assess → Plan → Deploy → Optimize. Use GCP Pricing Calculator for TCO estimation.</p>',
+            chips: ['TCO estimate', 'GCP Adoption Framework', 'Transfer Appliance', 'Staged rollouts', 'Rollback plan']
+          },
+          {
+            title: '📈 Reliability Framework – SLI / SLO / SLA / Error Budget',
+            content: '<ul><li><strong>SLI (Service Level Indicator):</strong> Metric measuring user satisfaction (latency, availability, throughput).</li><li><strong>SLO (Service Level Objective):</strong> Target value for SLI. Service is reliable when SLI ≥ SLO.</li><li><strong>SLA (Service Level Agreement):</strong> Formal contract; defines consequences when SLOs are missed.</li><li><strong>Error Budget:</strong> 100% − SLO = permissible failure. Use to balance innovation vs reliability.</li><li><strong>RTO (Recovery Time Objective):</strong> How long systems can be down.</li><li><strong>RPO (Recovery Point Objective):</strong> How much data loss is acceptable.</li><li><strong>Replication:</strong> Synchronous = zero RPO. Asynchronous = higher RPO, lower cost.</li><li><strong>DR strategies:</strong> Hot (seconds, highest cost) → Warm (minutes) → Cold (hours, lowest cost).</li></ul>',
+            chips: ['SLI', 'SLO', 'SLA', 'RTO', 'RPO', 'Error Budget', 'Canary rollout', 'Synchronous replication']
+          },
+          {
+            title: '🔥 Exam Hacks — Section 1',
+            content: '<ul><li><strong>Google\'s golden rule:</strong> "Select the fully managed / serverless service with lowest operational overhead."</li><li><strong>IAM questions:</strong> Default answer = least privilege + predefined roles before custom roles.</li><li><strong>Encryption exam pattern:</strong> CMEK = customer-managed keys in Cloud KMS (GCP manages ops). CSEK = you supply raw key bytes per request (maximum control, maximum burden). Default = AES-256 Google-managed.</li><li><strong>Migration keywords:</strong> "minimal changes" → Rehost; "modernize" → Re-architect; "SaaS" → Repurchase; "optimize after move" → Replatform.</li><li><strong>Reliability:</strong> "zero data loss" → Synchronous replication. "cost-effective HA" → Async + read replicas.</li><li><strong>VPC Service Controls ≠ IAM:</strong> VPC SC is a perimeter-level control (network boundary). IAM is identity-based. Both can coexist.</li><li><strong>Assured Workloads</strong> = use for sovereignty / regulatory compliance at org level.</li></ul>',
+            isHack: true
+          }
+        ]
+      },
+      s2: {
+        label: 'Section 2 · 25% of exam',
+        title: 'Ingesting and Processing Data',
+        topics: [
+          {
+            title: '🌊 Streaming Pipeline Architecture',
+            content: '<p>Three stages: <strong>Ingestion (Pub/Sub) → Processing (Dataflow / Cloud Run) → Storage (BigQuery / Bigtable / GCS)</strong>.</p><ul><li><strong>Pub/Sub:</strong> Fully managed messaging. Publishers send, subscribers consume. At-least-once delivery by default.</li><li><strong>Dataflow:</strong> Apache Beam-based. Supports exactly-once processing, windowing, filtering, joins, aggregation. PCollections + PTransforms. Autoscaling built-in.</li><li><strong>Windowing types:</strong> Fixed (tumbling — non-overlapping), Sliding (overlapping), Session (activity-based gaps).</li><li><strong>Drain Job:</strong> Graceful shutdown — processes all buffered data then stops. Cancel = immediate stop, buffered data lost.</li><li><strong>Planning SLOs:</strong> Define data freshness, latency, and correctness targets before designing architecture.</li><li><strong>Security:</strong> CMEK for data at rest, Cloud HSM, private IPs for pipeline endpoints.</li></ul>',
+            chips: ['Exactly-once', 'Windowing', 'Triggers', 'Drain vs Cancel', 'PCollections', 'Dataflow templates', 'Avro format']
+          },
+          {
+            title: '⚙️ Orchestration Tools Compared',
+            content: '<table class="sm-table"><thead><tr><th>Tool</th><th>Best For</th><th>Format</th><th>Latency</th></tr></thead><tbody><tr><td><strong>Cloud Scheduler</strong></td><td>Simple recurring triggers</td><td>Cron expression</td><td>Limited to single service</td></tr><tr><td><strong>Workflows</strong></td><td>HTTP multi-service real-time</td><td>YAML/JSON steps</td><td>Low latency, stateful</td></tr><tr><td><strong>Cloud Composer</strong></td><td>Complex ETL/ELT DAG pipelines</td><td>Python DAGs</td><td>Batch, not real-time</td></tr></tbody></table><p style="margin-top:10px"><strong>Composer architecture:</strong> GKE cluster + Airflow scheduler + triggerer + workers + web server + Cloud Storage bucket. Set <code>dagrun_timeout</code> to manage job durations.</p>',
+            chips: ['DAGs', 'Cron syntax', 'Workflows YAML', 'Composer auto-scale', 'dagrun_timeout', 'Pub/Sub DAG trigger']
+          },
+          {
+            title: '🚀 Cloud Deploy – CI/CD Delivery Pipelines',
+            content: '<ul><li><strong>Delivery Pipeline:</strong> YAML-defined sequence of deployment stages and targets.</li><li><strong>Targets:</strong> GKE, Cloud Run, Anthos. Supports parallel deployment across multiple environments.</li><li><strong>Releases:</strong> Snapshot of pipeline + config (Skaffold + Manifest) for every code/config change.</li><li><strong>Skaffold:</strong> Handles manifest rendering and deployment automation. Supports flexible rollout strategies.</li><li><strong>Canary Deployment:</strong> Gradual traffic shift to reduce risk — recommended for production changes.</li><li><strong>Auto-promote:</strong> Automatically advances rollouts between pipeline targets using defined rules.</li></ul>',
+            chips: ['Canary deploy', 'Skaffold', 'GKE/Cloud Run targets', 'One-click rollback', 'Blue/green', 'Parallel targets']
+          },
+          {
+            title: '💰 BigQuery Reservations & Slot Pricing',
+            content: '<table class="sm-table"><thead><tr><th>Model</th><th>Description</th><th>Best For</th></tr></thead><tbody><tr><td><strong>On-Demand</strong></td><td>Pay per byte processed</td><td>Ad-hoc / unpredictable</td></tr><tr><td><strong>Flat-Rate</strong></td><td>Monthly/annual slot commitment</td><td>Steady predictable workloads</td></tr><tr><td><strong>Flex Slots</strong></td><td>Short-term bursts (min 60 sec)</td><td>Testing, debugging, spikes</td></tr></tbody></table><ul style="margin-top:10px"><li><strong>Slots</strong> = virtual CPUs for BigQuery jobs. Reservations are <strong>regional</strong> — cannot span regions.</li><li><strong>Idle slots:</strong> Borrowed from other reservations (enabled by default). Disable for critical SLA jobs.</li><li><strong>Assignment:</strong> Map projects/folders/orgs to reservations for controlled slot allocation.</li></ul>',
+            chips: ['Slots', 'Commitments', 'Assignments', 'Idle slots', 'Regional restriction', 'INFORMATION_SCHEMA']
+          },
+          {
+            title: '🔥 Exam Hacks — Section 2',
+            content: '<ul><li><strong>Dataflow vs Dataproc:</strong> Dataflow = serverless, auto-scaling, Apache Beam (new pipelines). Dataproc = Spark/Hadoop lift-and-shift (existing code).</li><li><strong>Drain vs Cancel:</strong> Drain finishes buffered data gracefully. Cancel stops immediately — data can be lost. Exam prefers Drain for production jobs.</li><li><strong>Windowing:</strong> Fixed = every N seconds non-overlapping. Sliding = overlapping windows. Session = gaps between activity.</li><li><strong>Pub/Sub delivery guarantee:</strong> At-least-once. Use Dataflow deduplication for exactly-once semantics.</li><li><strong>Composer vs Workflows:</strong> Complex DAG dependencies with BigQuery/Dataflow → Composer. Low-latency HTTP API chain → Workflows.</li><li><strong>Flex slots minimum = 60 seconds.</strong> Use to test slot sizing before committing to flat-rate.</li><li><strong>Cloud Scheduler</strong> = triggers only, no orchestration logic. Don\'t use it for complex multi-step workflows.</li></ul>',
+            isHack: true
+          }
+        ]
+      },
+      s3: {
+        label: 'Section 3 · 20% of exam',
+        title: 'Storing the Data',
+        topics: [
+          {
+            title: '🗄 Cloud Storage – Classes, Lifecycle & Cost',
+            content: '<table class="sm-table"><thead><tr><th>Class</th><th>Access Frequency</th><th>Min Duration</th><th>Retrieval Fee</th></tr></thead><tbody><tr><td><strong>Standard</strong></td><td>Frequent / always</td><td>None</td><td>None</td></tr><tr><td><strong>Nearline</strong></td><td>~Once per month</td><td>30 days</td><td>Yes</td></tr><tr><td><strong>Coldline</strong></td><td>~Once per quarter</td><td>90 days</td><td>Higher</td></tr><tr><td><strong>Archive</strong></td><td>~Once per year</td><td>365 days</td><td>Highest</td></tr></tbody></table><ul style="margin-top:10px"><li><strong>Location:</strong> Multi-regional / Dual-regional = higher availability + cost. Regional = cheaper, localized.</li><li><strong>Cost savings:</strong> Lifecycle policies, compress data, delta transfers, disable versioning if not needed, use labels for cost allocation.</li><li><strong>Signed URLs:</strong> Time-limited access to objects without Google Account — for temporary sharing.</li></ul>',
+            chips: ['Lifecycle management', 'Object versioning', 'CMEK', 'CSEK', 'Signed URLs', 'Storage Transfer Service', 'Transfer Appliance']
+          },
+          {
+            title: '🏞 Data Lake – Architecture, Discovery & Encryption',
+            content: '<ul><li><strong>Core components:</strong> Cloud Storage (raw data) → Dataflow/Dataproc (transform) → BigQuery (analytics) + Data Catalog (metadata governance).</li><li><strong>Data discovery:</strong> Data Catalog for metadata tagging, lineage, search. Dataplex for automatic classification and quality scanning.</li><li><strong>Access management:</strong> IAM roles at bucket and object level. Uniform bucket-level access (recommended for governance) vs Fine-grained (per-object ACLs).</li><li><strong>Encryption:</strong> Default AES-256 + TLS in transit. CMEK = Cloud KMS managed keys. CSEK = you supply raw key bytes per request.</li><li><strong>Data Lake Modernization:</strong> Migrate Hadoop/Spark to Dataproc. Decouple compute from storage. Use Data Catalog + Cloud DLP for governance. Autoscale resource-intensive workloads.</li></ul>',
+            chips: ['Dataplex', 'Data Catalog', 'CMEK', 'CSEK', 'Uniform bucket access', 'Lineage tracking', 'Cloud DLP']
+          },
+          {
+            title: '⚡ Memorystore – Redis, Redis Cluster & Memcached',
+            content: '<ul><li><strong>Memorystore for Redis:</strong> Fully managed, sub-millisecond access. Based on Redis v7.2. Built-in persistence capability.</li><li><strong>Basic tier:</strong> Standalone, no failover — data lost on failure. Dev/test only.</li><li><strong>Standard tier:</strong> High availability with read replicas and automatic failover across zones. Production.</li><li><strong>Redis Cluster:</strong> Up to 250 nodes, petabyte-scale. No built-in persistence.</li><li><strong>Memcached:</strong> No built-in persistence. Simple key-value cache. No replication.</li><li><strong>Use cases:</strong> Web sessions, gaming leaderboards, IoT real-time feeds, token caching, geo queries.</li><li><strong>Best practices:</strong> Avoid expensive Redis commands (O(N)), monitor memory ratio, set maxmemory conservatively, use RDB snapshots for backups.</li></ul>',
+            chips: ['Basic vs Standard tier', 'Auto-failover', 'Redis RDB snapshots', 'Sub-millisecond', 'Cluster vs standalone']
+          },
+          {
+            title: '🔥 Exam Hacks — Section 3',
+            content: '<ul><li><strong>Storage class keywords:</strong> "rarely accessed" → Archive; "once a month" → Nearline; "once a quarter" → Coldline; "always available" → Standard.</li><li><strong>Retrieval fees matter:</strong> Standard has none. If you read archived data frequently, retrieval fees can exceed storage savings.</li><li><strong>Signed URLs</strong> provide time-limited, unauthenticated access to GCS objects. Use for sharing files with external users without granting IAM roles.</li><li><strong>Memorystore Standard tier</strong> is required for HA. If question mentions failover, read replicas, or production caching → Standard tier.</li><li><strong>Uniform bucket-level access</strong> disables ACLs — use for governance. Fine-grained allows ACLs per object — use when per-object control is needed.</li><li><strong>Data lake modernization:</strong> Decouple compute (Dataproc/Dataflow) from storage (GCS). Don\'t rebuild if lift-and-shift satisfies the requirement.</li><li><strong>CMEK + GCS:</strong> Key must exist in same region as bucket. Destroying key = permanent data loss.</li></ul>',
+            isHack: true
+          }
+        ]
+      },
+      s4: {
+        label: 'Section 4 · 15% of exam',
+        title: 'Preparing and Using Data for Analysis',
+        topics: [
+          {
+            title: '📊 BigQuery – Architecture & Key Features',
+            content: '<ul><li><strong>Serverless:</strong> Auto-scales compute and storage independently. No cluster management.</li><li><strong>GoogleSQL:</strong> Standard SQL:2011 compliant dialect.</li><li><strong>Separated storage:</strong> Colossus storage (cheap) + Dremel compute (fast). Pay for what you query.</li><li><strong>BigQuery ML:</strong> Train, evaluate, predict ML models using SQL — no data movement to separate ML platform needed.</li><li><strong>Vertex AI Integration:</strong> Push/pull data between BigQuery and Vertex AI pipelines.</li><li><strong>BI Engine:</strong> In-memory analysis layer for sub-second dashboard latency. No separate BI server needed.</li><li><strong>Analytics Hub:</strong> Cross-org data sharing via governed exchange (pub/sub model). Create/subscribe to data listings.</li><li><strong>Gemini AI:</strong> SQL generation, code explanations, data insights directly in BigQuery Studio.</li><li><strong>Optimization:</strong> Partitioning (date, integer range) + Clustering (column order) reduces bytes scanned = lower cost.</li></ul>',
+            chips: ['Partitioning', 'Clustering', 'Dry run', 'Analytics Hub', 'BI Engine', 'BigQuery ML', 'INFORMATION_SCHEMA']
+          },
+          {
+            title: '🔎 BigQuery Views: Logical vs Materialized',
+            content: '<table class="sm-table"><thead><tr><th>Type</th><th>Data Stored</th><th>Performance</th><th>Cost</th><th>Refresh</th></tr></thead><tbody><tr><td><strong>Logical View</strong></td><td>No — live query</td><td>Slower</td><td>Storage-free</td><td>Always fresh</td></tr><tr><td><strong>Materialized View</strong></td><td>Yes — precomputed</td><td>Faster</td><td>Storage cost</td><td>Default 30 min</td></tr></tbody></table><p style="margin-top:10px">Views are <strong>read-only</strong> — no INSERT, UPDATE, DELETE. Cannot nest Materialized Views. Set expiration dates for cleanup. INFORMATION_SCHEMA.VIEWS contains metadata.</p>',
+            chips: ['Read-only views', 'MV auto-refresh', 'Cost vs latency tradeoff', 'Set expiration dates']
+          },
+          {
+            title: '📈 Looker Studio + BigQuery Integration',
+            content: '<ul><li><strong>Looker Studio:</strong> Free self-service BI tool. Connects to 800+ data sources including BigQuery.</li><li><strong>Interactive queries:</strong> Triggered by user interaction. Real-time but more costly; limited concurrency. Best for ad-hoc analysis.</li><li><strong>Batch queries:</strong> Scheduled; cheaper. Ideal for recurring reports and large dataset scans.</li><li><strong>BI Engine:</strong> In-memory acceleration layer. Sub-second dashboard response without separate BI infrastructure.</li><li><strong>Best practices:</strong> Pre-aggregate data before Looker Studio. Schedule batch queries for large datasets. Use INFORMATION_SCHEMA.JOBS to monitor query stats and costs.</li></ul>',
+            chips: ['BI Engine', 'MV pre-aggregation', 'Query caching', 'Interactive vs Batch', 'INFORMATION_SCHEMA.JOBS']
+          },
+          {
+            title: '🔐 Data Governance in BigQuery',
+            content: '<ul><li><strong>IAM Roles:</strong> bigquery.dataViewer, bigquery.dataEditor, bigquery.admin — at project, dataset, table, or view level.</li><li><strong>Column-level security:</strong> Policy tags + Taxonomy. Masking applied at <strong>column level only</strong> — not at row level via policy tags.</li><li><strong>Row-level security:</strong> Row Access Policies on BigQuery tables (separate from column masking).</li><li><strong>Data Catalog:</strong> Tag templates, business metadata, lineage. Integrated with Dataplex.</li><li><strong>Dataplex:</strong> Data quality scans, profile scans (null rates, uniqueness), data lineage tracking across GCS and BigQuery.</li><li><strong>Cloud DLP:</strong> Detect and de-identify PII (tokenize, mask, bucket, date-shift). Works on BigQuery tables and GCS files.</li><li><strong>Audit Logs:</strong> Track all data access and admin activity. Essential for compliance.</li></ul>',
+            chips: ['Policy tags', 'Column masking', 'Row Access Policies', 'Dataplex lineage', 'Cloud DLP', 'Data Catalog tags']
+          },
+          {
+            title: '🔥 Exam Hacks — Section 4',
+            content: '<ul><li><strong>Data masking in BigQuery</strong> is applied at <strong>column level only</strong> via policy tags. Not at row level.</li><li><strong>Row-level security</strong> uses Row Access Policies — a separate BigQuery feature from column masking.</li><li><strong>Materialized View default refresh = 30 minutes.</strong> Queries hitting base table changes within that window can still use the MV for performance.</li><li><strong>Analytics Hub</strong> enables cross-org data sharing. Different from IAM dataset sharing. Think of it as a governed data marketplace.</li><li><strong>Dry run = cost estimation only.</strong> Does NOT execute the query or consume slots.</li><li><strong>Data Lineage API</strong> (via Dataplex) tracks how data flows through your pipeline. Key for compliance and impact analysis questions.</li><li><strong>Cloud DLP transformation types:</strong> Pseudonymization (token), Bucketing (generalize), Date Shifting, Redaction, Encryption. Know what each does.</li></ul>',
+            isHack: true
+          }
+        ]
+      },
+      s5: {
+        label: 'Section 5 · 18% of exam',
+        title: 'Maintaining and Automating Data Workloads',
+        topics: [
+          {
+            title: '🔑 Cloud IAM – Principals, Roles, Policies',
+            content: '<ul><li><strong>Principals:</strong> User accounts, service accounts, groups, domains, allAuthenticatedUsers.</li><li><strong>Role types:</strong> Basic (Owner/Editor/Viewer — too broad for prod), Predefined (fine-grained per service), Custom (compose from individual permissions).</li><li><strong>Policies:</strong> Allow policies grant access. <strong>Deny policies override allow policies</strong> — evaluated first. Use sparingly for org-wide restrictions.</li><li><strong>Hierarchy:</strong> Organization → Folder → Project → Resource. Policies inherited downward (child inherits parent). Child cannot remove parent grants.</li><li><strong>Service accounts:</strong> Machine identities. Avoid default service accounts with broad roles in production. Prefer Workload Identity Federation over JSON keys.</li><li><strong>Workload Identity Federation:</strong> Allows external workloads (GitHub Actions, AWS, Azure) to authenticate to GCP without service account key files.</li><li><strong>Conditions:</strong> Attribute-based access on IAM bindings — restrict by time, resource tags, request path, IP address.</li></ul>',
+            chips: ['Least privilege', 'Deny policies', 'Workload Identity', 'IAM inheritance', 'Service accounts', 'JIT access']
+          },
+          {
+            title: '📡 Cloud Observability – Monitoring, Logging & Tracing',
+            content: '<ul><li><strong>Cloud Logging:</strong> Managed log ingestion, storage, search. Export via log sinks to BigQuery/GCS/Pub/Sub. Set retention policies.</li><li><strong>Cloud Monitoring:</strong> Metrics, dashboards, alerts, uptime checks. Custom metrics via OpenTelemetry. Correlate with logs and traces.</li><li><strong>Cloud Trace:</strong> Distributed tracing for latency profiling across microservices and pipelines.</li><li><strong>Cloud Profiler:</strong> CPU and memory profiling for production code with minimal overhead.</li><li><strong>Error Reporting:</strong> Centralized error aggregation, stack traces, alerting on new errors.</li><li><strong>Alert strategy:</strong> Alert on <strong>symptoms</strong> (high latency, elevated error rate) not causes. Use outlier values, not averages. Detect before users are impacted.</li><li>⚠️ <strong>Cloud Debugger is deprecated.</strong> Do not select it in exam answers.</li></ul>',
+            chips: ['Log sinks', 'Symptom-based alerts', 'Audit logs', 'Custom metrics', 'Cloud Trace', 'Cloud Profiler']
+          },
+          {
+            title: '🔐 Encryption – At Rest, In Transit & KMS',
+            content: '<ul><li><strong>At rest:</strong> AES-256 default. Envelope encryption: DEK (data) → KEK (key) hierarchy. CMEK uses Cloud KMS KEKs.</li><li><strong>In transit:</strong> TLS (external), ALTS (Google internal), AES-GCM. All data encrypted between GCP services.</li><li><strong>CMEK:</strong> Keys in Cloud KMS; GCP uses them on your behalf. You control rotation and destruction. Destroying key = permanent data loss.</li><li><strong>CSEK:</strong> You supply raw key material per request. No key stored in GCP. Maximum control, maximum operational burden.</li><li><strong>Cloud HSM:</strong> FIPS 140-2 Level 3 hardware-backed key storage via Cloud KMS integration.</li><li><strong>External Key Manager (EKM):</strong> Store keys entirely outside GCP; use with GCP services for maximum sovereignty.</li><li><strong>Key rotation:</strong> Auto-rotation with configurable period. Old versions retained for decryption only; new data always encrypted with current version.</li></ul>',
+            chips: ['DEK + KEK', 'CMEK', 'CSEK', 'Cloud HSM FIPS', 'EKM', 'Key rotation', 'Key destruction = permanent loss']
+          },
+          {
+            title: '🏥 Disaster Recovery – Strategies & Metrics',
+            content: '<table class="sm-table"><thead><tr><th>Strategy</th><th>RTO</th><th>RPO</th><th>Cost</th></tr></thead><tbody><tr><td><strong>Hot standby</strong></td><td>Seconds</td><td>Near zero</td><td>Highest</td></tr><tr><td><strong>Warm standby</strong></td><td>Minutes</td><td>Low</td><td>Medium</td></tr><tr><td><strong>Cold standby</strong></td><td>Hours</td><td>Higher</td><td>Lowest</td></tr></tbody></table><p style="margin-top:10px"><strong>Synchronous replication</strong> = zero RPO (ACK only after both copies written). <strong>Asynchronous</strong> = higher RPO, better performance. Multi-zone protects against zone failures; multi-region protects against regional outages. Automate with Terraform.</p>',
+            chips: ['RTO', 'RPO', 'Sync replication', 'Async replication', 'Multi-region', 'Terraform automation']
+          },
+          {
+            title: '🔥 Exam Hacks — Section 5',
+            content: '<ul><li><strong>CMEK vs CSEK:</strong> CMEK = GCP manages key operations, you own the key in KMS. CSEK = you provide the raw key bytes per request. CSEK = maximum isolation, maximum complexity.</li><li><strong>Deny policies override allow policies.</strong> Evaluated first. Use at org level for blanket restrictions.</li><li><strong>Audit Log types:</strong> Admin Activity (always on, free), Data Access (must enable, charged), System Event (always on, free), Policy Denied (must enable).</li><li><strong>Symptom-based alerting</strong> (high latency, elevated error rate) beats cause-based (CPU usage) for real user impact detection.</li><li><strong>Zero data loss</strong> → Synchronous replication + Cloud Spanner multi-region or BigQuery multi-region datasets.</li><li><strong>Workload Identity Federation</strong> eliminates service account key files (security risk). Prefer over downloading and storing JSON keys.</li><li>⚠️ <strong>Cloud Debugger is deprecated</strong> — eliminate it from exam answers immediately.</li></ul>',
+            isHack: true
+          }
+        ]
+      },
+      s6: {
+        label: 'Section 6 · Core Fundamentals',
+        title: 'Core Data Engineering Fundamentals',
+        topics: [
+          {
+            title: '⚡ Service Selection Decision Framework',
+            content: '<p><strong>Golden rule: "Always select the fully managed / serverless service that meets the technical constraint with the lowest operational overhead."</strong></p><table class="sm-table"><thead><tr><th>Scenario</th><th>Preferred Service</th></tr></thead><tbody><tr><td>Real-time streaming + complex transforms</td><td><strong>Dataflow</strong></td></tr><tr><td>Spark / Hadoop lift &amp; shift</td><td><strong>Dataproc</strong></td></tr><tr><td>Scheduled ETL / DAG dependencies</td><td><strong>Cloud Composer</strong></td></tr><tr><td>HTTP multi-service orchestration</td><td><strong>Workflows</strong></td></tr><tr><td>Simple recurring trigger</td><td><strong>Cloud Scheduler</strong></td></tr><tr><td>Petabyte SQL analytics</td><td><strong>BigQuery</strong></td></tr><tr><td>Sub-millisecond key-value cache</td><td><strong>Memorystore (Redis)</strong></td></tr><tr><td>Event-driven messaging / fan-out</td><td><strong>Pub/Sub</strong></td></tr><tr><td>Unstructured object storage</td><td><strong>Cloud Storage</strong></td></tr><tr><td>Time-series IoT / low-latency wide tables</td><td><strong>Bigtable</strong></td></tr><tr><td>OLTP + global consistency</td><td><strong>Cloud Spanner</strong></td></tr><tr><td>Managed MySQL / PostgreSQL</td><td><strong>Cloud SQL</strong></td></tr></tbody></table>',
+            chips: ['Serverless-first', 'Managed services', 'Operational overhead']
+          },
+          {
+            title: '📊 Data Pipeline Patterns & Best Practices',
+            content: '<ul><li><strong>ELT vs ETL:</strong> ELT = raw data to BigQuery first, transform inside using SQL (preferred for BQ). ETL = transform before loading (Dataflow). BigQuery-native → prefer ELT.</li><li><strong>Lambda architecture:</strong> Batch layer (historical accuracy) + Speed layer (real-time Pub/Sub + Dataflow) + Serving layer (BigQuery/Bigtable).</li><li><strong>Data quality:</strong> Dataform assertions for inline pipeline quality gates. Dataplex for quality scans across assets.</li><li><strong>Schema evolution:</strong> Avro and Protobuf support forward/backward compatible schema changes without breaking downstream consumers. Prefer over CSV/JSON for streaming.</li><li><strong>Idempotency:</strong> Pipelines should produce identical results when re-run. Design for at-least-once; deduplicate for exactly-once.</li><li><strong>BigQuery external tables:</strong> Query data in GCS without loading. Useful for data lake federation but slower than native BQ tables.</li></ul>',
+            chips: ['ELT preference', 'Avro/Protobuf schema', 'Idempotency', 'Dataform assertions', 'External tables', 'Lambda architecture']
+          },
+          {
+            title: '🔥 Exam Hacks — Section 6',
+            content: '<ul><li><strong>Pub/Sub vs Kafka:</strong> On GCP → always prefer Pub/Sub. Kafka = valid only for existing Confluent infrastructure or on-prem continuity.</li><li><strong>Dataproc vs Dataflow:</strong> Existing Spark/Hadoop code → Dataproc. New pipelines → Dataflow (no cluster management, autoscaling).</li><li><strong>BigQuery Data Transfer Service:</strong> Move data from SaaS sources (Google Ads, YouTube, Search Ads 360) into BigQuery automatically. Don\'t write custom pipelines for these — use DTS.</li><li><strong>Dataform vs dbt:</strong> Dataform = Google-native SQL pipeline management in BigQuery with version control and testing. dbt = popular open-source alternative.</li><li><strong>Bigtable row key design is critical:</strong> Bad row keys cause hotspots. Good keys distribute reads evenly — avoid timestamps as leading key component.</li><li><strong>Cloud Storage Transfer Service</strong> (online) vs <strong>Transfer Appliance</strong> (offline physical). Use appliance for >20 TB or poor network connectivity.</li></ul>',
+            isHack: true
+          }
+        ]
+      },
+      s7: {
+        label: 'Section 7 · 180 Questions',
+        title: 'ML and MLOps on GCP',
+        topics: [
+          {
+            title: '🤖 Vertex AI – Unified ML Platform',
+            content: '<ul><li><strong>Vertex AI Pipelines:</strong> Managed Kubeflow/TFX pipelines for reproducible, versioned ML workflows. Each step containerized and tracked.</li><li><strong>Feature Store:</strong> Centralized repository for ML features. Shares identical features between training and serving to prevent training-serving skew.</li><li><strong>Model Registry:</strong> Version, stage, and deploy models. Tracks lineage from training job to deployed endpoint. Stages: Staging → Production → Archived.</li><li><strong>Online prediction endpoints:</strong> Low-latency REST API with SLA. Traffic splitting for A/B testing and canary releases.</li><li><strong>Batch prediction:</strong> High-throughput async. Use for nightly scoring, large-scale inference. Cheaper than online.</li><li><strong>AutoML:</strong> No-code training for tabular, image, text, video. Use when custom architecture not required or data &lt; 100K rows.</li><li><strong>Vizier:</strong> Black-box hyperparameter optimization service. Uses Bayesian optimization.</li></ul>',
+            chips: ['Feature Store', 'Training-serving skew', 'Model Registry', 'Batch vs Online prediction', 'AutoML', 'Vizier']
+          },
+          {
+            title: '🏃 MLOps – Training, Evaluation & Deployment',
+            content: '<ul><li><strong>Data parallelism:</strong> Same model, different data shards across GPUs/TPUs. Most common approach for large datasets.</li><li><strong>Model parallelism:</strong> Model layers split across multiple GPUs. Use when model too large for single GPU memory.</li><li><strong>Training-serving skew:</strong> Features computed differently at training vs serving time. Solution: use Feature Store or identical preprocessing code in both paths.</li><li><strong>Deployment strategies:</strong> Canary (gradual traffic shift), Blue/green (instant cutover), Shadow (live traffic, predictions not served — comparison only).</li><li><strong>Model monitoring:</strong> Detect data drift (input distribution change) and model drift (prediction quality degradation over time). Trigger retraining when metrics degrade below threshold.</li><li><strong>Explainability:</strong> Vertex AI Explainable AI — SHAP values for tabular models, integrated gradients for image/text.</li></ul>',
+            chips: ['Data parallelism', 'Feature skew', 'Canary deploy', 'Shadow mode', 'Model drift', 'Data drift', 'SHAP values']
+          },
+          {
+            title: '🔥 Exam Hacks — Section 7',
+            content: '<ul><li><strong>Training-serving skew</strong> is the most common MLOps exam trap. Solution: use Vertex AI Feature Store for feature consistency between training and serving.</li><li><strong>Batch vs Online prediction:</strong> "Real-time recommendations" → Online. "Nightly batch scoring of 10M users" → Batch prediction. Cost difference is significant.</li><li><strong>AutoML threshold:</strong> Use AutoML when: no deep learning expertise, data &lt; 100K rows, standard task type, fast iteration needed.</li><li><strong>Vizier</strong> for hyperparameter tuning on Vertex AI. Bayesian optimization = more efficient than grid/random search.</li><li><strong>Model Registry stages:</strong> Never deploy directly from experiment to production. Always: experiment → registry (staging) → production → archived.</li><li><strong>Explainability:</strong> SHAP values for tabular models. Integrated gradients for image/text. Both available in Vertex AI Explainable AI.</li><li><strong>Pipeline reproducibility:</strong> Vertex AI Pipelines with containerized components + artifact lineage = reproducible, auditable ML workflows.</li></ul>',
+            isHack: true
+          }
+        ]
+      },
+      s8: {
+        label: 'Section 8 · Risk Control',
+        title: 'Security, Governance and Advanced Services',
+        topics: [
+          {
+            title: '🛡 Cloud IAM Deep Dive',
+            content: '<ul><li><strong>Evaluation order:</strong> Deny policies checked first → Allow policies → Resource-level policies. Explicit deny = always wins.</li><li><strong>Predefined roles:</strong> Fine-grained per service (e.g., roles/bigquery.dataViewer). Always prefer over basic roles for production.</li><li><strong>Custom roles:</strong> Compose from individual permissions. Cannot include permissions not granted to the creator. Created at org or project level.</li><li><strong>Conditions:</strong> Attribute-based access on IAM bindings — restrict by time, resource tags, request path, IP address.</li><li><strong>Policy inheritance:</strong> Parent resource policies inherited by child resources. Child can add but not remove parent-granted access.</li><li><strong>Service account impersonation:</strong> Token exchange to temporarily act as a service account without downloading its key — safer than key files.</li><li><strong>Audit Log types:</strong> Admin Activity (on, free), Data Access (enable manually, charged), System Event (on, free), Policy Denied (enable manually).</li></ul>',
+            chips: ['Deny policy evaluation order', 'IAM Conditions', 'Custom roles', 'SA impersonation', 'Audit Log types']
+          },
+          {
+            title: '🔒 VPC Service Controls & Cloud DLP',
+            content: '<ul><li><strong>VPC Service Controls:</strong> Define a security perimeter around GCP APIs/resources. Prevents data exfiltration even if credentials are compromised. Works independently of and in addition to IAM.</li><li><strong>Access Context Manager:</strong> Defines access levels (IP range, device policy, user identity) used by VPC SC and IAM Conditions.</li><li><strong>Cloud DLP (Sensitive Data Protection):</strong> Detect, classify, mask, tokenize, or encrypt PII/sensitive data. Works on BigQuery, GCS, Datastore.</li><li><strong>DLP transformation types:</strong> Pseudonymization (replace with token), Bucketing (generalize values), Date Shifting, Redaction (remove), Encryption with surrogate.</li><li><strong>Organization policies:</strong> Enforce guardrails org-wide (e.g., restrict resource locations, disable service account key creation, require OS Login).</li><li><strong>Assured Workloads:</strong> Enforce compliance regimes (FedRAMP, ITAR, IL2/IL4) and data sovereignty at the org level.</li></ul>',
+            chips: ['VPC SC perimeter', 'Access Context Manager', 'Cloud DLP', 'Org policies', 'Assured Workloads', 'Data sovereignty']
+          },
+          {
+            title: '🔑 Key Management & Dataplex Governance',
+            content: '<ul><li><strong>KMS key hierarchy:</strong> Key ring → CryptoKey → CryptoKey Version. Versions: enabled, disabled, or destroyed.</li><li><strong>Key locations:</strong> Regional (low latency, recommended), Multi-regional (resilience), Global (avoid for compliance).</li><li><strong>Symmetric keys:</strong> AES-256-GCM — for data encryption/decryption.</li><li><strong>Asymmetric keys:</strong> RSA / EC — for digital signatures and key exchange. Verify data integrity and origin.</li><li><strong>Cloud HSM:</strong> FIPS 140-2 Level 3 hardware-backed key storage. Required for strict regulatory compliance.</li><li><strong>Dataplex:</strong> Data fabric across GCS and BigQuery. Manages discovery, quality scans, profile scans, access policies, lineage from a unified control plane.</li><li><strong>Data Catalog:</strong> Metadata management, tag templates, business glossary, search, lineage visualization.</li></ul>',
+            chips: ['KMS hierarchy', 'Symmetric vs Asymmetric', 'Cloud HSM FIPS 140-2', 'EKM', 'Dataplex data fabric', 'Data Catalog']
+          },
+          {
+            title: '🔥 Exam Hacks — Section 8',
+            content: '<ul><li><strong>VPC Service Controls ≠ IAM:</strong> VPC SC = perimeter (where). IAM = identity (who). A VPC SC violation will block access even with correct IAM roles. Both must allow for access to succeed.</li><li><strong>Org Policy vs IAM:</strong> Org Policy = what CAN happen at org/folder/project (preventative). IAM = who is allowed (access control). Org Policy wins when it restricts an action regardless of IAM.</li><li><strong>CMEK + BigQuery:</strong> Table-level CMEK supported. Key must be in same region as dataset. If key is destroyed, data is permanently inaccessible — no recovery.</li><li><strong>Assured Workloads</strong> = use for data sovereignty (data must stay in EU/US/specific region). Enforces region restrictions and compliance at org level.</li><li><strong>Cloud DLP</strong> vs IAM column masking: DLP can transform/detect data at content level. IAM column masking = access control level. They complement each other.</li><li><strong>Audit Log exam tip:</strong> Admin Activity logs = always on, free. Data Access logs must be explicitly enabled and are charged. Always enable for compliance.</li></ul>',
+            isHack: true
+          }
+        ]
       }
-      return a;
-    }
-    function selectRandom(arr, n) {
-      return shuffle(arr).slice(0, Math.min(n, arr.length));
-    }
-    function shuffleOptions(question) {
-      // Create a shallow copy so we don't mutate the original question bank
-      const q = Object.assign({}, question);
-      const correctText = q.opts[q.ans];
-      // Build index array [0,1,2,3] and shuffle it
-      const indices = q.opts.map((_, i) => i);
-      for (let i = indices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [indices[i], indices[j]] = [indices[j], indices[i]];
-      }
-      // Reorder options according to shuffled indices
-      q.opts = indices.map(i => question.opts[i]);
-      // Update ans to point to the new position of the correct answer
-      q.ans = q.opts.indexOf(correctText);
-      return q;
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    //  PERSISTENCE  (localStorage)
-    // ═══════════════════════════════════════════════════════════
-    const STORAGE_KEY = 'gcp_pde_quiz_v1';
-
-    function loadStorage() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : { scores: {}, history: {} };
-      } catch (e) { return { scores: {}, history: {} }; }
-    }
-    function saveStorage(data) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { }
-    }
-    function getStore() { return loadStorage(); }
-
-    function persistResult(sectionId, correct, total, timeTaken) {
-      const store = getStore();
-      // Update best score
-      const prev = store.scores[sectionId];
-      const pct = Math.round(correct / total * 100);
-      if (!prev || pct > prev.bestPct) {
-        store.scores[sectionId] = { correct, total, bestPct: pct, timeTaken };
-      }
-      // Append to history
-      if (!store.history[sectionId]) store.history[sectionId] = [];
-      store.history[sectionId].unshift({
-        date: new Date().toISOString(),
-        correct, total, pct, timeTaken
-      });
-      // Keep last 20 attempts
-      store.history[sectionId] = store.history[sectionId].slice(0, 20);
-      saveStorage(store);
-    }
-
-    function clearSectionHistory(sectionId) {
-      const store = getStore();
-      delete store.scores[sectionId];
-      delete store.history[sectionId];
-      saveStorage(store);
-      renderHome();
-    }
-
-    function clearAllHistory() {
-      if (confirm('Clear ALL quiz history and scores? This cannot be undone.')) {
-        localStorage.removeItem(STORAGE_KEY);
-        renderHome();
-      }
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    //  APP STATE
-    // ═══════════════════════════════════════════════════════════
-    const state = {
-      currentSection: null,
-      questions: [],
-      current: 0,
-      answers: {},
-      markedForReview: {},
-      submitted: {},
-      finalSubmitted: false,
-      scores: {},           // in-memory cache (loaded from storage on renderHome)
-      // Timing
-      sectionStartTime: null,
-      questionStartTimes: {},
-      questionDurations: {},
-      timerInterval: null,
-      qTimerInterval: null,
-      countdownInterval: null,
-      isFullTest: false,
-      examDurationSec: 0,
-      remainingSec: 0,
-      isPaused: false,
-      exportMode: false,
-      activeTab: 'all'
     };
 
-    const FULL_TEST_TIME_LIMIT_SEC = 2 * 60 * 60; // 2 hours for 50-question mock test
-
-    // ═══════════════════════════════════════════════════════════
-    //  HELPERS
-    // ═══════════════════════════════════════════════════════════
-    function fmt(sec) {
-      const m = Math.floor(sec / 60), s = sec % 60;
-      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-    }
-    function fmtHMS(sec) {
-      const h = Math.floor(sec / 3600);
-      const m = Math.floor((sec % 3600) / 60);
-      const s = sec % 60;
-      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-    }
-    function fmtSmart(sec) {
-      if (sec < 60) return `${sec}s`;
-      const m = Math.floor(sec / 60), s = sec % 60;
-      return s === 0 ? `${m}m` : `${m}m ${s}s`;
-    }
-
-    function updateFullscreenButton() {
-      const inFullscreen = !!document.fullscreenElement;
-      const icon = document.getElementById('fullscreen-icon');
-      const lbl = document.getElementById('fullscreen-label');
-      if (!icon || !lbl) return;
-      icon.textContent = inFullscreen ? '🗗' : '⛶';
-      lbl.textContent = inFullscreen ? 'Exit Fullscreen' : 'Fullscreen';
-    }
-
-    async function toggleFullscreen() {
-      try {
-        if (!document.fullscreenElement) {
-          await document.documentElement.requestFullscreen();
-        } else {
-          await document.exitFullscreen();
-        }
-      } catch (e) {
-        alert('Fullscreen is not available in this browser context.');
-      }
-      updateFullscreenButton();
-    }
-
-    function elapsedSec(from) { return Math.floor((Date.now() - from) / 1000); }
-
-    // ═══════════════════════════════════════════════════════════
-    //  INIT
-    // ═══════════════════════════════════════════════════════════
-    // ─── Load all questions from per-section JSON files ─────────────────────────
-    async function loadQuestions() {
-      const files = [
-        'questions-s1.json',
-        'questions-s2.json',
-        'questions-s3.json',
-        'questions-s4.json',
-        'questions-s5.json',
-        'questions-s6-core-fundamentals.json',
-        'questions-s7-mlops.json',
-        'questions-s8-security-governance.json'
-      ];
-      try {
-        const results = await Promise.all(files.map(f => fetch(f).then(r => {
-          if (!r.ok) throw new Error('Failed to load ' + f + ': ' + r.status);
-          return r.json();
-        })));
-        results.forEach((qs, i) => { SECTIONS[i].questions = qs; });
-      } catch (e) {
-        console.error('Failed to load questions — is the app served via HTTP (not file://)?', e.message);
-      }
-    }
-    async function init() { await loadQuestions(); renderHome(); showScreen('home'); }
-    function showScreen(id) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      window.scrollTo(0, 0);
-    }
-    function goHome() {
-      const bypassConfirm = typeof navigator !== 'undefined' && !!navigator.webdriver;
-      if (!bypassConfirm && hasOngoingQuiz()) {
-        if (!confirm('Exit current quiz? Your current attempt will be discarded.')) return;
-      }
-      stopTimers();
-      renderHome();
-      showScreen('home');
-    }
-
-    function hasOngoingQuiz() {
-      const quizActive = document.getElementById('quiz').classList.contains('active');
-      return quizActive && state.questions.length > 0 && !state.finalSubmitted;
-    }
-    function retakeSection() {
-      if (state.currentSection >= 0) startSection(state.currentSection);
-      else startFullTest();
-    }
-
-    // ── HOME ─────────────────────────────────────────────────────────
-    function renderHome() {
-      const store = getStore();
-      const grid = document.getElementById('sections-grid');
-      const badge = document.getElementById('blueprint-badge');
-      const totalPracticeQuestions = SECTIONS.reduce((sum, sec) => sum + sec.questions.length, 0);
-      if (badge) {
-        badge.textContent = `2026 Official Exam Blueprint · ${totalPracticeQuestions} Practice Questions`;
-      }
-      grid.innerHTML = SECTIONS.map((sec, i) => {
-        const best = store.scores[sec.id];
-        const history = store.history[sec.id] || [];
-        const tries = history.length;
-        const done = tries > 0;
-        const bestPct = best ? best.bestPct : 0;
-        const lastAttempt = history[0];  // most recent
-
-        // Progress bar uses best score
-        const barPct = bestPct;
-
-        // Pills
-        const pillsHtml = done ? `
-      <div class="sec-meta-row">
-        <span class="sec-meta-pill">🏆 Best: ${bestPct}%</span>
-        <span class="sec-meta-pill">🔁 ${tries} ${tries === 1 ? 'try' : 'tries'}</span>
-        ${lastAttempt ? `<span class="sec-meta-pill">🕐 Last: ${lastAttempt.pct}%</span>` : ''}
-        ${best && best.timeTaken ? `<span class="sec-meta-pill">⏱ ${fmtSmart(best.timeTaken)}</span>` : ''}
-      </div>` : '';
-
-        // History rows
-        const historyRows = history.map((h, hi) => {
-          const d = new Date(h.date);
-          const label = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-          const isBest = h.pct === bestPct && hi === history.findIndex(x => x.pct === bestPct);
-          return `<div class="history-row">
-        <span>${label}</span>
-        <span>${h.correct}/${h.total}</span>
-        <span>${h.timeTaken ? fmtSmart(h.timeTaken) : '—'}</span>
-        <span class="hr-pct ${h.pct >= 70 ? 'pass' : 'fail'}">${h.pct}%${isBest ? ' <span class="best-badge">BEST</span>' : ''}</span>
-      </div>`;
-        }).join('');
-
-        const historySection = done ? `
-      <button class="history-toggle" onclick="toggleHistory(event,'hist-${sec.id}')">📋 Show attempt history (${tries})</button>
-      <div class="history-table" id="hist-${sec.id}">
-        <div class="history-row" style="font-weight:700;color:var(--text);">
-          <span>Date</span><span>Score</span><span>Time</span><span>%</span>
-        </div>
-        ${historyRows}
-        <button class="clear-btn" onclick="clearSectionHistory(${sec.id})">🗑 Clear this section's history</button>
-      </div>` : '';
-
-        return `<div class="section-card">
-      <div onclick="startSection(${i})" style="cursor:pointer">
-        <span class="sec-badge ${done ? 'badge-done' : 'badge-new'}">${done ? `✓ ${tries} ${tries === 1 ? 'try' : 'tries'}` : 'New'}</span>
-        <div class="sec-num">Section ${sec.id} · ${sec.weight}</div>
-        <h3>${sec.title}</h3>
-        <div class="sec-weight">Pool: ${sec.questions.length} Qs · Quiz picks ${SECTION_Q_COUNT}</div>
-        ${pillsHtml}
-        <div class="sec-progress" style="margin-top:${done ? '10' : '12'}px">
-          <div class="progress-bar"><div class="progress-fill" style="width:${barPct}%"></div></div>
-          <div class="sec-score-label">${done ? `Best score: ${bestPct}% (${best.correct}/${best.total} correct)` : 'Not attempted — click to start'}</div>
-        </div>
-      </div>
-      ${historySection}
-    </div>`;
+    function openStudyModal(sid) {
+      var d = STUDY_DATA[sid];
+      if (!d) return;
+      document.getElementById('sm-sec-label').textContent = d.label;
+      document.getElementById('sm-title').textContent = d.title;
+      document.getElementById('sm-body').innerHTML = d.topics.map(function(t) {
+        var wrap = t.isHack ? 'sm-topic hack-box' : 'sm-topic';
+        var title = t.isHack ? 'sm-topic-title hack-title' : 'sm-topic-title';
+        var chips = (t.chips && t.chips.length)
+          ? '<div class="sm-chips">' + t.chips.map(function(c){ return '<span class="sm-chip">' + c + '</span>'; }).join('') + '</div>'
+          : '';
+        return '<div class="' + wrap + '"><div class="' + title + '">' + t.title + '</div>' + t.content + chips + '</div>';
       }).join('');
-
-      const fullTestBtn = document.getElementById('full-test-btn');
-      if (fullTestBtn) {
-        fullTestBtn.textContent = `▶ Start ${FULL_TEST_Q_COUNT}-Question Mock Exam (Blueprint-Weighted, Randomized)`;
-      }
+      document.getElementById('sm-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
     }
 
-    function toggleHistory(e, id) {
-      e.stopPropagation();
-      const el = document.getElementById(id);
-      el.classList.toggle('open');
-      const btn = e.target;
-      const sec = SECTIONS.find(s => `hist-${s.id}` === id);
-      const tries = (getStore().history[sec ? sec.id : 0] || []).length;
-      btn.textContent = el.classList.contains('open')
-        ? `▲ Hide attempt history`
-        : `📋 Show attempt history (${tries})`;
+    function closeStudyModal() {
+      document.getElementById('sm-overlay').classList.remove('open');
+      document.body.style.overflow = '';
     }
 
-    // ── START QUIZ ────────────────────────────────────────────────────
-    function startSection(idx) {
-      state.currentSection = idx;
-      state.isFullTest = false;
-      state.examDurationSec = 0;
-      state.remainingSec = 0;
-      state.isPaused = false;
-      state.questions = selectRandom(SECTIONS[idx].questions, SECTION_Q_COUNT).map(shuffleOptions);
-      _startQuiz();
-      document.getElementById('quiz-title').textContent = `Sec ${SECTIONS[idx].id}: ${SECTIONS[idx].title}`;
-    }
-    function startFullTest() {
-      state.currentSection = -1;
-      state.isFullTest = true;
-      state.examDurationSec = FULL_TEST_TIME_LIMIT_SEC;
-      state.remainingSec = FULL_TEST_TIME_LIMIT_SEC;
-      state.isPaused = false;
-      state.questions = SECTIONS.flatMap((s, i) =>
-        selectRandom(s.questions, FULL_TEST_DIST[i]).map(q => shuffleOptions(Object.assign({}, q, { _secIdx: i })))
-      );
-      _startQuiz();
-      document.getElementById('quiz-title').textContent = 'Full Practice Test — All Sections';
-    }
-    function _startQuiz() {
-      state.current = 0;
-      state.answers = {};
-      state.markedForReview = {};
-      state.submitted = {};
-      state.finalSubmitted = false;
-      state.questionStartTimes = {};
-      state.questionDurations = {};
-      state.sectionStartTime = Date.now();
-      stopTimers();
-      startTimers();
-      configureQuizToolbar();
-      renderQuestion();
-      showScreen('quiz');
-      // Mark for review is available on every question
-      document.getElementById('btn-review').style.display = '';
-      document.getElementById('btn-review').textContent = '⭐ Mark for Review';
-      document.getElementById('btn-review').onclick = toggleMarkForReview;
-    }
-
-    function configureQuizToolbar() {
-      const chip = document.getElementById('exam-left-chip');
-      const pauseBtn = document.getElementById('btn-pause');
-      const mainLbl = document.getElementById('timer-main-label');
-      if (state.isFullTest) {
-        chip.style.display = '';
-        pauseBtn.style.display = '';
-        mainLbl.textContent = 'Elapsed';
-        updateCountdownUI();
-      } else {
-        chip.style.display = 'none';
-        pauseBtn.style.display = 'none';
-        mainLbl.textContent = 'Section';
-      }
-    }
-
-    // ── TIMERS ────────────────────────────────────────────────────────
-    function startTimers() {
-      recordQStart();
-      state.timerInterval = setInterval(updateSectionTimer, 1000);
-      state.qTimerInterval = setInterval(updateQTimer, 1000);
-      if (state.isFullTest) {
-        state.countdownInterval = setInterval(tickCountdown, 1000);
-        updateCountdownUI();
-      }
-    }
-    function stopTimers() {
-      clearInterval(state.timerInterval);
-      clearInterval(state.qTimerInterval);
-      clearInterval(state.countdownInterval);
-    }
-    function recordQStart() {
-      if (state.questionStartTimes[state.current] === undefined) {
-        state.questionStartTimes[state.current] = Date.now();
-      }
-    }
-    function accumulateQTime(qIdx) {
-      if (state.questionStartTimes[qIdx] !== undefined) {
-        const spent = elapsedSec(state.questionStartTimes[qIdx]);
-        state.questionDurations[qIdx] = (state.questionDurations[qIdx] || 0) + spent;
-        // reset start to now (in case they come back)
-        state.questionStartTimes[qIdx] = Date.now();
-      }
-    }
-    function updateSectionTimer() {
-      if (!state.sectionStartTime) return;
-      const sec = elapsedSec(state.sectionStartTime);
-      const el = document.getElementById('timer-total');
-      if (!el) return;
-      el.textContent = fmt(sec);
-      if (sec > 3600) { el.className = 'timer-val alert'; }
-      else if (sec > 1800) { el.className = 'timer-val warn'; }
-      else { el.className = 'timer-val'; }
-      // Update avg
-      const answered = Object.keys(state.answers).length;
-      if (answered > 0) {
-        document.getElementById('timer-avg').textContent = fmtSmart(Math.floor(sec / answered));
-      }
-    }
-
-    function tickCountdown() {
-      if (!state.isFullTest || state.isPaused || state.finalSubmitted) return;
-      state.remainingSec = Math.max(0, state.remainingSec - 1);
-      updateCountdownUI();
-      if (state.remainingSec === 0) {
-        submitFinal(true);
-      }
-    }
-
-    function updateCountdownUI() {
-      const chip = document.getElementById('exam-left-chip');
-      const left = document.getElementById('exam-left');
-      if (!chip || !left) return;
-      left.textContent = fmtHMS(state.remainingSec);
-      chip.className = 'countdown-chip';
-      if (state.remainingSec <= 15 * 60) chip.classList.add('alert');
-      else if (state.remainingSec <= 30 * 60) chip.classList.add('warn');
-    }
-
-    function togglePause() {
-      if (!state.isFullTest || state.finalSubmitted) return;
-      const btn = document.getElementById('btn-pause');
-      if (!state.isPaused) {
-        accumulateQTime(state.current);
-        state.isPaused = true;
-        stopTimers();
-        btn.textContent = '▶ Resume';
-        renderQuestion();
-      } else {
-        state.isPaused = false;
-        startTimers();
-        btn.textContent = '⏸ Pause';
-        renderQuestion();
-      }
-    }
-
-    function isPauseLocked() {
-      return state.isFullTest && state.isPaused && !state.finalSubmitted;
-    }
-
-    function guardPauseNavigation() {
-      if (!isPauseLocked()) return false;
-      alert('Timer is paused. Resume to navigate to another question.');
-      return true;
-    }
-    function updateQTimer() {
-      const qIdx = state.current;
-      if (state.questionStartTimes[qIdx] === undefined) return;
-      const base = state.questionDurations[qIdx] || 0;
-      const live = elapsedSec(state.questionStartTimes[qIdx]);
-      const total = base + live;
-      const el = document.getElementById('timer-q');
-      if (!el) return;
-      el.textContent = fmt(total);
-      if (total > 180) { el.className = 'timer-val alert'; }
-      else if (total > 90) { el.className = 'timer-val warn'; }
-      else { el.className = 'timer-val'; }
-    }
-
-    // ── RENDER QUESTION ───────────────────────────────────────────────
-    function renderQuestion() {
-      recordQStart();
-      const q = state.questions[state.current];
-      const total = state.questions.length;
-      const pct = (state.current + 1) / total * 100;
-      const chosen = state.answers[state.current];
-
-      document.getElementById('q-number-text').textContent = `Question ${state.current + 1} of ${total}`;
-      document.getElementById('q-text').innerHTML = q.q;
-      document.getElementById('quiz-progress').style.width = pct + '%';
-
-      const answeredCount = Object.keys(state.answers).length;
-      document.getElementById('q-answered-info').textContent = `${answeredCount}/${total} answered`;
-      const panelMeta = document.getElementById('review-panel-meta');
-      const markedCount = Object.keys(state.markedForReview).length;
-      if (panelMeta) panelMeta.textContent = `${answeredCount}/${total} answered · ${markedCount} marked`;
-
-      // Dots
-      renderDots();
-
-      // Options — no correct/wrong colours during the quiz; those reveal only in Results
-      const letters = ['A', 'B', 'C', 'D'];
-      document.getElementById('options').innerHTML = q.opts.map((opt, i) => {
-        let cls = 'option';
-        if (i === chosen) cls += ' selected';
-        return `<div class="${cls}" onclick="selectOption(${i})"><div class="opt-letter">${letters[i]}</div><div>${opt}</div></div>`;
-      }).join('');
-
-      // Explanation — hidden during quiz; shown only in Results review
-      const expEl = document.getElementById('explanation');
-      expEl.classList.remove('show');
-      expEl.innerHTML = '';
-
-      // Nav
-      const pausedLocked = isPauseLocked();
-      document.getElementById('btn-prev').disabled = state.current === 0 || pausedLocked;
-      const isLast = state.current === total - 1;
-      const nextBtn = document.getElementById('btn-next');
-      nextBtn.textContent = isLast ? '✅ Submit Final' : 'Next →';
-      nextBtn.className = isLast ? 'btn btn-green' : (chosen !== undefined ? 'btn btn-primary' : 'btn btn-outline');
-      nextBtn.disabled = pausedLocked;
-      nextBtn.onclick = nextOrSubmit;
-      const submitBtn = document.getElementById('btn-review');
-      if (submitBtn) {
-        const marked = !!state.markedForReview[state.current];
-        submitBtn.textContent = marked ? '🟠 Marked for Review' : '⭐ Mark for Review';
-        submitBtn.disabled = false;
-      }
-    }
-
-    function renderDots() {
-      const total = state.questions.length;
-      // only render dots if ≤ 75 (avoid overflow)
-      const dotContainer = document.getElementById('q-dots');
-      dotContainer.innerHTML = Array.from({ length: total }, (_, i) => {
-        let cls = 'q-dot';
-        if (isPauseLocked()) cls += ' locked';
-        if (i === state.current) cls += ' active';
-        else if (state.answers[i] !== undefined) cls += ' answered';
-        if (state.markedForReview[i]) cls += ' marked';
-        return `<div class="${cls}" onclick="jumpTo(${i})" title="Q${i + 1}">${i + 1}</div>`;
-      }).join('');
-    }
-
-    function jumpTo(idx) {
-      if (guardPauseNavigation()) return;
-      accumulateQTime(state.current);
-      state.current = idx;
-      recordQStart();
-      renderQuestion();
-    }
-
-    function selectOption(i) {
-      state.answers[state.current] = i;
-      renderQuestion();
-    }
-
-    function toggleMarkForReview() {
-      if (typeof navigator !== 'undefined' && !!navigator.webdriver) {
-        submitFinal();
-        return;
-      }
-      if (state.markedForReview[state.current]) {
-        delete state.markedForReview[state.current];
-      } else {
-        state.markedForReview[state.current] = true;
-      }
-      renderQuestion();
-    }
-
-    function nextOrSubmit() {
-      if (guardPauseNavigation()) return;
-      const isLast = state.current === state.questions.length - 1;
-      if (!isLast) {
-        accumulateQTime(state.current);
-        state.current++;
-        recordQStart();
-        renderQuestion();
-      } else {
-        submitFinal();
-      }
-    }
-
-    function submitFinal(forcedByTimer = false) {
-      if (!forcedByTimer && guardPauseNavigation()) return;
-      if (state.finalSubmitted) return;
-      const total = state.questions.length;
-      const answered = Object.keys(state.answers).length;
-      const unanswered = total - answered;
-      const bypassConfirm = typeof navigator !== 'undefined' && !!navigator.webdriver;
-      if (!forcedByTimer && !bypassConfirm) {
-        const msg = unanswered > 0
-          ? `You still have ${unanswered} unanswered question(s). Submit final now?`
-          : 'Submit final answers now?';
-        if (!confirm(msg)) return;
-      } else if (forcedByTimer) {
-        alert("Time is up. Submitting your answers now.");
-      }
-      state.finalSubmitted = true;
-      showResults();
-    }
-
-    function prevQ() {
-      if (guardPauseNavigation()) return;
-      if (state.current > 0) {
-        accumulateQTime(state.current);
-        state.current--;
-        recordQStart();
-        renderQuestion();
-      }
-    }
-
-    // ── RESULTS ──────────────────────────────────────────────────────
-    function showResults() {
-      stopTimers();
-      // Accumulate time for current question
-      accumulateQTime(state.current);
-
-      const qs = state.questions;
-      const total = qs.length;
-      let correct = 0, wrong = 0, skipped = 0;
-
-      qs.forEach((q, i) => {
-        if (state.answers[i] === undefined) skipped++;
-        else if (state.answers[i] === q.ans) correct++;
-        else wrong++;
-      });
-
-      const pct = Math.round(correct / total * 100);
-      const passed = pct >= 70;
-
-      // Total elapsed time
-      const totalSec = state.isFullTest ? (state.examDurationSec - state.remainingSec) : elapsedSec(state.sectionStartTime);
-
-      // Save score to localStorage
-      if (state.currentSection >= 0) {
-        const sec = SECTIONS[state.currentSection];
-        persistResult(sec.id, correct, total, totalSec);
-      } else {
-        // Full test — save per-section breakdown using _secIdx tags
-        const qs = state.questions;
-        SECTIONS.forEach((sec, i) => {
-          const secTot = FULL_TEST_DIST[i];
-          let sc = 0;
-          qs.forEach((q, qi) => {
-            if (q._secIdx === i && state.answers[qi] !== undefined && state.answers[qi] === q.ans) sc++;
-          });
-          const secTime = Math.round(totalSec * (secTot / total));
-          persistResult(sec.id, sc, secTot, secTime);
-        });
-      }
-
-      // Ring
-      const circumference = 2 * Math.PI * 50; // r=50
-      const circle = document.getElementById('ring-circle');
-      circle.style.strokeDasharray = circumference;
-      circle.style.strokeDashoffset = circumference - (pct / 100) * circumference;
-      circle.style.stroke = passed ? '#1e8e3e' : pct >= 50 ? '#f9ab00' : '#c5221f';
-
-      document.getElementById('score-pct').textContent = pct + '%';
-      document.getElementById('score-pct').style.color = passed ? '#1e8e3e' : '#c5221f';
-      document.getElementById('results-title').textContent = passed ? '🎉 Great work!' : '📚 Keep studying!';
-      document.getElementById('results-sub').textContent = `You answered ${correct} of ${total} questions correctly.`;
-      document.getElementById('pass-indicator').textContent = passed ? '✅ Passing Score (≥70%)' : '❌ Below Passing Score (70% required)';
-      document.getElementById('pass-indicator').className = 'pass-indicator ' + (passed ? 'pass' : 'fail');
-
-      document.getElementById('st-correct').textContent = correct;
-      document.getElementById('st-wrong').textContent = wrong;
-      document.getElementById('st-skipped').textContent = skipped;
-      document.getElementById('st-total').textContent = total;
-      document.getElementById('st-pct').textContent = pct + '%';
-
-      // Time stats
-      const answeredCount = Object.keys(state.answers).length;
-      document.getElementById('res-total-time').textContent = fmtSmart(totalSec);
-      document.getElementById('res-avg-time').textContent = answeredCount > 0 ? fmtSmart(Math.round(totalSec / answeredCount)) : '—';
-
-      // Slowest / fastest
-      const durations = Object.entries(state.questionDurations).map(([i, d]) => ({ i: +i, d }));
-      if (durations.length > 0) {
-        const slow = durations.reduce((a, b) => b.d > a.d ? b : a);
-        const fast = durations.reduce((a, b) => b.d < a.d ? b : a);
-        document.getElementById('res-slow-q').textContent = `Q${slow.i + 1} (${fmtSmart(slow.d)})`;
-        document.getElementById('res-fast-q').textContent = `Q${fast.i + 1} (${fmtSmart(fast.d)})`;
-      }
-
-      // Wrong/skipped count badge
-      const needReview = wrong + skipped;
-      document.getElementById('wrong-count-badge').textContent = needReview;
-
-      state.activeTab = 'all';
-      renderReviewCards();
-      updateTabUI();
-      showScreen('results');
-    }
-
-    function setTab(tab) {
-      state.activeTab = tab;
-      renderReviewCards();
-      updateTabUI();
-    }
-    function updateTabUI() {
-      document.getElementById('tab-all').className = 'tab-btn' + (state.activeTab === 'all' ? ' active' : '');
-      document.getElementById('tab-wrong').className = 'tab-btn tab-wrong' + (state.activeTab === 'wrong' ? ' active' : '');
-    }
-
-    function renderReviewCards() {
-      const qs = state.questions;
-      const letters = ['A', 'B', 'C', 'D'];
-      const filtered = qs.map((q, i) => ({ q, i })).filter(({ i }) => {
-        if (state.activeTab === 'wrong') {
-          return state.answers[i] === undefined || state.answers[i] !== qs[i].ans;
-        }
-        return true;
-      });
-
-      if (filtered.length === 0) {
-        document.getElementById('review-cards').innerHTML =
-          '<p style="color:var(--green);font-weight:600;padding:20px 0;">🎯 No wrong answers — perfect score on answered questions!</p>';
-        return;
-      }
-
-      document.getElementById('review-cards').innerHTML = filtered.map(({ q, i }) => {
-        const yourAns = state.answers[i];
-        const isCorrect = yourAns !== undefined && yourAns === q.ans;
-        const isSkipped = yourAns === undefined;
-        const isWrong = yourAns !== undefined && !isCorrect;
-        const timeTaken = state.questionDurations[i];
-
-        const cardCls = isCorrect ? 'rc-correct' : isSkipped ? 'rc-skipped' : 'rc-wrong';
-        const badgeCls = isCorrect ? 'correct' : isSkipped ? 'skipped' : 'wrong';
-        const badgeText = isCorrect ? '✅ Correct' : isSkipped ? '⏭ Skipped' : '❌ Incorrect';
-
-        const timeStr = timeTaken !== undefined ? `⏱ ${fmtSmart(timeTaken)}` : '';
-
-        const yourAnswerRow = isSkipped
-          ? `<div class="answer-row"><span class="ar-label ar-wrong">Your answer:</span><span class="ar-wrong">Skipped</span></div>`
-          : `<div class="answer-row"><span class="ar-label ${isCorrect ? 'ar-correct' : 'ar-wrong'}">Your answer:</span><span class="${isCorrect ? 'ar-correct' : 'ar-wrong'}">${letters[yourAns]}. ${q.opts[yourAns]}</span></div>`;
-
-        const correctRow = isCorrect ? '' :
-          `<div class="answer-row"><span class="ar-label ar-correct">Correct answer:</span><span class="ar-correct">${letters[q.ans]}. ${q.opts[q.ans]}</span></div>`;
-
-        const detailHtml = state.exportMode
-          ? `<div class="rc-explain">${q.explain}<div class="concept-box" style="margin-top:8px;"><strong>📖 Concept:</strong> ${q.concept}</div></div>`
-          : (isCorrect
-            ? `<details style="margin-top:8px;"><summary class="rc-expand-btn">📖 Show explanation</summary><div class="rc-explain">${q.explain}<div class="concept-box" style="margin-top:8px;"><strong>📖 Concept:</strong> ${q.concept}</div></div></details>`
-            : `<div class="rc-explain">${q.explain}<div class="concept-box" style="margin-top:8px;"><strong>📖 Concept to study:</strong> ${q.concept}</div></div>`);
-
-        return `
-    <div class="review-card ${cardCls}">
-      <div class="rc-time">${timeStr}</div>
-      <div class="rc-badge ${badgeCls}">${badgeText}</div>
-      <div class="rc-q"><strong>Q${i + 1}.</strong> ${q.q}</div>
-      ${yourAnswerRow}
-      ${correctRow}
-      ${detailHtml}
-    </div>`;
-      }).join('');
-    }
-
-    function exportReport(mode) {
-      const prevTab = state.activeTab;
-      const prevExport = state.exportMode;
-      const prevTitle = document.title;
-
-      state.exportMode = true;
-      state.activeTab = 'all';
-      renderReviewCards();
-      updateTabUI();
-
-      const stamp = new Date().toISOString().slice(0, 10);
-      document.title = `GCP-PDE-Assessment-Report-${stamp}`;
-
-      const isWebDriver = typeof navigator !== 'undefined' && !!navigator.webdriver;
-      if (mode === 'download' && !isWebDriver) {
-        alert('The print dialog will open. Choose "Save as PDF" as the destination to download your report.');
-      }
-
-      window.print();
-
-      document.title = prevTitle;
-      state.exportMode = prevExport;
-      state.activeTab = prevTab;
-      renderReviewCards();
-      updateTabUI();
-    }
-
-    function printReport() {
-      exportReport('print');
-    }
-
-    // Warn before browser/tab navigation when an attempt is in progress.
-    document.addEventListener('fullscreenchange', updateFullscreenButton);
-
-    // Warn before browser/tab navigation when an attempt is in progress.
-    window.addEventListener('beforeunload', function (e) {
-      const bypassConfirm = typeof navigator !== 'undefined' && !!navigator.webdriver;
-      if (bypassConfirm) return;
-      if (!hasOngoingQuiz()) return;
-      e.preventDefault();
-      e.returnValue = '';
+    document.getElementById('sm-overlay').addEventListener('click', function(e) {
+      if (e.target === this) closeStudyModal();
     });
 
-    // ── START ─────────────────────────────────────────────────────────
-    init();
-    updateFullscreenButton();
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeStudyModal();
+    });
+
+    function toggleHeaderMenu(groupId, buttonId) {
+      const group = document.getElementById(groupId);
+      const button = document.getElementById(buttonId);
+      if (!group || !button) return;
+      const isOpen = group.classList.toggle('open');
+      button.setAttribute('aria-expanded', String(isOpen));
+      button.textContent = isOpen ? 'Close' : 'Menu';
+    }
+
+    const PRACTICE_FILES = [
+      'questions-s1.json',
+      'questions-s2.json',
+      'questions-s3.json',
+      'questions-s4.json',
+      'questions-s5.json',
+      'questions-s6-core-fundamentals.json',
+      'questions-s7-mlops.json',
+      'questions-s8-security-governance.json'
+    ];
+
+    async function loadPracticeTotals() {
+      try {
+        const pools = await Promise.all(PRACTICE_FILES.map(function (fileName) {
+          return fetch(fileName).then(function (res) {
+            if (!res.ok) throw new Error(fileName + ' failed');
+            return res.json();
+          });
+        }));
+        const total = pools.reduce(function (sum, section) { return sum + section.length; }, 0);
+        document.getElementById('practice-total-chip').textContent = total;
+        document.getElementById('practice-total-card').textContent = total;
+        document.getElementById('practice-total-copy').textContent = total + ' practice questions live across all section banks';
+      } catch (err) {
+        console.error('Unable to load portal totals', err);
+      }
+    }
+
+    loadPracticeTotals();
   </script>
 </body>
 

@@ -3,7 +3,7 @@ const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
 
-// ── App constants (must match index.html) ────────────────────────────
+// ── App constants (must match practice-exam.html) ────────────────────
 const SECTION_Q_COUNT = 20;
 const FULL_TEST_DIST = [4, 4, 4, 4, 4, 10, 10, 10];
 const FULL_TOTAL = FULL_TEST_DIST.reduce((a, b) => a + b, 0); // 50
@@ -53,7 +53,7 @@ async function withMock(page) {
 }
 
 async function loadApp(page) {
-  await page.goto('/');
+  await page.goto('/practice-exam.html');
   await page.waitForFunction(
     function () { return typeof SECTIONS !== 'undefined' && SECTIONS[0] && SECTIONS[0].questions.length > 0; },
     { timeout: 8000 }
@@ -190,7 +190,7 @@ test.describe('JSON Data Integrity', function () {
 test.describe('Home Screen', function () {
   test('shows 8 section cards with correct pool sizes, "Not attempted" state, full-test button', async function ({ page }) {
     await page.addInitScript(function () { localStorage.clear(); });
-    await page.goto('/');
+    await page.goto('/practice-exam.html');
     // Wait for all 8 sections to load real data
     await page.waitForFunction(
       function () {
@@ -221,7 +221,7 @@ test.describe('Home Screen', function () {
 
   test('section cards show section numbers and weights', async function ({ page }) {
     await page.addInitScript(function () { localStorage.clear(); });
-    await page.goto('/');
+    await page.goto('/practice-exam.html');
     await page.waitForFunction(
       function () { return typeof SECTIONS !== 'undefined' && SECTIONS[0] && SECTIONS[0].questions.length > 0; },
       { timeout: 10000 }
@@ -690,7 +690,7 @@ test.describe('Quiz Navigation', function () {
         route.fulfill({ contentType: 'application/json', body: '[]' });
       });
     }
-    await page.goto('/');
+    await page.goto('/practice-exam.html');
     await page.waitForFunction(function () { return typeof SECTIONS !== 'undefined' && SECTIONS[0].questions.length === 5; });
 
     await page.locator('.section-card').first().click();
@@ -722,7 +722,7 @@ test.describe('Persistence', function () {
     await programmaticAnswers(page, { correctIndices: correct, wrongIndices: wrong });
     await viewResults(page);
 
-    await page.locator('button:has-text("All Sections")').click();
+    await page.locator('button:has-text("All Sections")').first().click();
     await page.waitForSelector('#home.active');
 
     var card1 = page.locator('.section-card').first();
@@ -739,7 +739,7 @@ test.describe('Persistence', function () {
     var all20 = Array.from({ length: 20 }, function (_, i) { return i; });
     await programmaticAnswers(page, { correctIndices: all20 });
     await viewResults(page);
-    await page.locator('button:has-text("All Sections")').click();
+    await page.locator('button:has-text("All Sections")').first().click();
     await page.waitForSelector('#home.active');
     await expect(page.locator('.section-card').first()).toContainText('1 try');
 
@@ -748,7 +748,7 @@ test.describe('Persistence', function () {
     await waitForQuiz(page);
     await programmaticAnswers(page, { correctIndices: all20 });
     await viewResults(page);
-    await page.locator('button:has-text("All Sections")').click();
+    await page.locator('button:has-text("All Sections")').first().click();
     await page.waitForSelector('#home.active');
     await expect(page.locator('.section-card').first()).toContainText('2 tries');
   });
@@ -762,7 +762,7 @@ test.describe('Persistence', function () {
     var all20 = Array.from({ length: 20 }, function (_, i) { return i; });
     await programmaticAnswers(page, { correctIndices: all20 });
     await viewResults(page);
-    await page.locator('button:has-text("All Sections")').click();
+    await page.locator('button:has-text("All Sections")').first().click();
     await page.waitForSelector('#home.active');
 
     // Attempt 2: 50%
@@ -772,7 +772,7 @@ test.describe('Persistence', function () {
     var halfWrong = Array.from({ length: 10 }, function (_, i) { return i + 10; });
     await programmaticAnswers(page, { correctIndices: half, wrongIndices: halfWrong });
     await viewResults(page);
-    await page.locator('button:has-text("All Sections")').click();
+    await page.locator('button:has-text("All Sections")').first().click();
     await page.waitForSelector('#home.active');
 
     // Best should still be 100%
@@ -789,7 +789,7 @@ test.describe('Persistence', function () {
     var wrong = Array.from({ length: 8 }, function (_, i) { return i + 12; });
     await programmaticAnswers(page, { correctIndices: correct, wrongIndices: wrong });
     await viewResults(page);
-    await page.locator('button:has-text("All Sections")').click();
+    await page.locator('button:has-text("All Sections")').first().click();
     await page.waitForSelector('#home.active');
 
     await expect(page.locator('.section-card').first()).toContainText('Best: 60%');
@@ -804,7 +804,7 @@ test.describe('Persistence', function () {
     var all20 = Array.from({ length: 20 }, function (_, i) { return i; });
     await programmaticAnswers(page, { correctIndices: all20 });
     await viewResults(page);
-    await page.locator('button:has-text("All Sections")').click();
+    await page.locator('button:has-text("All Sections")').first().click();
     await page.waitForSelector('#home.active');
 
     // Confirm score shown
@@ -837,7 +837,7 @@ test.describe('Retake and Go Home', function () {
     await programmaticAnswers(page, { correctIndices: all20 });
     await viewResults(page);
 
-    await page.locator('button:has-text("Retake")').click();
+    await page.locator('button:has-text("Retake")').first().click();
     await waitForQuiz(page);
 
     var cur = await page.evaluate(function () { return state.current; });
@@ -858,7 +858,7 @@ test.describe('Retake and Go Home', function () {
     await programmaticAnswers(page, { correctIndices: all20 });
     await viewResults(page);
 
-    await page.locator('button:has-text("All Sections")').click();
+    await page.locator('button:has-text("All Sections")').first().click();
     await page.waitForSelector('#home.active');
     await expect(page.locator('#home')).toHaveClass(/active/);
   });
@@ -875,7 +875,7 @@ test.describe('Retake and Go Home', function () {
     var all20 = Array.from({ length: 20 }, function (_, i) { return i; });
     await programmaticAnswers(page, { correctIndices: all20 });
     await viewResults(page);
-    await page.locator('button:has-text("Retake")').click();
+    await page.locator('button:has-text("Retake")').first().click();
     await waitForQuiz(page);
 
     var titleAfter = await page.locator('#quiz-title').textContent();

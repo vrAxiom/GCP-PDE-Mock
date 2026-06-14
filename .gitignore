@@ -40,6 +40,7 @@ service-account-key.json
 #Unknown
 *.bak
 *.tmp
+*.pdf
 *.backup
 Unknown/
 .work/
