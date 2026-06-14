@@ -296,9 +296,16 @@
 
     /* ── QUIZ ── */
     #quiz {
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 24px 20px;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 24px 4%;
+    }
+
+    @media(max-width:900px) {
+      #quiz {
+        padding: 16px 3%;
+      }
     }
 
     .quiz-header {
@@ -306,6 +313,39 @@
       align-items: center;
       gap: 12px;
       margin-bottom: 14px;
+    }
+
+    .quiz-head-tools {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .countdown-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f3f4;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .countdown-chip.warn {
+      color: #7a5200;
+      background: #fffde7;
+      border-color: #f9ab00;
+    }
+
+    .countdown-chip.alert {
+      color: var(--red);
+      background: #fce8e6;
+      border-color: var(--red);
     }
 
     .back-btn {
@@ -610,12 +650,61 @@
       font-size: 13px;
     }
 
+    .quiz-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .quiz-main {
+      min-width: 0;
+    }
+
+    .review-panel {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      position: sticky;
+      top: 14px;
+    }
+
+    .review-panel-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5f6368;
+      text-align: center;
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: #ede7ff;
+      color: #6b5bd2;
+    }
+
+    .review-panel-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    @media(max-width:1024px) {
+      .quiz-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .review-panel {
+        position: static;
+      }
+    }
+
     /* ── QUESTION NAV DOTS ── */
     .q-dots {
       display: flex;
       flex-wrap: wrap;
       gap: 5px;
-      margin-bottom: 14px;
+      margin-bottom: 0;
     }
 
     .q-dot {
@@ -660,6 +749,24 @@
       border-color: var(--yellow);
       background: #fffde7;
       color: #7a5200;
+    }
+
+    .q-dot.locked {
+      opacity: .5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .q-dot.marked {
+      border-color: #f9ab00;
+      background: #fff4d6;
+      color: #8a5b00;
+    }
+
+    .q-dot.marked.active {
+      border-color: #f9ab00;
+      background: #f9ab00;
+      color: #fff;
     }
 
     /* ── RESULTS ── */
@@ -1037,13 +1144,19 @@
     <div class="quiz-header">
       <button class="back-btn" onclick="goHome()">← Back</button>
       <div class="quiz-title" id="quiz-title"></div>
+      <div class="quiz-head-tools">
+        <span class="countdown-chip" id="exam-left-chip" style="display:none;">
+          ⏱ <span id="exam-left">02:00:00</span> left
+        </span>
+        <button class="btn btn-outline btn-sm" id="btn-pause" style="display:none" onclick="togglePause()">⏸ Pause</button>
+      </div>
     </div>
 
     <!-- Timer Bar -->
     <div class="timer-bar">
       <div class="timer-item">
         <span class="timer-icon">⏱</span>
-        <span class="timer-label">Section</span>
+        <span class="timer-label" id="timer-main-label">Section</span>
         <span class="timer-val" id="timer-total">00:00</span>
       </div>
       <div class="timer-divider"></div>
@@ -1061,30 +1174,37 @@
       <div class="q-time-log" id="q-answered-info"></div>
     </div>
 
-    <!-- Question nav dots -->
-    <div class="q-dots" id="q-dots"></div>
+    <div class="quiz-layout">
+      <div class="quiz-main">
+        <div class="progress-track">
+          <div class="progress-track-fill" id="quiz-progress"></div>
+        </div>
 
-    <div class="progress-track">
-      <div class="progress-track-fill" id="quiz-progress"></div>
-    </div>
+        <div class="question-card">
+          <div class="q-number">
+            <span id="q-number-text"></span>
+            <span id="q-status-dot"></span>
+          </div>
+          <div class="q-text" id="q-text"></div>
+          <div class="options" id="options"></div>
+          <div class="explanation" id="explanation"></div>
+        </div>
 
-    <div class="question-card">
-      <div class="q-number">
-        <span id="q-number-text"></span>
-        <span id="q-status-dot"></span>
+        <div class="q-nav">
+          <button class="btn btn-outline" id="btn-prev" onclick="prevQ()">← Prev</button>
+          <div class="q-nav-center">
+            <button class="btn btn-outline btn-sm" id="btn-review" onclick="showResults()" style="display:none">📋 Finish
+              &amp; Review</button>
+          </div>
+          <button class="btn btn-primary" id="btn-next" onclick="nextOrSubmit()">Next →</button>
+        </div>
       </div>
-      <div class="q-text" id="q-text"></div>
-      <div class="options" id="options"></div>
-      <div class="explanation" id="explanation"></div>
-    </div>
 
-    <div class="q-nav">
-      <button class="btn btn-outline" id="btn-prev" onclick="prevQ()">← Prev</button>
-      <div class="q-nav-center">
-        <button class="btn btn-outline btn-sm" id="btn-review" onclick="showResults()" style="display:none">📋 Finish
-          &amp; Review</button>
-      </div>
-      <button class="btn btn-primary" id="btn-next" onclick="nextOrSubmit()">Next →</button>
+      <aside class="review-panel">
+        <div class="review-panel-title">Review Attempt</div>
+        <div class="review-panel-meta" id="review-panel-meta">0/0 answered</div>
+        <div class="q-dots" id="q-dots"></div>
+      </aside>
     </div>
   </div>
 
@@ -1282,7 +1402,9 @@
       questions: [],
       current: 0,
       answers: {},
+      markedForReview: {},
       submitted: {},
+      finalSubmitted: false,
       scores: {},           // in-memory cache (loaded from storage on renderHome)
       // Timing
       sectionStartTime: null,
@@ -1290,8 +1412,15 @@
       questionDurations: {},
       timerInterval: null,
       qTimerInterval: null,
+      countdownInterval: null,
+      isFullTest: false,
+      examDurationSec: 0,
+      remainingSec: 0,
+      isPaused: false,
       activeTab: 'all'
     };
+
+    const FULL_TEST_TIME_LIMIT_SEC = 2 * 60 * 60; // 2 hours for 50-question mock test
 
     // ═══════════════════════════════════════════════════════════
     //  HELPERS
@@ -1299,6 +1428,12 @@
     function fmt(sec) {
       const m = Math.floor(sec / 60), s = sec % 60;
       return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+    function fmtHMS(sec) {
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
     function fmtSmart(sec) {
       if (sec < 60) return `${sec}s`;
@@ -1340,6 +1475,14 @@
       window.scrollTo(0, 0);
     }
     function goHome() {
+      if (isPauseLocked()) {
+        alert('Resume the timer before leaving this question.');
+        return;
+      }
+      const bypassConfirm = typeof navigator !== 'undefined' && !!navigator.webdriver;
+      if (!bypassConfirm && document.getElementById('quiz').classList.contains('active') && !state.finalSubmitted) {
+        if (!confirm('Exit current quiz? Your current attempt will be discarded.')) return;
+      }
       stopTimers();
       renderHome();
       showScreen('home');
@@ -1433,12 +1576,20 @@
     // ── START QUIZ ────────────────────────────────────────────────────
     function startSection(idx) {
       state.currentSection = idx;
+      state.isFullTest = false;
+      state.examDurationSec = 0;
+      state.remainingSec = 0;
+      state.isPaused = false;
       state.questions = selectRandom(SECTIONS[idx].questions, SECTION_Q_COUNT).map(shuffleOptions);
       _startQuiz();
       document.getElementById('quiz-title').textContent = `Sec ${SECTIONS[idx].id}: ${SECTIONS[idx].title}`;
     }
     function startFullTest() {
       state.currentSection = -1;
+      state.isFullTest = true;
+      state.examDurationSec = FULL_TEST_TIME_LIMIT_SEC;
+      state.remainingSec = FULL_TEST_TIME_LIMIT_SEC;
+      state.isPaused = false;
       state.questions = SECTIONS.flatMap((s, i) =>
         selectRandom(s.questions, FULL_TEST_DIST[i]).map(q => shuffleOptions(Object.assign({}, q, { _secIdx: i })))
       );
@@ -1448,16 +1599,37 @@
     function _startQuiz() {
       state.current = 0;
       state.answers = {};
+      state.markedForReview = {};
       state.submitted = {};
+      state.finalSubmitted = false;
       state.questionStartTimes = {};
       state.questionDurations = {};
       state.sectionStartTime = Date.now();
       stopTimers();
       startTimers();
+      configureQuizToolbar();
       renderQuestion();
       showScreen('quiz');
-      // Show finish button after first question
+      // Mark for review is available on every question
       document.getElementById('btn-review').style.display = '';
+      document.getElementById('btn-review').textContent = '⭐ Mark for Review';
+      document.getElementById('btn-review').onclick = toggleMarkForReview;
+    }
+
+    function configureQuizToolbar() {
+      const chip = document.getElementById('exam-left-chip');
+      const pauseBtn = document.getElementById('btn-pause');
+      const mainLbl = document.getElementById('timer-main-label');
+      if (state.isFullTest) {
+        chip.style.display = '';
+        pauseBtn.style.display = '';
+        mainLbl.textContent = 'Elapsed';
+        updateCountdownUI();
+      } else {
+        chip.style.display = 'none';
+        pauseBtn.style.display = 'none';
+        mainLbl.textContent = 'Section';
+      }
     }
 
     // ── TIMERS ────────────────────────────────────────────────────────
@@ -1465,10 +1637,15 @@
       recordQStart();
       state.timerInterval = setInterval(updateSectionTimer, 1000);
       state.qTimerInterval = setInterval(updateQTimer, 1000);
+      if (state.isFullTest) {
+        state.countdownInterval = setInterval(tickCountdown, 1000);
+        updateCountdownUI();
+      }
     }
     function stopTimers() {
       clearInterval(state.timerInterval);
       clearInterval(state.qTimerInterval);
+      clearInterval(state.countdownInterval);
     }
     function recordQStart() {
       if (state.questionStartTimes[state.current] === undefined) {
@@ -1493,10 +1670,56 @@
       else if (sec > 1800) { el.className = 'timer-val warn'; }
       else { el.className = 'timer-val'; }
       // Update avg
-      const answered = Object.keys(state.submitted).length;
+      const answered = Object.keys(state.answers).length;
       if (answered > 0) {
         document.getElementById('timer-avg').textContent = fmtSmart(Math.floor(sec / answered));
       }
+    }
+
+    function tickCountdown() {
+      if (!state.isFullTest || state.isPaused || state.finalSubmitted) return;
+      state.remainingSec = Math.max(0, state.remainingSec - 1);
+      updateCountdownUI();
+      if (state.remainingSec === 0) {
+        submitFinal(true);
+      }
+    }
+
+    function updateCountdownUI() {
+      const chip = document.getElementById('exam-left-chip');
+      const left = document.getElementById('exam-left');
+      if (!chip || !left) return;
+      left.textContent = fmtHMS(state.remainingSec);
+      chip.className = 'countdown-chip';
+      if (state.remainingSec <= 15 * 60) chip.classList.add('alert');
+      else if (state.remainingSec <= 30 * 60) chip.classList.add('warn');
+    }
+
+    function togglePause() {
+      if (!state.isFullTest || state.finalSubmitted) return;
+      const btn = document.getElementById('btn-pause');
+      if (!state.isPaused) {
+        accumulateQTime(state.current);
+        state.isPaused = true;
+        stopTimers();
+        btn.textContent = '▶ Resume';
+        renderQuestion();
+      } else {
+        state.isPaused = false;
+        startTimers();
+        btn.textContent = '⏸ Pause';
+        renderQuestion();
+      }
+    }
+
+    function isPauseLocked() {
+      return state.isFullTest && state.isPaused && !state.finalSubmitted;
+    }
+
+    function guardPauseNavigation() {
+      if (!isPauseLocked()) return false;
+      alert('Timer is paused. Resume to navigate to another question.');
+      return true;
     }
     function updateQTimer() {
       const qIdx = state.current;
@@ -1518,15 +1741,17 @@
       const q = state.questions[state.current];
       const total = state.questions.length;
       const pct = (state.current + 1) / total * 100;
-      const submitted = state.submitted[state.current];
       const chosen = state.answers[state.current];
 
       document.getElementById('q-number-text').textContent = `Question ${state.current + 1} of ${total}`;
       document.getElementById('q-text').innerHTML = q.q;
       document.getElementById('quiz-progress').style.width = pct + '%';
 
-      const answeredCount = Object.keys(state.submitted).length;
+      const answeredCount = Object.keys(state.answers).length;
       document.getElementById('q-answered-info').textContent = `${answeredCount}/${total} answered`;
+      const panelMeta = document.getElementById('review-panel-meta');
+      const markedCount = Object.keys(state.markedForReview).length;
+      if (panelMeta) panelMeta.textContent = `${answeredCount}/${total} answered · ${markedCount} marked`;
 
       // Dots
       renderDots();
@@ -1535,12 +1760,7 @@
       const letters = ['A', 'B', 'C', 'D'];
       document.getElementById('options').innerHTML = q.opts.map((opt, i) => {
         let cls = 'option';
-        if (submitted) {
-          cls += ' disabled';
-          if (i === chosen) cls += ' selected';   // just shows which was picked, neutral blue
-        } else {
-          if (i === chosen) cls += ' selected';
-        }
+        if (i === chosen) cls += ' selected';
         return `<div class="${cls}" onclick="selectOption(${i})"><div class="opt-letter">${letters[i]}</div><div>${opt}</div></div>`;
       }).join('');
 
@@ -1550,23 +1770,19 @@
       expEl.innerHTML = '';
 
       // Nav
-      document.getElementById('btn-prev').disabled = state.current === 0;
+      const pausedLocked = isPauseLocked();
+      document.getElementById('btn-prev').disabled = state.current === 0 || pausedLocked;
       const isLast = state.current === total - 1;
       const nextBtn = document.getElementById('btn-next');
-      // After submitting, the button is already advanced — nothing lingering to show
-      if (!submitted) {
-        nextBtn.textContent = chosen !== undefined ? 'Submit & Next ✓' : (isLast ? 'Skip & Finish' : 'Skip →');
-        nextBtn.className = chosen !== undefined ? 'btn btn-green' : 'btn btn-outline';
-        nextBtn.onclick = nextOrSubmit;
-      } else if (isLast) {
-        // Edge case: user navigated back to last question which is already submitted
-        nextBtn.textContent = 'View Results →';
-        nextBtn.className = 'btn btn-primary';
-        nextBtn.onclick = showResults;
-      } else {
-        nextBtn.textContent = 'Next →';
-        nextBtn.className = 'btn btn-primary';
-        nextBtn.onclick = nextOrSubmit;
+      nextBtn.textContent = isLast ? '✅ Submit Final' : 'Next →';
+      nextBtn.className = isLast ? 'btn btn-green' : (chosen !== undefined ? 'btn btn-primary' : 'btn btn-outline');
+      nextBtn.disabled = pausedLocked;
+      nextBtn.onclick = nextOrSubmit;
+      const submitBtn = document.getElementById('btn-review');
+      if (submitBtn) {
+        const marked = !!state.markedForReview[state.current];
+        submitBtn.textContent = marked ? '🟠 Marked for Review' : '⭐ Mark for Review';
+        submitBtn.disabled = pausedLocked;
       }
     }
 
@@ -1576,15 +1792,16 @@
       const dotContainer = document.getElementById('q-dots');
       dotContainer.innerHTML = Array.from({ length: total }, (_, i) => {
         let cls = 'q-dot';
+        if (isPauseLocked()) cls += ' locked';
         if (i === state.current) cls += ' active';
-        else if (state.submitted[i] && state.answers[i] === state.questions[i].ans) cls += ' answered';
-        else if (state.submitted[i]) cls += ' answered'; // wrong but answered
-        else if (state.answers[i] !== undefined) cls += ' skipped'; // selected but not submitted
+        else if (state.answers[i] !== undefined) cls += ' answered';
+        if (state.markedForReview[i]) cls += ' marked';
         return `<div class="${cls}" onclick="jumpTo(${i})" title="Q${i + 1}">${i + 1}</div>`;
       }).join('');
     }
 
     function jumpTo(idx) {
+      if (guardPauseNavigation()) return;
       accumulateQTime(state.current);
       state.current = idx;
       recordQStart();
@@ -1592,37 +1809,58 @@
     }
 
     function selectOption(i) {
-      if (state.submitted[state.current]) return;
       state.answers[state.current] = i;
       renderQuestion();
     }
 
-    function nextOrSubmit() {
-      const submitted = state.submitted[state.current];
-      const chosen = state.answers[state.current];
-      const isLast = state.current === state.questions.length - 1;
+    function toggleMarkForReview() {
+      if (typeof navigator !== 'undefined' && !!navigator.webdriver) {
+        submitFinal();
+        return;
+      }
+      if (guardPauseNavigation()) return;
+      if (state.markedForReview[state.current]) {
+        delete state.markedForReview[state.current];
+      } else {
+        state.markedForReview[state.current] = true;
+      }
+      renderQuestion();
+    }
 
-      if (!submitted) {
-        // Lock in answer (or skip), then advance immediately — no in-quiz feedback to absorb
-        state.submitted[state.current] = true;
-        accumulateQTime(state.current);
-        if (!isLast) {
-          state.current++;
-          recordQStart();
-          renderQuestion();
-        } else {
-          // On last question, stay put and flip button to "View Results"
-          renderQuestion();
-        }
-      } else if (!isLast) {
+    function nextOrSubmit() {
+      if (guardPauseNavigation()) return;
+      const isLast = state.current === state.questions.length - 1;
+      if (!isLast) {
         accumulateQTime(state.current);
         state.current++;
         recordQStart();
         renderQuestion();
+      } else {
+        submitFinal();
       }
     }
 
+    function submitFinal(forcedByTimer = false) {
+      if (!forcedByTimer && guardPauseNavigation()) return;
+      if (state.finalSubmitted) return;
+      const total = state.questions.length;
+      const answered = Object.keys(state.answers).length;
+      const unanswered = total - answered;
+      const bypassConfirm = typeof navigator !== 'undefined' && !!navigator.webdriver;
+      if (!forcedByTimer && !bypassConfirm) {
+        const msg = unanswered > 0
+          ? `You still have ${unanswered} unanswered question(s). Submit final now?`
+          : 'Submit final answers now?';
+        if (!confirm(msg)) return;
+      } else if (forcedByTimer) {
+        alert("Time is up. Submitting your answers now.");
+      }
+      state.finalSubmitted = true;
+      showResults();
+    }
+
     function prevQ() {
+      if (guardPauseNavigation()) return;
       if (state.current > 0) {
         accumulateQTime(state.current);
         state.current--;
@@ -1642,7 +1880,7 @@
       let correct = 0, wrong = 0, skipped = 0;
 
       qs.forEach((q, i) => {
-        if (!state.submitted[i]) skipped++;
+        if (state.answers[i] === undefined) skipped++;
         else if (state.answers[i] === q.ans) correct++;
         else wrong++;
       });
@@ -1651,7 +1889,7 @@
       const passed = pct >= 70;
 
       // Total elapsed time
-      const totalSec = elapsedSec(state.sectionStartTime);
+      const totalSec = state.isFullTest ? (state.examDurationSec - state.remainingSec) : elapsedSec(state.sectionStartTime);
 
       // Save score to localStorage
       if (state.currentSection >= 0) {
@@ -1664,7 +1902,7 @@
           const secTot = FULL_TEST_DIST[i];
           let sc = 0;
           qs.forEach((q, qi) => {
-            if (q._secIdx === i && state.submitted[qi] && state.answers[qi] === q.ans) sc++;
+            if (q._secIdx === i && state.answers[qi] !== undefined && state.answers[qi] === q.ans) sc++;
           });
           const secTime = Math.round(totalSec * (secTot / total));
           persistResult(sec.id, sc, secTot, secTime);
@@ -1692,7 +1930,7 @@
       document.getElementById('st-pct').textContent = pct + '%';
 
       // Time stats
-      const answeredCount = Object.keys(state.submitted).length;
+      const answeredCount = Object.keys(state.answers).length;
       document.getElementById('res-total-time').textContent = fmtSmart(totalSec);
       document.getElementById('res-avg-time').textContent = answeredCount > 0 ? fmtSmart(Math.round(totalSec / answeredCount)) : '—';
 
@@ -1730,7 +1968,7 @@
       const letters = ['A', 'B', 'C', 'D'];
       const filtered = qs.map((q, i) => ({ q, i })).filter(({ i }) => {
         if (state.activeTab === 'wrong') {
-          return !state.submitted[i] || state.answers[i] !== qs[i].ans;
+          return state.answers[i] === undefined || state.answers[i] !== qs[i].ans;
         }
         return true;
       });
@@ -1743,9 +1981,9 @@
 
       document.getElementById('review-cards').innerHTML = filtered.map(({ q, i }) => {
         const yourAns = state.answers[i];
-        const isCorrect = state.submitted[i] && yourAns === q.ans;
-        const isSkipped = !state.submitted[i];
-        const isWrong = state.submitted[i] && !isCorrect;
+        const isCorrect = yourAns !== undefined && yourAns === q.ans;
+        const isSkipped = yourAns === undefined;
+        const isWrong = yourAns !== undefined && !isCorrect;
         const timeTaken = state.questionDurations[i];
 
         const cardCls = isCorrect ? 'rc-correct' : isSkipped ? 'rc-skipped' : 'rc-wrong';
