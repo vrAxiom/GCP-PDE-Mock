@@ -2002,5 +2002,65 @@
     "ans": 2,
     "explain": "BigQuery external tables support CSV, Avro, and newline-delimited JSON for both Cloud Storage and Google Drive. Parquet and ORC are supported for Cloud Storage only, not Google Drive.",
     "concept": "BigQuery, external tables, Google Drive, supported formats"
+  },
+  {
+    "q": "You are designing Cloud Bigtable for IoT time-series events. Which table shape is the recommended pattern for sustained write performance and avoiding oversized rows?",
+    "opts": [
+      "Tall and narrow table: one event per row with compact columns",
+      "Short and wide table: one row per device per day with thousands of columns",
+      "Single row per customer with nested JSON payloads in one cell",
+      "Wide table with all metrics pivoted into dynamic column qualifiers per event"
+    ],
+    "ans": 0,
+    "explain": "For Bigtable time-series workloads, the recommended schema is tall and narrow (one event per row). Short-and-wide designs create very large rows and many cells, which degrades performance and increases hotspot risk.",
+    "concept": "Cloud Bigtable schema design: time-series should be tall/narrow, not short/wide."
+  },
+  {
+    "q": "A production Bigtable instance was created on HDD storage. You must migrate to SSD with minimal risk. Which approach is correct?",
+    "opts": [
+      "Export data with Dataflow, create a new SSD instance, then import data into the new instance",
+      "Change the existing instance storage type from HDD to SSD in the console",
+      "Run btadmin modifycluster to switch disk type in-place without data movement",
+      "Enable autoscaling and wait for Bigtable to automatically convert HDD nodes to SSD"
+    ],
+    "ans": 0,
+    "explain": "You cannot directly convert an existing Bigtable instance storage type from HDD to SSD in-place. The supported migration path is export/copy and restore into a newly created SSD instance.",
+    "concept": "Bigtable storage migration: HDD to SSD requires new instance + data migration."
+  },
+  {
+    "q": "Before benchmarking Bigtable throughput, which pre-test setup best matches Google-recommended practices?",
+    "opts": [
+      "Use at least ~300-400 GB of representative data and run warm-up load for several minutes before measuring",
+      "Scale up nodes immediately before the test and start measuring in the first minute",
+      "Run tests on a 10 GB sample because relative scaling makes small datasets equivalent",
+      "Benchmark immediately after schema changes to capture peak write-path optimization"
+    ],
+    "ans": 0,
+    "explain": "Meaningful Bigtable performance tests require sufficient dataset size (commonly hundreds of GB) and warm-up time for balancing/caching effects. Measuring immediately after scale changes gives misleading numbers.",
+    "concept": "Bigtable benchmarking: warm-up + sufficiently large dataset + avoid immediate post-scale testing."
+  },
+  {
+    "q": "Your Bigtable reads are slow even with low QPS. Which combination most likely explains the degradation?",
+    "opts": [
+      "Rows contain too many cells and very large row payloads while cluster node count is undersized",
+      "Using multiple column families instead of one",
+      "Using short row keys with random UUID prefixes",
+      "Enabling autoscaling min=max node count"
+    ],
+    "ans": 0,
+    "explain": "Common Bigtable anti-patterns include oversized rows, excessive cell counts per row, and insufficient cluster nodes. These increase read amplification and latency.",
+    "concept": "Bigtable performance anti-patterns: oversized rows/cell explosion/insufficient nodes."
+  },
+  {
+    "q": "You increased Bigtable node count from 6 to 20 and immediately ran a load test. Throughput looked unstable. What is the best next step?",
+    "opts": [
+      "Wait for rebalancing to settle (often around 20 minutes) before collecting benchmark metrics",
+      "Roll back to 6 nodes because autoscaling always causes unstable performance",
+      "Run the benchmark only with read traffic because write paths are unaffected by scaling",
+      "Disable replication to force immediate hotspot elimination"
+    ],
+    "ans": 0,
+    "explain": "After scaling, Bigtable needs time to rebalance tablets and load distribution. Benchmarking too early produces noisy, non-representative metrics.",
+    "concept": "Bigtable scale events require rebalance time before valid performance measurement."
   }
 ]

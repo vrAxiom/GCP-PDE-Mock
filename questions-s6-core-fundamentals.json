@@ -8,20 +8,20 @@
       "Stream data through Dataflow to Cloud Storage using Pub/Sub"
     ],
     "ans": 2,
-    "explain": "At 380TB with limited bandwidth (100 Mbps \u2248 44 days upload time), Transfer Appliance is the only practical option. It's a physical device shipped to your location for offline data transfer at scale. Storage Transfer Service requires online connectivity and would be too slow. gsutil works for small/medium datasets but not at this scale with bandwidth constraints.",
-    "concept": "Data Transfer: Online vs Offline Migration \u2014 Use Transfer Appliance for: (1) Large on-premise datasets (>10TB), (2) Limited/expensive bandwidth, (3) Tight migration deadlines. Use Storage Transfer Service for: cloud-to-cloud or online-accessible sources."
+    "explain": "At 380TB with limited bandwidth (100 Mbps ≈ 44 days upload time), Transfer Appliance is the only practical option. It's a physical device shipped to your location for offline data transfer at scale. Storage Transfer Service requires online connectivity and would be too slow. gsutil works for small/medium datasets but not at this scale with bandwidth constraints.",
+    "concept": "Data Transfer: Online vs Offline Migration — Use Transfer Appliance for: (1) Large on-premise datasets (>10TB), (2) Limited/expensive bandwidth, (3) Tight migration deadlines. Use Storage Transfer Service for: cloud-to-cloud or online-accessible sources."
   },
   {
     "q": "You need to copy 15TB of data from a Cloud Storage bucket in us-central1 to another bucket in europe-west1, scheduled to run weekly. Which service is most appropriate?",
     "opts": [
-      "Transfer Appliance \u2014 schedule physical shipments weekly",
+      "Transfer Appliance — schedule physical shipments weekly",
       "gsutil rsync in a Cloud Scheduler cron job",
       "Storage Transfer Service with scheduled weekly transfer",
       "Dataflow batch job with Cloud Scheduler trigger"
     ],
     "ans": 2,
     "explain": "Storage Transfer Service is designed for online bucket-to-bucket transfers (within GCS, from S3, or HTTP sources) with scheduling support. It's enterprise-grade, supports incremental sync, and handles large-scale operations efficiently. gsutil works but isn't optimized for repeated large-scale transfers. Transfer Appliance is for offline on-premise data, not cloud-to-cloud.",
-    "concept": "Storage Transfer Service Use Cases: (1) GCS bucket-to-bucket transfers, (2) AWS S3 \u2192 GCS migration, (3) HTTP/HTTPS sources \u2192 GCS, (4) Scheduled/recurring transfers, (5) Cross-region replication. Key: ONLINE sources only."
+    "concept": "Storage Transfer Service Use Cases: (1) GCS bucket-to-bucket transfers, (2) AWS S3 → GCS migration, (3) HTTP/HTTPS sources → GCS, (4) Scheduled/recurring transfers, (5) Cross-region replication. Key: ONLINE sources only."
   },
   {
     "q": "A data scientist has 5GB of training data in CSV format on their laptop. What's the simplest way to upload this to a Cloud Storage bucket?",
@@ -33,7 +33,7 @@
     ],
     "ans": 1,
     "explain": "For small datasets (<10TB) and one-time/ad-hoc uploads, gsutil is the appropriate tool. It's a CLI tool included in Cloud SDK, optimized for developer workflows. Transfer Appliance is for petabyte-scale offline transfers. Storage Transfer Service requires online-accessible sources (not local files). Dataflow is overkill for a simple upload.",
-    "concept": "Data Transfer Decision Tree: <10GB \u2192 Console upload or gsutil | 10GB-10TB \u2192 gsutil or Storage Transfer Service | >10TB on-premise \u2192 Transfer Appliance | Cloud-to-cloud at scale \u2192 Storage Transfer Service"
+    "concept": "Data Transfer Decision Tree: <10GB → Console upload or gsutil | 10GB-10TB → gsutil or Storage Transfer Service | >10TB on-premise → Transfer Appliance | Cloud-to-cloud at scale → Storage Transfer Service"
   },
   {
     "q": "You need to query daily transaction tables named orders_20260101, orders_20260102, etc. Convert this Legacy SQL to Standard SQL: SELECT COUNT(*) FROM TABLE_DATE_RANGE([project:dataset.orders_], TIMESTAMP('2026-01-01'), TIMESTAMP('2026-01-31'))",
@@ -45,7 +45,7 @@
     ],
     "ans": 1,
     "explain": "Standard SQL uses backticks for table names, wildcard tables with asterisk (*), and _TABLE_SUFFIX pseudo-column for filtering. _TABLE_SUFFIX contains the part after the wildcard (e.g., '20260101'). TABLE_DATE_RANGE is Legacy SQL only and doesn't exist in Standard SQL. Option B correctly filters dates using string comparison on _TABLE_SUFFIX.",
-    "concept": "BigQuery Standard SQL Wildcard Tables: Syntax: `dataset.table_*` | Pseudo-column: _TABLE_SUFFIX (string) | Filter: WHERE _TABLE_SUFFIX BETWEEN '20260101' AND '20260131' | Legacy TABLE_DATE_RANGE has NO Standard SQL equivalent \u2014 use _TABLE_SUFFIX instead."
+    "concept": "BigQuery Standard SQL Wildcard Tables: Syntax: `dataset.table_*` | Pseudo-column: _TABLE_SUFFIX (string) | Filter: WHERE _TABLE_SUFFIX BETWEEN '20260101' AND '20260131' | Legacy TABLE_DATE_RANGE has NO Standard SQL equivalent — use _TABLE_SUFFIX instead."
   },
   {
     "q": "Which query correctly uses Standard SQL to select from wildcard tables for Q4 2025?",
@@ -57,7 +57,7 @@
     ],
     "ans": 1,
     "explain": "Standard SQL requires backticks around fully qualified table names. Wildcard table must end with *. _TABLE_SUFFIX is the pseudo-column (with underscore) containing the string after the wildcard. Option B has correct syntax: backticks, asterisk wildcard, _TABLE_SUFFIX pseudo-column, and proper BETWEEN filtering for Q4 dates.",
-    "concept": "Common BigQuery Standard SQL Mistakes: \u274c Square brackets [table] \u2192 \u2705 Backticks `table` | \u274c TABLE_SUFFIX \u2192 \u2705 _TABLE_SUFFIX (underscore!) | \u274c TABLE_QUERY \u2192 \u2705 Wildcard with _TABLE_SUFFIX | \u274c Wildcard without * \u2192 \u2705 table_*"
+    "concept": "Common BigQuery Standard SQL Mistakes: ❌ Square brackets [table] → ✅ Backticks `table` | ❌ TABLE_SUFFIX → ✅ _TABLE_SUFFIX (underscore!) | ❌ TABLE_QUERY → ✅ Wildcard with _TABLE_SUFFIX | ❌ Wildcard without * → ✅ table_*"
   },
   {
     "q": "Your API receives user requests to generate large reports that take 3-5 minutes to process. Users experience timeouts after 60 seconds. The API writes to Cloud SQL. How should you redesign the architecture?",
@@ -68,8 +68,8 @@
       "Add a Cloud CDN layer in front of the API to cache responses"
     ],
     "ans": 2,
-    "explain": "The core issue is synchronous request/response pattern for long-running operations. Pub/Sub decouples the request (quick acknowledgment) from processing (asynchronous). Pattern: API receives request \u2192 publishes to Pub/Sub topic \u2192 returns 202 Accepted \u2192 background worker (Cloud Functions/Run/Dataflow) processes \u2192 sends notification. Cloud Spanner addresses database scale, not request timeout architecture.",
-    "concept": "Pub/Sub Async Decoupling Pattern: Use when: (1) Operations take >30s, (2) Client can't wait for completion, (3) Prevent timeout issues. Architecture: Request \u2192 Pub/Sub (queue) \u2192 Background processor \u2192 Notification (email/webhook). This converts blocking operations to non-blocking."
+    "explain": "The core issue is synchronous request/response pattern for long-running operations. Pub/Sub decouples the request (quick acknowledgment) from processing (asynchronous). Pattern: API receives request → publishes to Pub/Sub topic → returns 202 Accepted → background worker (Cloud Functions/Run/Dataflow) processes → sends notification. Cloud Spanner addresses database scale, not request timeout architecture.",
+    "concept": "Pub/Sub Async Decoupling Pattern: Use when: (1) Operations take >30s, (2) Client can't wait for completion, (3) Prevent timeout issues. Architecture: Request → Pub/Sub (queue) → Background processor → Notification (email/webhook). This converts blocking operations to non-blocking."
   },
   {
     "q": "A mobile app triggers complex analytics queries that can take 2-10 minutes. Users complain about timeout errors. The data is in BigQuery. What's the best solution?",
@@ -80,32 +80,32 @@
       "Pre-aggregate data into summary tables and query those instead"
     ],
     "ans": 2,
-    "explain": "While pre-aggregation (option D) helps, it doesn't solve the architectural timeout problem if queries still take minutes. The correct pattern is async processing: mobile app sends request \u2192 Pub/Sub queues it \u2192 Cloud Run executes BigQuery query asynchronously \u2192 sends push notification or provides a polling endpoint. This decouples request submission from query execution. Option A and B are optimizations but don't address the timeout issue fundamentally.",
-    "concept": "Async Query Pattern: When queries >60s are unavoidable: (1) Accept request \u2192 return job_id immediately, (2) Process in background (Pub/Sub + Cloud Run/Functions), (3) Notify client (push notification, webhook, or polling endpoint). Never make clients wait for long-running synchronous operations."
+    "explain": "While pre-aggregation (option D) helps, it doesn't solve the architectural timeout problem if queries still take minutes. The correct pattern is async processing: mobile app sends request → Pub/Sub queues it → Cloud Run executes BigQuery query asynchronously → sends push notification or provides a polling endpoint. This decouples request submission from query execution. Option A and B are optimizations but don't address the timeout issue fundamentally.",
+    "concept": "Async Query Pattern: When queries >60s are unavoidable: (1) Accept request → return job_id immediately, (2) Process in background (Pub/Sub + Cloud Run/Functions), (3) Notify client (push notification, webhook, or polling endpoint). Never make clients wait for long-running synchronous operations."
   },
   {
     "q": "You're building a credit card fraud detection model. Your team built a classifier that predicts 'fraud' or 'legitimate'. What type of machine learning problem is this?",
     "opts": [
-      "Regression \u2014 predicting a continuous fraud score",
-      "Classification \u2014 predicting discrete categories (fraud vs legitimate)",
-      "Clustering \u2014 grouping similar transactions",
-      "Anomaly detection \u2014 finding outliers without labels"
+      "Regression — predicting a continuous fraud score",
+      "Classification — predicting discrete categories (fraud vs legitimate)",
+      "Clustering — grouping similar transactions",
+      "Anomaly detection — finding outliers without labels"
     ],
     "ans": 1,
     "explain": "Classification predicts discrete categories/labels from predefined classes. Binary classification has 2 classes (fraud/not fraud). Multi-class has >2 classes. Regression predicts continuous numbers (price, temperature). Clustering is unsupervised (no labels). Anomaly detection finds outliers but doesn't require training on labeled fraud examples like this does.",
-    "concept": "ML Problem Types: CLASSIFICATION \u2192 discrete output, labeled data (spam/not spam, fraud/legit, cat/dog/bird) | REGRESSION \u2192 continuous output (price $523.45, temperature 72.3\u00b0F) | CLUSTERING \u2192 unsupervised grouping, no labels (customer segments) | Key: If output is categorical \u2192 Classification"
+    "concept": "ML Problem Types: CLASSIFICATION → discrete output, labeled data (spam/not spam, fraud/legit, cat/dog/bird) | REGRESSION → continuous output (price $523.45, temperature 72.3°F) | CLUSTERING → unsupervised grouping, no labels (customer segments) | Key: If output is categorical → Classification"
   },
   {
     "q": "A bank wants to predict the loan amount a customer qualifies for based on income, credit score, and employment history. What type of ML problem is this?",
     "opts": [
-      "Classification \u2014 categorizing customers into loan brackets",
-      "Regression \u2014 predicting continuous numerical loan amount",
-      "Clustering \u2014 grouping customers by financial profile",
-      "Reinforcement learning \u2014 optimizing loan approval strategy"
+      "Classification — categorizing customers into loan brackets",
+      "Regression — predicting continuous numerical loan amount",
+      "Clustering — grouping customers by financial profile",
+      "Reinforcement learning — optimizing loan approval strategy"
     ],
     "ans": 1,
     "explain": "Regression predicts continuous numerical values. Loan amount is a continuous number (e.g., $47,350.00), not a discrete category. Even if loan amounts are later bucketed into ranges for business logic, the ML task of predicting the actual amount is regression. Classification would be 'approved/denied' or 'low/medium/high' risk categories.",
-    "concept": "Classification vs Regression: CLASSIFICATION \u2192 output is label/category (yes/no, color, risk tier) | REGRESSION \u2192 output is number ($, kg, seconds, %). Key question: Is the output categorical or numeric? Numeric with decimal precision \u2192 Regression."
+    "concept": "Classification vs Regression: CLASSIFICATION → output is label/category (yes/no, color, risk tier) | REGRESSION → output is number ($, kg, seconds, %). Key question: Is the output categorical or numeric? Numeric with decimal precision → Regression."
   },
   {
     "q": "Your deep learning model achieves 98% accuracy on training data but only 75% on validation data. Training error is very low but validation error is high. How should you address this?",
@@ -117,19 +117,19 @@
     ],
     "ans": 1,
     "explain": "High training accuracy + low validation accuracy = overfitting. The model memorized training data instead of learning generalizable patterns. Solutions: (1) MORE training data (helps model see more examples), (2) FEWER parameters/features (reduce model complexity), (3) MORE regularization (L1/L2 penalties discourage memorization). Adding complexity (option A) or removing regularization (option D) worsens overfitting.",
-    "concept": "Fixing Overfitting (High Train Accuracy, Low Validation): \u2705 Increase training data | \u2705 Decrease model complexity (fewer layers, features) | \u2705 Increase regularization (L1/L2/dropout) | \u2705 Early stopping | \u274c Add more features/parameters | \u274c Remove regularization"
+    "concept": "Fixing Overfitting (High Train Accuracy, Low Validation): ✅ Increase training data | ✅ Decrease model complexity (fewer layers, features) | ✅ Increase regularization (L1/L2/dropout) | ✅ Early stopping | ❌ Add more features/parameters | ❌ Remove regularization"
   },
   {
     "q": "Your model has 60% training accuracy and 58% validation accuracy. Both errors are high. What's the problem and solution?",
     "opts": [
-      "Overfitting \u2014 add regularization and reduce features",
-      "Underfitting \u2014 increase model complexity, add features, train longer",
-      "Data quality issue \u2014 clean outliers and normalize",
-      "Imbalanced dataset \u2014 apply class weights or SMOTE"
+      "Overfitting — add regularization and reduce features",
+      "Underfitting — increase model complexity, add features, train longer",
+      "Data quality issue — clean outliers and normalize",
+      "Imbalanced dataset — apply class weights or SMOTE"
     ],
     "ans": 1,
     "explain": "High training error + high validation error (both similar and low) = underfitting. The model is too simple to capture patterns in the data. Solutions: (1) Increase model complexity (more layers, neurons), (2) Add more features or better features, (3) Train longer, (4) Reduce regularization. Overfitting shows high training accuracy with low validation accuracy.",
-    "concept": "Underfitting vs Overfitting: UNDERFITTING (high train error, high val error) \u2192 Model too simple \u2192 Increase complexity, add features | OVERFITTING (low train error, high val error) \u2192 Model too complex \u2192 Reduce complexity, add data, add regularization | Goal: Low train error + Low val error"
+    "concept": "Underfitting vs Overfitting: UNDERFITTING (high train error, high val error) → Model too simple → Increase complexity, add features | OVERFITTING (low train error, high val error) → Model too complex → Reduce complexity, add data, add regularization | Goal: Low train error + Low val error"
   },
   {
     "q": "You're using AutoML Vision to classify product images. You have 10,000 labeled images. How should you split the data for training?",
@@ -141,43 +141,43 @@
     ],
     "ans": 1,
     "explain": "Always split data into train/validation/test sets. Typical splits: 70/15/15 or 60/20/20. Training set trains the model. Validation set tunes hyperparameters and prevents overfitting during training. Test set provides final unbiased evaluation. Training on 100% of data (option A) leads to overfitting with no validation. Option B provides balanced splits for all three purposes.",
-    "concept": "Train/Validation/Test Split: TRAIN (60-70%) \u2192 Model learns patterns | VALIDATION (15-20%) \u2192 Tune hyperparameters, prevent overfitting | TEST (15-20%) \u2192 Final unbiased evaluation | \u274c NEVER train on 100% \u2014 you need held-out data to detect overfitting | AutoML handles splits automatically if you choose."
+    "concept": "Train/Validation/Test Split: TRAIN (60-70%) → Model learns patterns | VALIDATION (15-20%) → Tune hyperparameters, prevent overfitting | TEST (15-20%) → Final unbiased evaluation | ❌ NEVER train on 100% — you need held-out data to detect overfitting | AutoML handles splits automatically if you choose."
   },
   {
     "q": "A real-time IoT sensor system ingests 10,000 events/second. Data scientists need to run SQL analytics queries with sub-second response. The data must support ACID transactions and relational joins. Which database is most appropriate?",
     "opts": [
-      "BigQuery with streaming inserts \u2014 optimized for analytics at scale",
-      "Bigtable \u2014 high-throughput NoSQL for time-series data",
-      "Cloud SQL (PostgreSQL) \u2014 ACID-compliant relational database",
-      "Firestore \u2014 real-time document database with offline support"
+      "BigQuery with streaming inserts — optimized for analytics at scale",
+      "Bigtable — high-throughput NoSQL for time-series data",
+      "Cloud SQL (PostgreSQL) — ACID-compliant relational database",
+      "Firestore — real-time document database with offline support"
     ],
     "ans": 2,
     "explain": "The scenario emphasizes ACID transactions, relational joins, and SQL queries at moderate scale (10K events/sec = ~1M events per 100s, manageable for Cloud SQL). Cloud SQL (MySQL/PostgreSQL) provides ACID guarantees, full SQL support, and relational features. BigQuery is for analytics at massive scale (billions of rows) but has eventual consistency for streaming inserts, not immediate ACID. Bigtable is NoSQL without native SQL/ACID.",
-    "concept": "Database Selection: Cloud SQL \u2192 ACID transactions, relational joins, traditional SQL, <10TB, <10K QPS | BigQuery \u2192 Analytics, petabyte-scale, eventual consistency for streaming | Bigtable \u2192 NoSQL, high throughput, no ACID, key-value lookups | Key: ACID + Relational + Moderate scale = Cloud SQL"
+    "concept": "Database Selection: Cloud SQL → ACID transactions, relational joins, traditional SQL, <10TB, <10K QPS | BigQuery → Analytics, petabyte-scale, eventual consistency for streaming | Bigtable → NoSQL, high throughput, no ACID, key-value lookups | Key: ACID + Relational + Moderate scale = Cloud SQL"
   },
   {
     "q": "Your application needs to store 5 billion sensor readings with millisecond latency for lookups by sensor_id and timestamp. Queries are simple key-value lookups, no complex joins. Which storage solution is best?",
     "opts": [
-      "Cloud SQL \u2014 supports indexes for fast lookups",
-      "BigQuery \u2014 optimized for analytical queries at scale",
-      "Bigtable \u2014 designed for high-throughput, low-latency NoSQL operations",
-      "Cloud Spanner \u2014 globally distributed with strong consistency"
+      "Cloud SQL — supports indexes for fast lookups",
+      "BigQuery — optimized for analytical queries at scale",
+      "Bigtable — designed for high-throughput, low-latency NoSQL operations",
+      "Cloud Spanner — globally distributed with strong consistency"
     ],
     "ans": 2,
     "explain": "Bigtable is purpose-built for this use case: billions of rows, millisecond latency, simple key lookups (no complex joins), time-series data. Design a row key like sensor_id#timestamp for efficient lookups and range scans. Cloud SQL doesn't scale to billions of rows efficiently. BigQuery is for complex analytics, not millisecond point lookups. Spanner is overkill for simple key-value access without multi-region consistency requirements.",
-    "concept": "Bigtable Use Cases: \u2705 Billions/trillions of rows | \u2705 Millisecond latency | \u2705 Time-series data (IoT, logs, metrics) | \u2705 Simple lookups by key | \u2705 High write throughput | \u274c NOT for: complex SQL, ACID transactions, <1TB data. Row key design critical: sensor_id#timestamp enables both point lookups and range scans."
+    "concept": "Bigtable Use Cases: ✅ Billions/trillions of rows | ✅ Millisecond latency | ✅ Time-series data (IoT, logs, metrics) | ✅ Simple lookups by key | ✅ High write throughput | ❌ NOT for: complex SQL, ACID transactions, <1TB data. Row key design critical: sensor_id#timestamp enables both point lookups and range scans."
   },
   {
     "q": "A financial services company needs to store transaction records with multi-region replication, strong consistency, ACID transactions, and SQL queries. Data size: 2TB. Which database is most appropriate?",
     "opts": [
       "Cloud SQL with read replicas across regions",
       "BigQuery with multi-region dataset",
-      "Cloud Spanner \u2014 globally distributed, ACID-compliant SQL database",
+      "Cloud Spanner — globally distributed, ACID-compliant SQL database",
       "Bigtable with replication to multiple clusters"
     ],
     "ans": 2,
     "explain": "Cloud Spanner is the only service that provides: (1) Strong consistency across regions, (2) ACID transactions, (3) Full SQL support, (4) Horizontal scalability. Cloud SQL supports ACID and SQL but is regional (read replicas are eventually consistent). BigQuery lacks full ACID for streaming inserts. Bigtable is NoSQL and eventually consistent across regions.",
-    "concept": "Cloud Spanner Use Cases: \u2705 Multi-region strong consistency | \u2705 ACID transactions | \u2705 SQL support | \u2705 Horizontal scaling | \u2705 >2TB with high availability | Typical: Financial transactions, global inventory, multi-region apps. Trade-off: More expensive than Cloud SQL. If single-region is OK \u2192 Cloud SQL is simpler/cheaper."
+    "concept": "Cloud Spanner Use Cases: ✅ Multi-region strong consistency | ✅ ACID transactions | ✅ SQL support | ✅ Horizontal scaling | ✅ >2TB with high availability | Typical: Financial transactions, global inventory, multi-region apps. Trade-off: More expensive than Cloud SQL. If single-region is OK → Cloud SQL is simpler/cheaper."
   },
   {
     "q": "You need to load nested JSON log files from Cloud Storage into BigQuery for analysis. The schema changes occasionally with new fields. What's the best approach?",
@@ -189,7 +189,7 @@
     ],
     "ans": 2,
     "explain": "BigQuery natively supports schema auto-detection for JSON, CSV, and Google Sheets. Use `bq load --autodetect --source_format=NEWLINE_DELIMITED_JSON` to automatically infer schema from data. BigQuery handles nested and repeated fields in JSON. When new fields are added, re-load with auto-detect and schema will update. Dataflow adds unnecessary complexity for this standard use case.",
-    "concept": "BigQuery Schema Auto-Detection: \u2705 Supported formats: JSON, CSV, Google Sheets | \u274c NOT supported: Avro, Parquet, ORC (have embedded schemas) | Syntax: bq load --autodetect | Use cases: (1) Rapidly evolving schemas, (2) Exploratory data analysis, (3) Prototyping. Production: Define schema explicitly for consistency."
+    "concept": "BigQuery Schema Auto-Detection: ✅ Supported formats: JSON, CSV, Google Sheets | ❌ NOT supported: Avro, Parquet, ORC (have embedded schemas) | Syntax: bq load --autodetect | Use cases: (1) Rapidly evolving schemas, (2) Exploratory data analysis, (3) Prototyping. Production: Define schema explicitly for consistency."
   },
   {
     "q": "Your team loads CSV files into BigQuery. Data types are consistent but column order occasionally changes. What's the best loading strategy?",
@@ -201,7 +201,7 @@
     ],
     "ans": 1,
     "explain": "When CSV files have headers, BigQuery can map columns by name (not position) using explicit schema definition with --skip_leading_rows=1. This handles column order changes. Auto-detect infers types but doesn't guarantee consistency across loads (type mismatches can occur). For production data with known types, always use explicit schema + header mapping for reliability.",
-    "concept": "BigQuery CSV Loading Best Practices: \u2705 Explicit schema + --skip_leading_rows=1 (if header row) \u2192 Maps by column name, handles order changes | \u2705 --autodetect \u2192 Quick prototyping, type inference | Production: Explicit schemas prevent type drift. Header row allows column name mapping (order-independent)."
+    "concept": "BigQuery CSV Loading Best Practices: ✅ Explicit schema + --skip_leading_rows=1 (if header row) → Maps by column name, handles order changes | ✅ --autodetect → Quick prototyping, type inference | Production: Explicit schemas prevent type drift. Header row allows column name mapping (order-independent)."
   },
   {
     "q": "You're migrating Oracle database (150GB) to Cloud SQL. The database is currently in production and must minimize downtime. What's the best migration strategy?",
@@ -213,7 +213,7 @@
     ],
     "ans": 0,
     "explain": "Database Migration Service (DMS) is purpose-built for database migrations with minimal downtime. It performs continuous replication (change data capture) while the source database remains online, then switches over with minimal cutover time (<1 minute). For 150GB, Transfer Appliance is overkill (it's for petabyte-scale). Full dump requires long downtime. Dataflow requires custom CDC implementation.",
-    "concept": "Database Migration Service (DMS): \u2705 Minimal downtime migrations | \u2705 Continuous replication (CDC) | \u2705 Supports: MySQL, PostgreSQL, SQL Server, Oracle \u2192 Cloud SQL | Process: (1) Initial full copy, (2) Continuous replication of changes, (3) Quick cutover. Best for: Production databases, <15min downtime requirement."
+    "concept": "Database Migration Service (DMS): ✅ Minimal downtime migrations | ✅ Continuous replication (CDC) | ✅ Supports: MySQL, PostgreSQL, SQL Server, Oracle → Cloud SQL | Process: (1) Initial full copy, (2) Continuous replication of changes, (3) Quick cutover. Best for: Production databases, <15min downtime requirement."
   },
   {
     "q": "Your company stores 25TB of transactional data in an on-premise PostgreSQL database. You need to migrate to Cloud SQL PostgreSQL with less than 1 hour of downtime. What's the optimal approach?",
@@ -225,7 +225,7 @@
     ],
     "ans": 1,
     "explain": "Database Migration Service supports continuous replication (CDC) from on-premise PostgreSQL to Cloud SQL. It performs an initial full copy while source DB stays online, continuously syncs changes, and allows quick cutover with minimal downtime (<1 hour). pg_dump would require hours of downtime for 25TB. Transfer Appliance doesn't integrate directly with Cloud SQL (requires custom import). Manual logical replication is complex and error-prone.",
-    "concept": "Cloud SQL Migration Patterns: Minimal downtime (<1 hour) \u2192 Database Migration Service (DMS) with CDC | Tolerable downtime (hours) \u2192 pg_dump/mysqldump \u2192 GCS \u2192 Cloud SQL import | On-premise + large scale \u2192 DMS is the managed solution. DMS handles networking (VPN/Interconnect), continuous sync, and validation."
+    "concept": "Cloud SQL Migration Patterns: Minimal downtime (<1 hour) → Database Migration Service (DMS) with CDC | Tolerable downtime (hours) → pg_dump/mysqldump → GCS → Cloud SQL import | On-premise + large scale → DMS is the managed solution. DMS handles networking (VPN/Interconnect), continuous sync, and validation."
   },
   {
     "q": "Your company needs to transfer 500 TB of historical sales data from an on-premises data center to Google Cloud Storage. The data center has a 1 Gbps internet connection, but the network is heavily utilized during business hours (8 AM - 6 PM). The data must be transferred within 2 weeks. What is the most cost-effective solution?",
@@ -477,7 +477,7 @@
     ],
     "ans": 1,
     "explain": "With 5% churn rate, a 'dumb' model that always predicts 'no churn' achieves 95% accuracy. This is class imbalance - when one class dominates, accuracy is misleading. The model may have learned to predict the majority class only. Better metrics: precision/recall, F1-score, AUC-ROC. Solutions: oversample minority class, undersample majority, use class weights, or use specialized metrics. Overfitting would show high training accuracy but low validation accuracy. High bias/low variance means underfitting (both train and validation accuracy would be low). Learning rate affects training convergence, not this type of poor generalization.",
-    "concept": "Class imbalance detection: If accuracy \u2248 majority class percentage, suspect majority-class-only prediction. Solution: check confusion matrix, use precision/recall/F1, apply resampling techniques, adjust class weights during training."
+    "concept": "Class imbalance detection: If accuracy ≈ majority class percentage, suspect majority-class-only prediction. Solution: check confusion matrix, use precision/recall/F1, apply resampling techniques, adjust class weights during training."
   },
   {
     "q": "You're evaluating a fraud detection model that flags transactions as fraudulent or legitimate. False positives (flagging legitimate transactions as fraud) annoy customers. False negatives (missing fraud) cost the company money. Currently: precision=0.70, recall=0.95. The business wants fewer false positives. What should you do?",
@@ -489,7 +489,7 @@
     ],
     "ans": 0,
     "explain": "Increasing the classification threshold makes the model more conservative about flagging fraud. It will only flag transactions with higher predicted fraud probability, reducing false positives (improving precision) but increasing false negatives (lowering recall). This trade-off is acceptable here since the business prioritizes reducing false positives. Decreasing threshold does the opposite. Retraining with more data might help but doesn't directly address the business requirement to reduce false positives. F1-score balances precision and recall but doesn't let you prioritize one over the other as needed.",
-    "concept": "Precision vs Recall trade-off: Increase threshold \u2192 higher precision, lower recall (fewer false positives, more false negatives). Decrease threshold \u2192 higher recall, lower precision (catch more positives, more false alarms). Adjust based on business cost of FP vs FN."
+    "concept": "Precision vs Recall trade-off: Increase threshold → higher precision, lower recall (fewer false positives, more false negatives). Decrease threshold → higher recall, lower precision (catch more positives, more false alarms). Adjust based on business cost of FP vs FN."
   },
   {
     "q": "Your data science team built a model with the following metrics: Training accuracy=0.98, Validation accuracy=0.87, Test accuracy=0.86. They plan to deploy to production. What is your assessment?",
@@ -501,7 +501,7 @@
     ],
     "ans": 1,
     "explain": "The gap between training (98%) and validation (87%) suggests some overfitting, but what matters most is that validation and test accuracies are similar (87% vs 86%). This indicates the model generalizes well to unseen data. The validation set accurately predicted test performance. While reducing overfitting could improve performance, the model is production-ready. Severe overfitting would show validation << test. Underfitting would show all three metrics being similarly low. The model does have some variance (training vs validation gap) but the consistent validation/test performance indicates it's manageable.",
-    "concept": "Model evaluation: Train vs validation gap = overfit degree. Validation vs test similarity = validation set reliability. Production decision: if validation \u2248 test AND meets business requirements, deploy. Monitor performance and iterate."
+    "concept": "Model evaluation: Train vs validation gap = overfit degree. Validation vs test similarity = validation set reliability. Production decision: if validation ≈ test AND meets business requirements, deploy. Monitor performance and iterate."
   },
   {
     "q": "You're training a regression model to predict house prices. After training, you observe: Training RMSE=15000, Validation RMSE=80000. What is the most likely problem and solution?",
@@ -525,7 +525,7 @@
     ],
     "ans": 1,
     "explain": "Distribution mismatch between training and production data is a common cause of deployment failures. Training might be on historical data with different user behavior, seasonal patterns, or product catalogs than production. Option A (temporal leakage) would make validation metrics unrealistically good, not bad. Option C (overfitting to validation set) is possible with excessive hyperparameter tuning but usually shows as small degradation, not significant. Option D (split ratio) doesn't explain production vs validation performance gap - if validation was representative, the split ratio wouldn't matter. Always validate that training data distribution matches production.",
-    "concept": "Train-serve skew: Training data distribution \u2260 production distribution. Causes: temporal drift, sampling bias, different data sources. Solution: validate on recent production-like data, monitor for distribution drift, retrain periodically with fresh data."
+    "concept": "Train-serve skew: Training data distribution ≠ production distribution. Causes: temporal drift, sampling bias, different data sources. Solution: validate on recent production-like data, monitor for distribution drift, retrain periodically with fresh data."
   },
   {
     "q": "You're building a classification model and split data into 60% train, 20% validation, 20% test. You tune hyperparameters using validation performance, achieving 92% validation accuracy. The test accuracy is 89%. Your manager asks why you need a test set. What do you explain?",
@@ -692,8 +692,8 @@
       "Use Cloud SQL federated queries to access data directly in BigQuery"
     ],
     "ans": 0,
-    "explain": "Datastream is Google's recommended tool for database replication to BigQuery. It captures changes from Cloud SQL (via binary logs) and streams to BigQuery with low latency, preserving schema and handling updates. It's the official path for Cloud SQL \u2192 BigQuery migration. BigQuery Data Transfer Service doesn't support Cloud SQL as a source (it's for SaaS apps like Google Ads, YouTube). Exporting to CSV works but is a one-time load, not a continuous sync, and loses relationships. Federated queries allow querying Cloud SQL from BigQuery but don't migrate data - they query in-place with high latency.",
-    "concept": "Database to BigQuery migration: Use Datastream for continuous CDC replication from Cloud SQL, PostgreSQL, Oracle, MySQL. Alternatives: one-time batch export (CSV/Avro \u2192 GCS \u2192 BigQuery) for historical load. Datastream for ongoing sync."
+    "explain": "Datastream is Google's recommended tool for database replication to BigQuery. It captures changes from Cloud SQL (via binary logs) and streams to BigQuery with low latency, preserving schema and handling updates. It's the official path for Cloud SQL → BigQuery migration. BigQuery Data Transfer Service doesn't support Cloud SQL as a source (it's for SaaS apps like Google Ads, YouTube). Exporting to CSV works but is a one-time load, not a continuous sync, and loses relationships. Federated queries allow querying Cloud SQL from BigQuery but don't migrate data - they query in-place with high latency.",
+    "concept": "Database to BigQuery migration: Use Datastream for continuous CDC replication from Cloud SQL, PostgreSQL, Oracle, MySQL. Alternatives: one-time batch export (CSV/Avro → GCS → BigQuery) for historical load. Datastream for ongoing sync."
   },
   {
     "q": "Your application uses Firestore in Datastore mode and needs to migrate to Firestore Native mode to use new features like real-time listeners. What is the migration path?",
@@ -705,7 +705,7 @@
     ],
     "ans": 0,
     "explain": "Firestore Datastore mode and Native mode are incompatible - you cannot convert between them in-place. You must create a new Firestore Native database (in a different project or region) and migrate data via export (from Datastore mode) and import (to Native mode). This is a significant migration effort requiring application code changes (different APIs). There's no automatic conversion tool. Plan carefully: consider data model changes, test thoroughly, and plan for cutover downtime or dual-write periods.",
-    "concept": "Firestore modes: Datastore mode = App Engine compatibility, no realtime. Native mode = mobile/web SDK, realtime, richer queries. No in-place conversion. Migration: export \u2192 import + code changes. Choose mode at database creation (permanent)."
+    "concept": "Firestore modes: Datastore mode = App Engine compatibility, no realtime. Native mode = mobile/web SDK, realtime, richer queries. No in-place conversion. Migration: export → import + code changes. Choose mode at database creation (permanent)."
   },
   {
     "q": "Your Dataflow pipeline processes daily sales data with a fixed daily window (midnight to midnight UTC). Sales events arrive out-of-order by up to 1 hour. You need to ensure all events for a day are included in that day's window. What windowing configuration should you use?",
@@ -801,7 +801,7 @@
     ],
     "ans": 0,
     "explain": "Lifecycle policies automate transitions based on object age. Transition to Nearline after 7 days (cheaper storage for 80% rarely accessed, plus 15% occasional access fits Nearline). For objects still in Nearline after 90 days (rarely accessed), transition to Coldline for even lower cost. The 5% frequently accessed objects will generate retrieval costs in Nearline, but the overall savings from the 80% rarely accessed justifies this. Moving everything to Coldline immediately would cause high retrieval costs for the 5% frequently accessed. Archive's 365-day minimum is too aggressive. Object versioning doesn't reduce costs.",
-    "concept": "Lifecycle policy pattern: Standard \u2192 Nearline (7-30 days) \u2192 Coldline (90 days) \u2192 Archive (365 days) or Delete. Base on access patterns. Early deletion before minimum storage duration incurs penalty. Test with smaller buckets first."
+    "concept": "Lifecycle policy pattern: Standard → Nearline (7-30 days) → Coldline (90 days) → Archive (365 days) or Delete. Base on access patterns. Early deletion before minimum storage duration incurs penalty. Test with smaller buckets first."
   },
   {
     "q": "You need to provide a temporary download link for a private object in Cloud Storage to an external user who doesn't have a Google account. The link should expire after 1 hour. What should you use?",
@@ -945,7 +945,7 @@
     ],
     "ans": 2,
     "explain": "Dataflow provides full control over error handling: parse JSON with try/catch, route invalid rows to a dead-letter table, load valid rows to BigQuery. This ensures no data loss and provides visibility into errors. BigQuery's max_bad_records allows some errors but doesn't give you the bad records for debugging. Pre-validation with Cloud Functions works but doesn't scale as well as Dataflow for large volumes. Switching to CSV doesn't solve data quality issues and JSON may be required for nested structures.",
-    "concept": "Error handling pattern: Use Dataflow for complex error handling (dead-letter tables, retries, monitoring). BigQuery native loads for simple cases with max_bad_records. Pattern: parse \u2192 route errors to side output \u2192 write to error table. Enables debugging and reprocessing."
+    "concept": "Error handling pattern: Use Dataflow for complex error handling (dead-letter tables, retries, monitoring). BigQuery native loads for simple cases with max_bad_records. Pattern: parse → route errors to side output → write to error table. Enables debugging and reprocessing."
   },
   {
     "q": "You need to reserve 500 slots for your analytics team's BigQuery queries to ensure consistent performance. The team runs queries 8 hours/day, 5 days/week. What reservation strategy minimizes costs?",
@@ -956,7 +956,7 @@
       "Purchase monthly flex slots (500 slots) for the months when usage is high"
     ],
     "ans": 0,
-    "explain": "Flex slots (monthly or annual commitment) provide reserved capacity at lower cost than on-demand. However, since usage is only 8h/day, 5 days/week (\u224824% utilization), reserving full 500 slots 24/7 is wasteful. The optimal strategy is baseline reservation for predictable load (e.g., 100 slots) + on-demand for spikes. You can also use autoscaling with slot reservations. Annual commitment for 500 slots at 24% utilization costs more than mixed approach. Pure on-demand is expensive for consistent usage. Monthly flex slots don't address daily underutilization.",
+    "explain": "Flex slots (monthly or annual commitment) provide reserved capacity at lower cost than on-demand. However, since usage is only 8h/day, 5 days/week (≈24% utilization), reserving full 500 slots 24/7 is wasteful. The optimal strategy is baseline reservation for predictable load (e.g., 100 slots) + on-demand for spikes. You can also use autoscaling with slot reservations. Annual commitment for 500 slots at 24% utilization costs more than mixed approach. Pure on-demand is expensive for consistent usage. Monthly flex slots don't address daily underutilization.",
     "concept": "BigQuery slot reservations: On-demand = $6.25/TB, fair scheduling. Flat-rate = reserved slots, predictable cost. Flex slots = monthly/annual commitment, 40-50% discount vs on-demand. Use: baseline reservation + autoscaling or on-demand for peaks. Monitor slot utilization."
   },
   {
@@ -969,7 +969,7 @@
     ],
     "ans": 1,
     "explain": "Partitioning by event_date allows BigQuery to prune partitions outside the queried date range, while clustering by customer_region further reduces data scanned within partitions. This directly reduces bytes processed and costs. BI Engine caches results but doesn't reduce initial query costs. Materialized views help with repeated identical queries but add storage costs and maintenance overhead. Increasing slots improves performance but increases costs rather than reducing them.",
-    "concept": "Cost reduction hierarchy: Partition (prune data) \u2192 Cluster (organize within partitions) \u2192 Cache/Materialize (reuse results). Partitioning provides the largest cost savings by reducing bytes scanned."
+    "concept": "Cost reduction hierarchy: Partition (prune data) → Cluster (organize within partitions) → Cache/Materialize (reuse results). Partitioning provides the largest cost savings by reducing bytes scanned."
   },
   {
     "q": "A BigQuery query joining three large tables (10 TB, 5 TB, and 100 GB) is timing out after 6 hours. The query execution details show the largest table is being broadcast to all workers. How should you optimize this query?",
@@ -1017,7 +1017,7 @@
     ],
     "ans": 0,
     "explain": "Flex slots provide immediate additional capacity that can be purchased hourly for peak periods, directly addressing the slot shortage indicated by wait times. While table optimization (partitioning/clustering) reduces bytes processed, it doesn't increase available slots for concurrent workloads. Result caching helps repeated queries but not initial executions. Reservations reorganize existing slot allocation but don't add capacity. The question specifically mentions slot wait time, indicating insufficient compute capacity.",
-    "concept": "Slot wait time \u2192 capacity problem. Solution hierarchy for slot contention: Add flex slots (immediate) \u2192 Optimize queries (reduce demand) \u2192 Use reservations (prioritize workloads)."
+    "concept": "Slot wait time → capacity problem. Solution hierarchy for slot contention: Add flex slots (immediate) → Optimize queries (reduce demand) → Use reservations (prioritize workloads)."
   },
   {
     "q": "A Dataproc cluster processes daily batch jobs that run for 2 hours. The cluster has 10 worker nodes (n1-standard-4) and remains idle for 22 hours daily. Job completion time is acceptable. What is the MOST cost-effective optimization?",
@@ -1053,7 +1053,7 @@
     ],
     "ans": 1,
     "explain": "Increasing the scale-up factor adds more workers per scaling decision, helping the cluster respond more aggressively to sudden demand spikes. The 2-minute cooldown is already reasonable; decreasing it below 2 minutes can cause thrashing. Scale-down cooldown and graceful decommissioning improve cost efficiency and stability during scale-down but don't help with scale-up responsiveness during traffic spikes. The question specifically identifies delays during spikes, indicating insufficient scale-up aggressiveness.",
-    "concept": "Dataproc autoscaling tuning: Scale-up factor controls aggressiveness (how many workers), cooldown controls frequency (how often). For bursty workloads: increase factor, keep cooldown \u2265 2min."
+    "concept": "Dataproc autoscaling tuning: Scale-up factor controls aggressiveness (how many workers), cooldown controls frequency (how often). For bursty workloads: increase factor, keep cooldown ≥ 2min."
   },
   {
     "q": "A Cloud Composer DAG has 15 tasks with complex dependencies. Five tasks are external API calls that occasionally fail due to rate limiting. The DAG uses default retry settings (1 retry, no delay). What is the BEST configuration to improve resilience?",
@@ -1077,7 +1077,7 @@
     ],
     "ans": 1,
     "explain": "Scheduler heartbeat gaps indicate scheduler bottleneck during DAG parsing and scheduling, not task execution capacity. Adding a second scheduler (available in Airflow 2.x) improves scheduling throughput for the 50 concurrent DAGs. Worker count affects task execution capacity, but the issue is scheduling delays before tasks even start. Reducing max_active_runs limits parallelism and doesn't solve the scheduler bottleneck. Upgrading worker machine type doesn't help scheduling performance.",
-    "concept": "Composer bottleneck diagnosis: Scheduler heartbeat gaps = add schedulers. Worker queue buildup = add workers. Decision: Scheduling delays \u2192 more schedulers; Execution delays \u2192 more workers."
+    "concept": "Composer bottleneck diagnosis: Scheduler heartbeat gaps = add schedulers. Worker queue buildup = add workers. Decision: Scheduling delays → more schedulers; Execution delays → more workers."
   },
   {
     "q": "A DAG uses a FileSensor to wait for files in Cloud Storage before processing. Files arrive unpredictably between 1-6 AM. The sensor checks every 60 seconds with timeout=10800s (3 hours). The environment frequently hits Composer worker limits during sensor wait times. How should you optimize this pattern?",
@@ -1113,7 +1113,7 @@
     ],
     "ans": 2,
     "explain": "Using Spark as the execution engine allows Great Expectations to parallelize expectation evaluation across distributed compute, significantly improving performance for large datasets. Sampling introduces risk of missing data quality issues in unsampled records. Reducing expectations compromises data quality coverage. Moving to BigQuery SQL might help but loses Great Expectations' rich features and standardization. The pandas execution engine processes serially, which explains the performance degradation with data growth.",
-    "concept": "Great Expectations performance: Scale execution engine with data volume. Decision: Pandas (<1M rows) \u2192 Spark (1M-100M rows) \u2192 SQL/BigQuery (>100M rows). Keep expectations comprehensive, scale compute."
+    "concept": "Great Expectations performance: Scale execution engine with data volume. Decision: Pandas (<1M rows) → Spark (1M-100M rows) → SQL/BigQuery (>100M rows). Keep expectations comprehensive, scale compute."
   },
   {
     "q": "You need to validate that 'email' column values match standard email format and that 'country_code' values are in a predefined list of 50 countries. Great Expectations doesn't have a built-in email format expectation. What is the BEST approach?",
@@ -1137,7 +1137,7 @@
     ],
     "ans": 2,
     "explain": "Adding application timestamps (event_time) to the data allows you to calculate processing latency (current_time - event_time) directly in BigQuery scheduled queries, which can then export results to Cloud Monitoring for alerting. This approach is reliable and doesn't depend on log parsing. Logs-based metrics from audit logs may not capture streaming insert timestamps reliably. Cloud Functions add unnecessary complexity and execution costs. Metrics Explorer can't derive latency from standard BigQuery metrics that don't include timing information.",
-    "concept": "Custom metric strategy: Instrument at source, calculate in pipeline. For latency: Add timestamp at ingestion, compute delta in processing layer, export to monitoring. Pattern: Source \u2192 Pipeline \u2192 Monitor."
+    "concept": "Custom metric strategy: Instrument at source, calculate in pipeline. For latency: Add timestamp at ingestion, compute delta in processing layer, export to monitoring. Pattern: Source → Pipeline → Monitor."
   },
   {
     "q": "A data pipeline has an SLO of 99.5% availability (monthly window). You need to create an alerting policy that notifies the team when SLO burn rate indicates you'll exhaust the error budget in 2 days. What should you configure?",
@@ -1161,7 +1161,7 @@
     ],
     "ans": 1,
     "explain": "Dataproc initialization actions can install and configure Prometheus JMX exporters that expose JVM metrics, which can then be scraped and sent to Cloud Monitoring. This is the standard pattern for custom metrics on Dataproc clusters. The Cloud Monitoring agent provides OS-level metrics but not JVM-specific metrics. Cloud Functions polling Spark UI adds unnecessary complexity and latency. Component Gateway provides UI access but doesn't export metrics to monitoring systems for alerting and analysis.",
-    "concept": "Dataproc observability layers: GCE metrics (OS/hardware) \u2192 Initialization actions + Prometheus (JVM/application) \u2192 Cloud Monitoring (aggregation/alerts). Custom metrics need exporters installed at cluster creation."
+    "concept": "Dataproc observability layers: GCE metrics (OS/hardware) → Initialization actions + Prometheus (JVM/application) → Cloud Monitoring (aggregation/alerts). Custom metrics need exporters installed at cluster creation."
   },
   {
     "q": "Your data warehouse team needs to distinguish between user queries (interactive) and ETL jobs (batch) in Cloud Monitoring dashboards for BigQuery. Both use the same project but different service accounts. What is the SIMPLEST approach?",
@@ -1185,7 +1185,7 @@
     ],
     "ans": 0,
     "explain": "Storing the last processed timestamp (watermark) and filtering the source query is the standard ELT pattern for incremental loads from databases with update timestamps. This minimizes data extracted and processed. CDC via Datastream is powerful but adds infrastructure complexity when simple timestamp filtering suffices. _TABLE_SUFFIX is for BigQuery wildcard queries, not source extraction. Reading all data defeats the purpose of incremental processing. The timestamp watermark pattern is simple, efficient, and idiomatic.",
-    "concept": "Incremental ELT pattern: Store watermark (last timestamp) \u2192 Filter source with WHERE timestamp > watermark \u2192 Update watermark after success. Storage: Cloud Storage, Datastore, or metadata table."
+    "concept": "Incremental ELT pattern: Store watermark (last timestamp) → Filter source with WHERE timestamp > watermark → Update watermark after success. Storage: Cloud Storage, Datastore, or metadata table."
   },
   {
     "q": "A batch ETL pipeline occasionally fails mid-processing, leaving partial data in BigQuery target tables. Rerunning the job creates duplicate records. The pipeline uses batch INSERT statements. What pattern ensures idempotent loads?",
@@ -1197,6 +1197,66 @@
     ],
     "ans": 0,
     "explain": "MERGE (upsert) statements check for existing records by key and update if present or insert if absent, making the operation idempotent regardless of how many times it runs. Truncating tables loses data if multiple jobs run concurrently and doesn't handle partial failures. Adding job_run_id requires changing query patterns and doesn't prevent duplicates. Streaming inserts with insertId provide deduplication but are designed for streaming workloads, not batch ETL. MERGE is the standard idempotent batch load pattern.",
-    "concept": "Idempotent load patterns: Batch \u2192 MERGE/UPSERT with keys. Streaming \u2192 insertId deduplication. DELETE/INSERT is NOT idempotent. Memory aid: 'MERGE makes multiple runs safe.'"
+    "concept": "Idempotent load patterns: Batch → MERGE/UPSERT with keys. Streaming → insertId deduplication. DELETE/INSERT is NOT idempotent. Memory aid: 'MERGE makes multiple runs safe.'"
+  },
+  {
+    "q": "A BigQuery table has 1,000 columns. Analysts need all columns except 10 sensitive fields, and cost must be minimized. Which query pattern is best?",
+    "opts": [
+      "SELECT * EXCEPT (sensitive_col1, sensitive_col2, ...) FROM `project.dataset.table`",
+      "SELECT * FROM `project.dataset.table` and drop columns in BI tool",
+      "CREATE TABLE copy AS SELECT * FROM source, then manually remove fields daily",
+      "SELECT TO_JSON_STRING(t) FROM `project.dataset.table` t to scan fewer bytes"
+    ],
+    "ans": 0,
+    "explain": "SELECT * EXCEPT avoids scanning unnecessary columns and is the cost-efficient SQL pattern for excluding a known set of fields.",
+    "concept": "BigQuery cost optimization: prune columns with SELECT * EXCEPT."
+  },
+  {
+    "q": "You are implementing Authorized Views for analysts to see only masked records from a restricted table. Where should the authorized view live?",
+    "opts": [
+      "In a separate dataset from the source tables, then grant analysts access to that view dataset",
+      "In the same dataset as source tables with Data Viewer on the dataset",
+      "In the same dataset with BigQuery Admin on the view only",
+      "In any dataset because Authorized Views ignore dataset-level permissions"
+    ],
+    "ans": 0,
+    "explain": "Authorized Views should be placed in a separate dataset so analysts can query the view without inheriting direct visibility to raw source tables through same-dataset access patterns.",
+    "concept": "BigQuery authorized views security boundary: separate dataset for controlled exposure."
+  },
+  {
+    "q": "Which IAM role allows reading/writing table data but does not grant full dataset administration?",
+    "opts": [
+      "BigQuery Data Editor",
+      "BigQuery Admin",
+      "BigQuery Data Viewer",
+      "Project Owner"
+    ],
+    "ans": 0,
+    "explain": "BigQuery Data Editor can create/update/delete table data objects in scope, but BigQuery Admin has broader administrative authority. Data Viewer is read-only.",
+    "concept": "BigQuery IAM role boundaries: Data Viewer vs Data Editor vs Admin."
+  },
+  {
+    "q": "You need to load CSV from Cloud Storage into BigQuery with a defined schema using the CLI. Which command shape is correct?",
+    "opts": [
+      "bq load --source_format=CSV dataset.table gs://bucket/path/file.csv schema.json",
+      "bq query --load_csv dataset.table gs://bucket/path/file.csv schema.json",
+      "bq extract --source_format=CSV dataset.table gs://bucket/path/file.csv schema.json",
+      "bq cp --source_format=CSV gs://bucket/path/file.csv dataset.table schema.json"
+    ],
+    "ans": 0,
+    "explain": "The correct load command uses bq load with --source_format=CSV followed by destination table, source URI, and schema.",
+    "concept": "BigQuery CLI: bq load syntax for CSV ingestion."
+  },
+  {
+    "q": "A team grants BigQuery Data Viewer to an analyst group but wants to prevent any accidental table modifications. Is this role appropriate?",
+    "opts": [
+      "Yes, Data Viewer is read-only and cannot modify table data or schema",
+      "No, Data Viewer can update table rows but not schema",
+      "No, Data Viewer can delete datasets but not tables",
+      "No, Data Viewer is equivalent to BigQuery Admin at dataset scope"
+    ],
+    "ans": 0,
+    "explain": "BigQuery Data Viewer provides read/list access only. It is suitable when modifications must be blocked.",
+    "concept": "BigQuery least privilege: Data Viewer for strict read-only access."
   }
 ]

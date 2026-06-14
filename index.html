@@ -294,6 +294,17 @@
       background: var(--blue-dark);
     }
 
+    .home-guide {
+      margin-top: 12px;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
     /* ── QUIZ ── */
     #quiz {
       width: 100%;
@@ -315,12 +326,58 @@
       margin-bottom: 14px;
     }
 
+    .quiz-head-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .quiz-title-wrap {
+      min-width: 0;
+    }
+
+    .quiz-context {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .2px;
+      color: var(--blue);
+      margin-bottom: 2px;
+    }
+
     .quiz-head-tools {
       margin-left: auto;
       display: flex;
       align-items: center;
       gap: 8px;
       flex-shrink: 0;
+    }
+
+    .fullscreen-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--blue);
+      cursor: pointer;
+      transition: .15s;
+      white-space: nowrap;
+    }
+
+    .fullscreen-btn:hover {
+      border-color: var(--blue);
+      background: #e8f0fe;
+    }
+
+    .fullscreen-icon {
+      font-size: 16px;
+      line-height: 1;
     }
 
     .countdown-chip {
@@ -368,7 +425,6 @@
     .quiz-title {
       font-size: 16px;
       font-weight: 700;
-      flex: 1;
       min-width: 0;
     }
 
@@ -652,7 +708,7 @@
 
     .quiz-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 320px;
+      grid-template-columns: minmax(0, 1fr) 380px;
       gap: 16px;
       align-items: start;
     }
@@ -665,13 +721,13 @@
       background: var(--card);
       border: 1.5px solid var(--border);
       border-radius: 12px;
-      padding: 14px;
+      padding: 18px;
       position: sticky;
       top: 14px;
     }
 
     .review-panel-title {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 700;
       color: #5f6368;
       text-align: center;
@@ -683,10 +739,53 @@
     }
 
     .review-panel-meta {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--muted);
       margin-bottom: 10px;
       text-align: center;
+    }
+
+    .review-legend {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 10px;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      background: #f8f9fa;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 8px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid transparent;
+      display: inline-block;
+    }
+
+    .legend-dot.current {
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .legend-dot.answered {
+      background: #e6f4ea;
+      border-color: var(--green);
+    }
+
+    .legend-dot.marked {
+      background: #fff4d6;
+      border-color: #f9ab00;
     }
 
     @media(max-width:1024px) {
@@ -703,17 +802,17 @@
     .q-dots {
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
+      gap: 8px;
       margin-bottom: 0;
     }
 
     .q-dot {
-      width: 26px;
-      height: 26px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       border: 1.5px solid var(--border);
       background: #fff;
-      font-size: 11px;
+      font-size: 14px;
       font-weight: 700;
       cursor: pointer;
       display: flex;
@@ -876,6 +975,12 @@
 
     .stat-box {
       background: #f8f9fa;
+
+      .q-dot {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+      }
       border-radius: 10px;
       padding: 12px 8px;
       text-align: center;
@@ -1120,6 +1225,45 @@
       font-weight: 800;
       color: var(--text);
     }
+
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+
+      #results,
+      #results * {
+        visibility: visible !important;
+      }
+
+      #results {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0 10mm;
+        background: #fff;
+      }
+
+      .results-actions,
+      .tab-bar,
+      .rc-expand-btn,
+      .global-actions,
+      .history-toggle {
+        display: none !important;
+      }
+
+      .review-card,
+      .results-hero,
+      .stat-box,
+      .time-box {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
   </style>
 </head>
 
@@ -1130,21 +1274,33 @@
     <div class="hero">
       <h1>GCP Professional Data Engineer</h1>
       <p>Graded Mock Quiz · Section-by-Section · Guided Learning</p>
-      <span class="blueprint-badge">2026 Official Exam Blueprint</span>
+      <span class="blueprint-badge" id="blueprint-badge">2026 Official Exam Blueprint</span>
+    </div>
+    <button class="full-test-btn" id="full-test-btn" onclick="startFullTest()"></button>
+    <div class="home-guide">
+      Tip: Start section-wise to focus on specific domains, then use past attempts to review and learn from previous questions before taking the full mock exam.
     </div>
     <div class="global-actions">
       <button class="global-clear-btn" onclick="clearAllHistory()">🗑 Clear All History</button>
     </div>
     <div id="sections-grid" class="sections-grid"></div>
-    <button class="full-test-btn" id="full-test-btn" onclick="startFullTest()"></button>
   </div>
 
   <!-- ═══ QUIZ ═══ -->
   <div id="quiz" class="screen">
     <div class="quiz-header">
-      <button class="back-btn" onclick="goHome()">← Back</button>
-      <div class="quiz-title" id="quiz-title"></div>
+      <div class="quiz-head-left">
+        <button class="back-btn" title="Go to Home" onclick="goHome()">⌂ Home</button>
+        <div class="quiz-title-wrap">
+          <div class="quiz-context">GCP Professional Data Engineer</div>
+          <div class="quiz-title" id="quiz-title"></div>
+        </div>
+      </div>
       <div class="quiz-head-tools">
+        <button class="fullscreen-btn" id="btn-fullscreen" onclick="toggleFullscreen()">
+          <span class="fullscreen-icon" id="fullscreen-icon">⛶</span>
+          <span id="fullscreen-label">Fullscreen</span>
+        </button>
         <span class="countdown-chip" id="exam-left-chip" style="display:none;">
           ⏱ <span id="exam-left">02:00:00</span> left
         </span>
@@ -1204,6 +1360,11 @@
         <div class="review-panel-title">Review Attempt</div>
         <div class="review-panel-meta" id="review-panel-meta">0/0 answered</div>
         <div class="q-dots" id="q-dots"></div>
+        <div class="review-legend">
+          <span class="legend-item"><span class="legend-dot current"></span>Current</span>
+          <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+          <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+        </div>
       </aside>
     </div>
   </div>
@@ -1279,6 +1440,12 @@
     </div>
 
     <!-- Review Section -->
+    <div class="results-actions">
+      <button class="btn btn-outline" onclick="printReport()">🖨 Print Report</button>
+      <button class="btn btn-outline" onclick="retakeSection()">↺ Retake This Section</button>
+      <button class="btn btn-primary" onclick="goHome()">⌂ All Sections</button>
+    </div>
+
     <div class="review-section">
       <div class="review-header">
         <h2>📋 Question Review</h2>
@@ -1292,6 +1459,7 @@
     </div>
 
     <div class="results-actions">
+      <button class="btn btn-outline" onclick="printReport()">🖨 Print Report</button>
       <button class="btn btn-outline" onclick="retakeSection()">↺ Retake This Section</button>
       <button class="btn btn-primary" onclick="goHome()">⌂ All Sections</button>
     </div>
@@ -1417,6 +1585,7 @@
       examDurationSec: 0,
       remainingSec: 0,
       isPaused: false,
+      exportMode: false,
       activeTab: 'all'
     };
 
@@ -1439,6 +1608,28 @@
       if (sec < 60) return `${sec}s`;
       const m = Math.floor(sec / 60), s = sec % 60;
       return s === 0 ? `${m}m` : `${m}m ${s}s`;
+    }
+
+    function updateFullscreenButton() {
+      const inFullscreen = !!document.fullscreenElement;
+      const icon = document.getElementById('fullscreen-icon');
+      const lbl = document.getElementById('fullscreen-label');
+      if (!icon || !lbl) return;
+      icon.textContent = inFullscreen ? '🗗' : '⛶';
+      lbl.textContent = inFullscreen ? 'Exit Fullscreen' : 'Fullscreen';
+    }
+
+    async function toggleFullscreen() {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+        } else {
+          await document.exitFullscreen();
+        }
+      } catch (e) {
+        alert('Fullscreen is not available in this browser context.');
+      }
+      updateFullscreenButton();
     }
 
     function elapsedSec(from) { return Math.floor((Date.now() - from) / 1000); }
@@ -1475,17 +1666,18 @@
       window.scrollTo(0, 0);
     }
     function goHome() {
-      if (isPauseLocked()) {
-        alert('Resume the timer before leaving this question.');
-        return;
-      }
       const bypassConfirm = typeof navigator !== 'undefined' && !!navigator.webdriver;
-      if (!bypassConfirm && document.getElementById('quiz').classList.contains('active') && !state.finalSubmitted) {
+      if (!bypassConfirm && hasOngoingQuiz()) {
         if (!confirm('Exit current quiz? Your current attempt will be discarded.')) return;
       }
       stopTimers();
       renderHome();
       showScreen('home');
+    }
+
+    function hasOngoingQuiz() {
+      const quizActive = document.getElementById('quiz').classList.contains('active');
+      return quizActive && state.questions.length > 0 && !state.finalSubmitted;
     }
     function retakeSection() {
       if (state.currentSection >= 0) startSection(state.currentSection);
@@ -1496,6 +1688,11 @@
     function renderHome() {
       const store = getStore();
       const grid = document.getElementById('sections-grid');
+      const badge = document.getElementById('blueprint-badge');
+      const totalPracticeQuestions = SECTIONS.reduce((sum, sec) => sum + sec.questions.length, 0);
+      if (badge) {
+        badge.textContent = `2026 Official Exam Blueprint · ${totalPracticeQuestions} Practice Questions`;
+      }
       grid.innerHTML = SECTIONS.map((sec, i) => {
         const best = store.scores[sec.id];
         const history = store.history[sec.id] || [];
@@ -1782,7 +1979,7 @@
       if (submitBtn) {
         const marked = !!state.markedForReview[state.current];
         submitBtn.textContent = marked ? '🟠 Marked for Review' : '⭐ Mark for Review';
-        submitBtn.disabled = pausedLocked;
+        submitBtn.disabled = false;
       }
     }
 
@@ -1818,7 +2015,6 @@
         submitFinal();
         return;
       }
-      if (guardPauseNavigation()) return;
       if (state.markedForReview[state.current]) {
         delete state.markedForReview[state.current];
       } else {
@@ -1999,6 +2195,12 @@
         const correctRow = isCorrect ? '' :
           `<div class="answer-row"><span class="ar-label ar-correct">Correct answer:</span><span class="ar-correct">${letters[q.ans]}. ${q.opts[q.ans]}</span></div>`;
 
+        const detailHtml = state.exportMode
+          ? `<div class="rc-explain">${q.explain}<div class="concept-box" style="margin-top:8px;"><strong>📖 Concept:</strong> ${q.concept}</div></div>`
+          : (isCorrect
+            ? `<details style="margin-top:8px;"><summary class="rc-expand-btn">📖 Show explanation</summary><div class="rc-explain">${q.explain}<div class="concept-box" style="margin-top:8px;"><strong>📖 Concept:</strong> ${q.concept}</div></div></details>`
+            : `<div class="rc-explain">${q.explain}<div class="concept-box" style="margin-top:8px;"><strong>📖 Concept to study:</strong> ${q.concept}</div></div>`);
+
         return `
     <div class="review-card ${cardCls}">
       <div class="rc-time">${timeStr}</div>
@@ -2006,16 +2208,57 @@
       <div class="rc-q"><strong>Q${i + 1}.</strong> ${q.q}</div>
       ${yourAnswerRow}
       ${correctRow}
-      ${isCorrect
-            ? `<details style="margin-top:8px;"><summary class="rc-expand-btn">📖 Show explanation</summary><div class="rc-explain">${q.explain}<div class="concept-box" style="margin-top:8px;"><strong>📖 Concept:</strong> ${q.concept}</div></div></details>`
-            : `<div class="rc-explain">${q.explain}<div class="concept-box" style="margin-top:8px;"><strong>📖 Concept to study:</strong> ${q.concept}</div></div>`
-          }
+      ${detailHtml}
     </div>`;
       }).join('');
     }
 
+    function exportReport(mode) {
+      const prevTab = state.activeTab;
+      const prevExport = state.exportMode;
+      const prevTitle = document.title;
+
+      state.exportMode = true;
+      state.activeTab = 'all';
+      renderReviewCards();
+      updateTabUI();
+
+      const stamp = new Date().toISOString().slice(0, 10);
+      document.title = `GCP-PDE-Assessment-Report-${stamp}`;
+
+      const isWebDriver = typeof navigator !== 'undefined' && !!navigator.webdriver;
+      if (mode === 'download' && !isWebDriver) {
+        alert('The print dialog will open. Choose "Save as PDF" as the destination to download your report.');
+      }
+
+      window.print();
+
+      document.title = prevTitle;
+      state.exportMode = prevExport;
+      state.activeTab = prevTab;
+      renderReviewCards();
+      updateTabUI();
+    }
+
+    function printReport() {
+      exportReport('print');
+    }
+
+    // Warn before browser/tab navigation when an attempt is in progress.
+    document.addEventListener('fullscreenchange', updateFullscreenButton);
+
+    // Warn before browser/tab navigation when an attempt is in progress.
+    window.addEventListener('beforeunload', function (e) {
+      const bypassConfirm = typeof navigator !== 'undefined' && !!navigator.webdriver;
+      if (bypassConfirm) return;
+      if (!hasOngoingQuiz()) return;
+      e.preventDefault();
+      e.returnValue = '';
+    });
+
     // ── START ─────────────────────────────────────────────────────────
     init();
+    updateFullscreenButton();
   </script>
 </body>
 

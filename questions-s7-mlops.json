@@ -1837,7 +1837,7 @@
   },
   {
     "q": "You're running distributed training for a computer vision model with data parallelism across 8 GPUs. The training step time is 100ms, but you observe significant variation (80ms-150ms) between steps. What is the most likely cause?",
-    "o pts": [
+    "opts": [
       "Straggler effects where one GPU finishes slower than others, causing synchronization delays; investigate load imbalance in data distribution or check for hardware issues",
       "Network bandwidth limitations between GPUs",
       "The model architecture is inefficient",

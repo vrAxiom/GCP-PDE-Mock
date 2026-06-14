@@ -108,20 +108,16 @@
     "concept": "Dataform Assertions: TYPES → Uniqueness, null checks, custom SQL conditions | INTEGRATION → Part of Dataform job, fails pipeline on violation | SYNTAX → assert_unique, assert_not_null, custom queries. Use for: Data quality gates in transformation pipelines. Alternative: dbt tests (similar concept). Dataplex tasks = separate orchestration. Ref: GCP Sample Q10"
   },
   {
-    "q": "Your Cloud Composer 2 environment shows increased worker memory usage and pod evictions. Data processing tasks are failing. What should you do? (Choose two)",
+    "q": "Your Cloud Composer 2 environment shows increased worker memory usage and pod evictions. Data processing tasks are failing. What is the best first action?",
     "opts": [
+      "Increase memory available to Airflow workers",
       "Increase DAG file parsing interval",
       "Increase Cloud Composer environment size (medium → large)",
-      "Increase memory available to Airflow workers",
-      "Increase memory available to Airflow triggerer",
-      "Increase max workers and reduce worker concurrency"
+      "Increase memory available to Airflow triggerer"
     ],
-    "ans": [
-      2,
-      4
-    ],
-    "explain": "Worker pod evictions + high memory = out-of-memory (OOM) on workers. Solutions: (1) Increase worker memory (option C)—gives each worker more capacity. (2) Increase max workers + reduce concurrency (option E)—distributes load across more workers with fewer tasks per worker. Option A affects scheduler, not workers. Option B affects backend (DB, queue), not worker capacity. Option D targets triggerer, not worker memory issue.",
-    "concept": "Cloud Composer Worker Tuning: SYMPTOM → Pod evictions + high memory | FIX → (1) Increase worker memory, (2) Scale workers horizontally + reduce task concurrency. Environment size ≠ worker capacity (affects backend only). Worker config: memory, CPU, min/max replicas, concurrency. Monitor: Worker memory %, eviction rate. Ref: GCP Sample Q11"
+    "ans": 0,
+    "explain": "Worker pod evictions with high worker memory usage indicate workers are running out of memory. The best first action is to increase memory for Airflow workers. Increasing DAG parse interval affects scheduler overhead, not worker OOM. Environment size mainly affects Composer control plane/backend capacity. Triggerer memory helps deferred tasks, not worker execution memory pressure.",
+    "concept": "Cloud Composer Worker Tuning: SYMPTOM -> Worker pod evictions + high worker memory. FIRST FIX -> Increase worker memory. Then consider scaling max workers and reducing concurrency if pressure persists."
   },
   {
     "q": "Non-technical business users need to clean data before analysis in a spreadsheet. What should you recommend?",
