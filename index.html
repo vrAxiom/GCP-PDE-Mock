@@ -929,6 +929,171 @@
     @media (max-width: 480px) {
       .domains-grid { grid-template-columns: 1fr; }
     }
+
+    /* ── CERT GUIDE ── */
+    #cert-guide {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cert-guide-card {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 32px;
+      align-items: start;
+      background: var(--bg);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cert-guide-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 60%, #7C3AED 100%);
+    }
+
+    .cert-guide-badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary-border);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .cert-guide-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .cert-guide-desc {
+      font-size: 14.5px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .cert-guide-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 22px;
+      padding: 0;
+    }
+
+    .cert-guide-points li {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .cert-guide-points li::before {
+      content: '✓';
+      color: var(--success);
+      font-weight: 700;
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .cert-guide-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 3px 10px rgba(29, 78, 216, 0.28);
+      transition: background .15s, transform .15s, box-shadow .15s;
+    }
+
+    .cert-guide-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 5px 14px rgba(29, 78, 216, 0.36);
+    }
+
+    .cert-guide-stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .cert-guide-stat {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 14px 12px;
+      text-align: center;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .cgs-num {
+      display: block;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+
+    .cgs-label {
+      display: block;
+      font-size: 11.5px;
+      color: var(--text-dim);
+      font-weight: 600;
+      margin-top: 3px;
+    }
+
+    .cert-guide-tip {
+      background: #FFFBEB;
+      border: 1px solid rgba(217, 119, 6, 0.22);
+      border-left: 3px solid var(--warning);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .cert-guide-tip strong { color: #92400E; }
+
+    @media (max-width: 900px) {
+      .cert-guide-card {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 24px 20px;
+      }
+      .cert-guide-stat-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    @media (max-width: 540px) {
+      .cert-guide-stat-grid { grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 
@@ -1053,6 +1218,55 @@
               <li>Retake the same domain after a short reset, not back-to-back fatigue</li>
             </ul>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="cert-guide">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <h2>PDE Certification Guide</h2>
+            <p>The official Google Cloud exam guide is the single most authoritative source for what the Professional Data Engineer certification actually tests. Read it before you study so every topic you encounter maps back to a real exam objective.</p>
+          </div>
+        </div>
+        <div class="cert-guide-card">
+          <div class="cert-guide-left">
+            <div class="cert-guide-badge">Official</div>
+            <h3 class="cert-guide-title">Professional Data Engineer Exam Guide</h3>
+            <p class="cert-guide-desc">Published by Google Cloud, this document defines the five scored domains, their weightings, and every sub-topic you may be tested on. Use it to audit gaps in your practice-exam performance and to confirm you are not over-studying out-of-scope material.</p>
+            <ul class="cert-guide-points">
+              <li>Domain weightings aligned to this practice app's section structure</li>
+              <li>Authoritative sub-topic list — nothing on the exam falls outside this guide</li>
+              <li>Essential reading before your first full mock, and again one week before exam day</li>
+            </ul>
+            <a class="cert-guide-btn" href="https://services.google.com/fh/files/misc/professional_data_engineer_exam_guide_english.pdf" target="_blank" rel="noopener noreferrer">
+              &#128196; Download Exam Guide (PDF)
+            </a>
+          </div>
+          <div class="cert-guide-right">
+            <div class="cert-guide-stat-grid">
+              <div class="cert-guide-stat">
+                <span class="cgs-num">5</span>
+                <span class="cgs-label">Exam Domains</span>
+              </div>
+              <div class="cert-guide-stat">
+                <span class="cgs-num">50</span>
+                <span class="cgs-label">Questions</span>
+              </div>
+              <div class="cert-guide-stat">
+                <span class="cgs-num">2 hr</span>
+                <span class="cgs-label">Time Limit</span>
+              </div>
+              <div class="cert-guide-stat">
+                <span class="cgs-num">70%</span>
+                <span class="cgs-label">Passing Score</span>
+              </div>
+            </div>
+            <div class="cert-guide-tip">
+              <strong>How to use it:</strong> After each practice session, cross-reference the question topics with the exam guide sub-topics to identify which domain objectives still need work.
+            </div>
+          </div>
         </div>
       </div>
     </section>
