@@ -44,3 +44,24 @@ service-account-key.json
 *.backup
 Unknown/
 .work/
+
+# Test outputs and reports
+playwright-report/
+test-results/
+blob-report/
+coverage/
+reports/
+
+# CI/CD and deploy temp outputs
+.cf-pages/
+.wrangler/
+out/
+artifacts/
+tmp/
+temp/
+
+# Optional sample content folders (if used locally)
+sample/
+samples/
+sample-docs/
+sample-images/

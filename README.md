@@ -21,6 +21,36 @@ Open `http://localhost:8000`.
 
 ---
 
+## Deploying to GitHub Pages
+
+This repository includes an automatic GitHub Pages workflow at `.github/workflows/deploy-github-pages.yml`.
+
+### One-time setup
+
+1. Go to your GitHub repository settings.
+2. Open **Settings → Pages**.
+3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+4. Push to `main`.
+
+The workflow publishes these static files:
+
+- `index.html`
+- `practice-exam.html`
+- `questions-*.json`
+
+After deployment, your site URL will be shown in the Actions run summary.
+
+### Pull request checks
+
+This repository also includes `.github/workflows/pr-playwright-tests.yml`.
+
+- Runs on pull requests targeting `main`
+- Installs Chromium
+- Executes `npx playwright test`
+- Uploads Playwright reports as artifacts
+
+---
+
 ## Question Bank Structure
 
 Questions live in five JSON files — one per exam section:
