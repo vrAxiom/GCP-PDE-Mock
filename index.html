@@ -146,12 +146,10 @@
       border-radius: var(--radius-md);
       display: grid;
       place-items: center;
-      color: #fff;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.30);
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 0.03em;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.20), 0 0 0 1px rgba(15,23,42,0.08);
+      overflow: hidden;
+      flex-shrink: 0;
     }
 
     .brand-copy small {
@@ -369,6 +367,27 @@
 
     .btn-text:hover { text-decoration: underline; }
 
+    .btn-pill {
+      padding: 8px 18px;
+      background: #FEF9C3;
+      color: #92400E;
+      border: 1.5px solid #FDE68A;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .18s, border-color .18s, transform .18s;
+    }
+
+    .btn-pill:hover {
+      background: #FEF08A;
+      border-color: #FCD34D;
+      transform: translateY(-1px);
+    }
+
     .hero-stats {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -407,22 +426,22 @@
     .hero-side-card {
       width: 100%;
       border-radius: var(--radius-lg);
-      padding: 24px;
+      padding: 16px 20px;
       background: var(--bg-subtle);
       border: 1px solid var(--border-medium);
     }
 
     .hero-side-card h3 {
-      font-size: 18px;
-      margin-bottom: 16px;
+      font-size: 16px;
+      margin-bottom: 10px;
       font-weight: 700;
     }
 
     .hero-side-list {
       list-style: none;
       display: grid;
-      gap: 11px;
-      margin-bottom: 18px;
+      gap: 8px;
+      margin-bottom: 0;
     }
 
     .hero-side-list li {
@@ -1102,7 +1121,19 @@
   <header class="site-header">
     <div class="shell nav-row">
       <a class="brand" href="#top">
-        <span class="brand-mark">DE</span>
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- GCP certification hexagon logo using Google Cloud brand colors -->
+            <polygon points="13,2 22,7 22,19 13,24 4,19 4,7" fill="#E8F0FE" stroke="#4285F4" stroke-width="1.2"/>
+            <polygon points="13,5 19.5,8.75 19.5,17.25 13,21 6.5,17.25 6.5,8.75" fill="#4285F4" opacity="0.15"/>
+            <text x="13" y="17" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-weight="800" font-size="10" fill="#4285F4">GCP</text>
+            <!-- color accents -->
+            <circle cx="13" cy="2" r="2" fill="#4285F4"/>
+            <circle cx="22" cy="7" r="2" fill="#EA4335"/>
+            <circle cx="22" cy="19" r="2" fill="#FBBC05"/>
+            <circle cx="13" cy="24" r="2" fill="#34A853"/>
+          </svg>
+        </span>
         <span class="brand-copy">
           <small>Google Cloud Certification</small>
           <strong>PDE Mastery Portal</strong>
@@ -1133,7 +1164,7 @@
           <div class="hero-actions">
             <a class="btn-primary" href="./practice-exam.html">Open Practice Exam</a>
             <a class="btn-secondary" href="#study-map">View Study Map</a>
-            <a class="btn-text" href="#recovery">Why breaks matter</a>
+            <a class="btn-pill" href="#recovery">Why breaks matter</a>
           </div>
           <div class="hero-stats">
             <div class="hero-stat">
@@ -1158,16 +1189,6 @@
               <li>Section drills for weak areas plus a timed 50-question full mock.</li>
               <li>Review-first explanations designed for PDE service-selection reasoning.</li>
             </ul>
-            <div class="hero-side-meta">
-              <div class="hero-side-pill">
-                <strong id="practice-total-card">1118</strong>
-                <span id="practice-total-copy">live practice questions across all section banks</span>
-              </div>
-              <div class="hero-side-pill">
-                <strong>2h</strong>
-                <span>full mock exam with review before final submit</span>
-              </div>
-            </div>
           </div>
         </aside>
       </div>
@@ -1721,8 +1742,10 @@
         }));
         const total = pools.reduce(function (sum, section) { return sum + section.length; }, 0);
         document.getElementById('practice-total-chip').textContent = total;
-        document.getElementById('practice-total-card').textContent = total;
-        document.getElementById('practice-total-copy').textContent = total + ' practice questions live across all section banks';
+        const cardEl = document.getElementById('practice-total-card');
+        const copyEl = document.getElementById('practice-total-copy');
+        if (cardEl) cardEl.textContent = total;
+        if (copyEl) copyEl.textContent = total + ' practice questions live across all section banks';
       } catch (err) {
         console.error('Unable to load portal totals', err);
       }
