@@ -141,15 +141,21 @@
     }
 
     .brand-mark {
-      width: 40px;
-      height: 40px;
-      border-radius: var(--radius-md);
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-xl);
       display: grid;
       place-items: center;
-      background: #fff;
-      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.20), 0 0 0 1px rgba(15,23,42,0.08);
+      background: #ffffff;
+      border: 1.5px solid rgba(15, 23, 42, 0.08);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 20px -6px rgba(0, 0, 0, 0.04);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
       overflow: hidden;
       flex-shrink: 0;
+    }
+    .brand-mark:hover {
+      transform: scale(1.03);
+      box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.12), 0 10px 24px -5px rgba(0, 0, 0, 0.06);
     }
 
     .brand-copy small {
@@ -910,6 +916,12 @@
     @media (max-width: 780px) {
       .nav-row { flex-wrap: wrap; }
 
+      .brand-mark {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius-lg);
+      }
+
       .menu-toggle {
         display: inline-flex;
         align-items: center;
@@ -1122,16 +1134,25 @@
     <div class="shell nav-row">
       <a class="brand" href="#top" aria-label="GCP PDE Mastery Portal — Google Cloud Certification home">
         <span class="brand-mark" aria-hidden="true">
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- GCP certification hexagon logo using Google Cloud brand colors -->
-            <polygon points="13,2 22,7 22,19 13,24 4,19 4,7" fill="#E8F0FE" stroke="#4285F4" stroke-width="1.2"/>
-            <polygon points="13,5 19.5,8.75 19.5,17.25 13,21 6.5,17.25 6.5,8.75" fill="#4285F4" opacity="0.15"/>
-            <text x="13" y="17" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-weight="800" font-size="10" fill="#4285F4">GCP</text>
-            <!-- color accents -->
-            <circle cx="13" cy="2" r="2" fill="#4285F4"/>
-            <circle cx="22" cy="7" r="2" fill="#EA4335"/>
-            <circle cx="22" cy="19" r="2" fill="#FBBC05"/>
-            <circle cx="13" cy="24" r="2" fill="#34A853"/>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; display: block;">
+            <!-- Inner Filled Hexagon -->
+            <polygon points="50,22.8 73.5,36.4 73.5,63.6 50,77.2 26.5,63.6 26.5,36.4" fill="#E8F0FE" />
+            
+            <!-- Outer Hexagon Outline -->
+            <polygon points="50,18 77.7,34 77.7,66 50,82 22.3,66 22.3,34" fill="none" stroke="#4285F4" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" />
+            
+            <!-- Vertices Circles -->
+            <!-- Top: Blue -->
+            <circle cx="50" cy="18" r="6.5" fill="#4285F4" stroke="#FFFFFF" stroke-width="1.5" />
+            <!-- Right-Top: Red -->
+            <circle cx="77.7" cy="34" r="6.5" fill="#EA4335" stroke="#FFFFFF" stroke-width="1.5" />
+            <!-- Right-Bottom: Yellow -->
+            <circle cx="77.7" cy="66" r="6.5" fill="#FBBC05" stroke="#FFFFFF" stroke-width="1.5" />
+            <!-- Bottom: Green -->
+            <circle cx="50" cy="82" r="6.5" fill="#34A853" stroke="#FFFFFF" stroke-width="1.5" />
+            
+            <!-- Centered "GCP" Text -->
+            <text x="50" y="52" font-family="'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif" font-size="23" font-weight="800" fill="#4285F4" text-anchor="middle" dominant-baseline="central" letter-spacing="-0.02em">GCP</text>
           </svg>
         </span>
         <span class="brand-copy">

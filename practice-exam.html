@@ -132,16 +132,19 @@
     }
 
     .brand-mark {
-      width: 38px;
-      height: 38px;
-      border-radius: var(--radius-md);
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-xl);
       display: grid;
       place-items: center;
-      color: #fff;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.30);
-      font-size: 14px;
-      font-weight: 800;
+      background: #ffffff;
+      border: 1.5px solid rgba(15, 23, 42, 0.08);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 20px -6px rgba(0, 0, 0, 0.04);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .brand-mark:hover {
+      transform: scale(1.03);
+      box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.12), 0 10px 24px -5px rgba(0, 0, 0, 0.06);
     }
 
     .brand-copy small {
@@ -344,6 +347,11 @@
 
     @media(max-width:900px) {
       .nav-row { flex-wrap: wrap; }
+      .brand-mark {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius-lg);
+      }
       .menu-toggle { display: inline-flex; align-items: center; justify-content: center; margin-left: auto; }
       .nav-group { display: none; width: 100%; order: 3; flex-direction: column; align-items: stretch; gap: 10px; padding-top: 12px; }
       .nav-group.open { display: flex; }
@@ -1452,7 +1460,28 @@
   <header class="site-header">
     <div class="app-shell nav-row">
       <a class="brand" href="./index.html" aria-label="Go to mastery portal home">
-        <span class="brand-mark">DE</span>
+        <span class="brand-mark">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; display: block;">
+            <!-- Inner Filled Hexagon -->
+            <polygon points="50,22.8 73.5,36.4 73.5,63.6 50,77.2 26.5,63.6 26.5,36.4" fill="#E8F0FE" />
+            
+            <!-- Outer Hexagon Outline -->
+            <polygon points="50,18 77.7,34 77.7,66 50,82 22.3,66 22.3,34" fill="none" stroke="#4285F4" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" />
+            
+            <!-- Vertices Circles -->
+            <!-- Top: Blue -->
+            <circle cx="50" cy="18" r="6.5" fill="#4285F4" stroke="#FFFFFF" stroke-width="1.5" />
+            <!-- Right-Top: Red -->
+            <circle cx="77.7" cy="34" r="6.5" fill="#EA4335" stroke="#FFFFFF" stroke-width="1.5" />
+            <!-- Right-Bottom: Yellow -->
+            <circle cx="77.7" cy="66" r="6.5" fill="#FBBC05" stroke="#FFFFFF" stroke-width="1.5" />
+            <!-- Bottom: Green -->
+            <circle cx="50" cy="82" r="6.5" fill="#34A853" stroke="#FFFFFF" stroke-width="1.5" />
+            
+            <!-- Centered "GCP" Text -->
+            <text x="50" y="52" font-family="'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif" font-size="23" font-weight="800" fill="#4285F4" text-anchor="middle" dominant-baseline="central" letter-spacing="-0.02em">GCP</text>
+          </svg>
+        </span>
         <span class="brand-copy">
           <small>Google Cloud Certification</small>
           <strong>PDE Practice Exam</strong>
