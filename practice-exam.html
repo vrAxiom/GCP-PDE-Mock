@@ -563,6 +563,93 @@
       background: var(--primary-dark);
     }
 
+    .full-mock-history {
+      margin-top: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .full-mock-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .full-mock-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .full-mock-sub {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .full-mock-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .full-mock-row {
+      display: grid;
+      grid-template-columns: 1.2fr .6fr .7fr .9fr;
+      gap: 8px;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 9px 10px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .full-mock-row .fm-score {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .full-mock-row .fm-pass {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .full-mock-row .fm-fail {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .full-mock-row .fm-assessment {
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+
+    .full-mock-clear {
+      font-size: 12px;
+      color: var(--danger);
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 8px 0;
+      min-height: 40px;
+      font-weight: 600;
+    }
+
+    @media(max-width:700px) {
+      .full-mock-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
     .home-guide {
       margin-top: 12px;
       background: var(--bg-card);
@@ -1512,6 +1599,7 @@
       </div>
     </div>
     <button class="full-test-btn" id="full-test-btn" onclick="startFullTest()"></button>
+    <div class="full-mock-history" id="full-mock-history"></div>
     <div class="home-guide">
       Tip: Start section-wise to focus on specific domains, then use past attempts to review and learn from previous questions before taking the full mock exam.
     </div>
@@ -1780,16 +1868,35 @@
     // ═══════════════════════════════════════════════════════════
     const STORAGE_KEY = 'gcp_pde_quiz_v1';
 
+    function emptyStore() {
+      return { scores: {}, history: {}, fullMockHistory: [] };
+    }
+
+    function normalizeStore(data) {
+      const base = data && typeof data === 'object' ? data : {};
+      const scores = base.scores && typeof base.scores === 'object' ? base.scores : {};
+      const history = base.history && typeof base.history === 'object' ? base.history : {};
+      const fullMockHistory = Array.isArray(base.fullMockHistory) ? base.fullMockHistory : [];
+      return { scores, history, fullMockHistory };
+    }
+
     function loadStorage() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : { scores: {}, history: {} };
-      } catch (e) { return { scores: {}, history: {} }; }
+        return raw ? normalizeStore(JSON.parse(raw)) : emptyStore();
+      } catch (e) { return emptyStore(); }
     }
     function saveStorage(data) {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { }
     }
     function getStore() { return loadStorage(); }
+
+    function getAssessmentLabel(pct) {
+      if (pct >= 85) return 'Exam Ready';
+      if (pct >= 70) return 'Pass Zone';
+      if (pct >= 55) return 'Near Pass';
+      return 'Needs Review';
+    }
 
     function persistResult(sectionId, correct, total, timeTaken) {
       const store = getStore();
@@ -1810,6 +1917,23 @@
       saveStorage(store);
     }
 
+    function persistFullMockResult(correct, total, timeTaken) {
+      const store = getStore();
+      const pct = Math.round(correct / total * 100);
+      const attempt = {
+        date: new Date().toISOString(),
+        correct,
+        total,
+        pct,
+        timeTaken,
+        passed: pct >= 70,
+        assessment: getAssessmentLabel(pct)
+      };
+      store.fullMockHistory.unshift(attempt);
+      store.fullMockHistory = store.fullMockHistory.slice(0, 20);
+      saveStorage(store);
+    }
+
     function clearSectionHistory(sectionId) {
       const store = getStore();
       delete store.scores[sectionId];
@@ -1823,6 +1947,14 @@
         localStorage.removeItem(STORAGE_KEY);
         renderHome();
       }
+    }
+
+    function clearFullMockHistory() {
+      if (!confirm('Clear full mock exam attempt history?')) return;
+      const store = getStore();
+      store.fullMockHistory = [];
+      saveStorage(store);
+      renderHome();
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -1969,6 +2101,7 @@
     function renderHome() {
       const store = getStore();
       const grid = document.getElementById('sections-grid');
+      const fullMockHistoryWrap = document.getElementById('full-mock-history');
       const badge = document.getElementById('blueprint-badge');
       const totalPracticeQuestions = SECTIONS.reduce((sum, sec) => sum + sec.questions.length, 0);
       if (badge) {
@@ -2048,6 +2181,56 @@
       const fullTestBtn = document.getElementById('full-test-btn');
       if (fullTestBtn) {
         fullTestBtn.textContent = `▶ Start ${FULL_TEST_Q_COUNT}-Question Mock Exam (Blueprint-Weighted, Randomized)`;
+      }
+
+      const fullMockHistory = (Array.isArray(store.fullMockHistory) ? store.fullMockHistory : []).map(function (h) {
+        const pct = asSafeNumber(h.pct);
+        return {
+          date: String(h.date || ''),
+          correct: asSafeNumber(h.correct),
+          total: asSafeNumber(h.total),
+          pct,
+          timeTaken: asSafeNumber(h.timeTaken),
+          passed: pct >= 70,
+          assessment: String(h.assessment || getAssessmentLabel(pct))
+        };
+      });
+
+      if (fullMockHistoryWrap) {
+        if (fullMockHistory.length === 0) {
+          fullMockHistoryWrap.innerHTML = `
+            <div class="full-mock-head">
+              <div>
+                <div class="full-mock-title">Mock Exam History</div>
+                <div class="full-mock-sub">No full mock attempts yet. Complete one to track performance trends.</div>
+              </div>
+            </div>`;
+        } else {
+          const bestPct = Math.max.apply(null, fullMockHistory.map(function (h) { return h.pct; }));
+          const rows = fullMockHistory.slice(0, 6).map(function (h, idx) {
+            const d = new Date(h.date);
+            const dateLabel = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+            const bestTag = h.pct === bestPct && idx === fullMockHistory.findIndex(function (x) { return x.pct === bestPct; })
+              ? ' <span class="best-badge">BEST</span>' : '';
+            return `
+              <div class="full-mock-row">
+                <div>${escapeHTML(dateLabel)}</div>
+                <div class="fm-score">${h.correct}/${h.total} (${h.pct}%)${bestTag}</div>
+                <div class="${h.passed ? 'fm-pass' : 'fm-fail'}">${h.passed ? 'Pass' : 'Fail'}</div>
+                <div class="fm-assessment">${escapeHTML(h.assessment)}</div>
+              </div>`;
+          }).join('');
+
+          fullMockHistoryWrap.innerHTML = `
+            <div class="full-mock-head">
+              <div>
+                <div class="full-mock-title">Mock Exam History</div>
+                <div class="full-mock-sub">${fullMockHistory.length} ${fullMockHistory.length === 1 ? 'attempt' : 'attempts'} saved in your browser.</div>
+              </div>
+              <button class="full-mock-clear" onclick="clearFullMockHistory()">🗑 Clear mock exam history</button>
+            </div>
+            <div class="full-mock-list">${rows}</div>`;
+        }
       }
     }
 
@@ -2394,6 +2577,7 @@
         const sec = SECTIONS[state.currentSection];
         persistResult(sec.id, correct, total, totalSec);
       } else {
+        persistFullMockResult(correct, total, totalSec);
         // Full test — save per-section breakdown using _secIdx tags
         const qs = state.questions;
         SECTIONS.forEach((sec, i) => {
