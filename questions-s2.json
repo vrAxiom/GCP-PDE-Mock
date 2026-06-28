@@ -3,7 +3,7 @@
     "q": "You need to replicate a MySQL database to BigQuery for real-time analytics with less than 1-minute lag. The source database cannot have additional load. Which GCP service is most appropriate?",
     "opts": [
       "Cloud Data Fusion CDC connector polling MySQL every minute",
-      "Datastream for MySQL CDC \u2192 BigQuery direct integration",
+      "Datastream for MySQL CDC → BigQuery direct integration",
       "mysqldump to Cloud Storage every minute via Cloud Scheduler",
       "Dataproc Sqoop incremental imports every 5 minutes"
     ],
@@ -28,7 +28,7 @@
     "opts": [
       "Hardcode DataflowRunner; test by deploying a Dataflow job with --region=local",
       "Use PipelineOptions with --runner flag; use DirectRunner for local tests, DataflowRunner for production",
-      "Create two separate pipelines \u2014 one for testing, one for production",
+      "Create two separate pipelines — one for testing, one for production",
       "Use Cloud Composer to switch runners via environment variables"
     ],
     "ans": 1,
@@ -39,7 +39,7 @@
     "q": "A Dataflow job processes 1 million messages/sec but you observe hot keys causing some workers to be overloaded while others are idle. What technique resolves hot key skew?",
     "opts": [
       "Increase the number of workers to distribute load evenly",
-      "Use a salting technique \u2014 add a random prefix to the hot key before GroupByKey, then recombine",
+      "Use a salting technique — add a random prefix to the hot key before GroupByKey, then recombine",
       "Switch to Dataproc; Spark handles skew automatically",
       "Reduce the window size to limit the number of elements per worker"
     ],
@@ -108,24 +108,24 @@
     "concept": "BigQuery Storage Write API, exactly-once ingestion, atomic writes"
   },
   {
-    "q": "A Dataproc cluster runs Spark jobs that read from Cloud Storage. Jobs are slow due to many small files (10,000 files \u00d7 1MB each). What is the recommended fix?",
+    "q": "A Dataproc cluster runs Spark jobs that read from Cloud Storage. Jobs are slow due to many small files (10,000 files × 1MB each). What is the recommended fix?",
     "opts": [
       "Increase Dataproc master node size to handle more file metadata",
-      "Compact small files into larger files (128\u2013256MB+) using a Spark coalesce/repartition job before processing",
+      "Compact small files into larger files (128–256MB+) using a Spark coalesce/repartition job before processing",
       "Use Cloud Storage Transfer Service to merge files",
       "Enable HDFS on the Dataproc cluster instead of using Cloud Storage"
     ],
     "ans": 1,
-    "explain": "The small files problem: each small file requires a separate GCS RPC call and creates a separate Spark task. Compacting to 128\u2013256MB files dramatically reduces overhead.",
+    "explain": "The small files problem: each small file requires a separate GCS RPC call and creates a separate Spark task. Compacting to 128–256MB files dramatically reduces overhead.",
     "concept": "Small files problem, Spark coalesce/repartition, Cloud Storage optimization"
   },
   {
     "q": "Which of the following is NOT a supported trigger type in Apache Beam?",
     "opts": [
-      "AfterWatermark \u2014 fires when the watermark passes the window end",
-      "AfterProcessingTime \u2014 fires after a delay from first element",
-      "AfterCount \u2014 fires after a specified number of elements",
-      "AfterExternalSignal \u2014 fires when a Cloud Pub/Sub message is received"
+      "AfterWatermark — fires when the watermark passes the window end",
+      "AfterProcessingTime — fires after a delay from first element",
+      "AfterCount — fires after a specified number of elements",
+      "AfterExternalSignal — fires when a Cloud Pub/Sub message is received"
     ],
     "ans": 3,
     "explain": "Apache Beam's built-in triggers are: AfterWatermark, AfterProcessingTime, AfterCount, Repeatedly, AfterFirst, AfterAll. There is no AfterExternalSignal trigger that polls Pub/Sub.",
@@ -188,26 +188,26 @@
       "Export all 50 tables as CSV hourly using Cloud Scheduler + pg_dump + gsutil"
     ],
     "ans": 1,
-    "explain": "Datastream uses PostgreSQL logical replication slots to capture all changes in real-time. With 50 tables configured in a single Datastream stream, all tables replicate continuously \u2014 no scheduling needed, and latency is typically < 1 minute.",
+    "explain": "Datastream uses PostgreSQL logical replication slots to capture all changes in real-time. With 50 tables configured in a single Datastream stream, all tables replicate continuously — no scheduling needed, and latency is typically < 1 minute.",
     "concept": "Datastream, PostgreSQL CDC, logical replication, continuous replication"
   },
   {
     "q": "A Dataflow pipeline running in streaming mode is experiencing high system latency (difference between event time and watermark). What does this indicate?",
     "opts": [
-      "Workers are processing events too fast \u2014 reduce the number of workers",
+      "Workers are processing events too fast — reduce the number of workers",
       "Data is arriving faster than workers can process it, causing a backlog. The pipeline needs more workers (increase maxNumWorkers) or pipeline logic optimization",
       "The Pub/Sub topic has too many partitions",
       "System latency only matters for batch pipelines, not streaming"
     ],
     "ans": 1,
-    "explain": "System latency in Dataflow streaming = current processing time minus the current watermark timestamp. High system latency means the pipeline is falling behind \u2014 events are piling up unprocessed. Increase maxNumWorkers and review bottleneck steps in the pipeline graph.",
+    "explain": "System latency in Dataflow streaming = current processing time minus the current watermark timestamp. High system latency means the pipeline is falling behind — events are piling up unprocessed. Increase maxNumWorkers and review bottleneck steps in the pipeline graph.",
     "concept": "Dataflow system latency, watermark lag, streaming backlog"
   },
   {
     "q": "When would you choose Apache Beam's CombinePerKey over GroupByKey + ParDo for aggregations?",
     "opts": [
       "CombinePerKey is only for counting; GroupByKey handles all other aggregations",
-      "CombinePerKey is preferred when the aggregation is associative and commutative (sums, averages, max/min) \u2014 it applies partial aggregation on each worker before shuffling, dramatically reducing network data transfer vs. GroupByKey which shuffles all raw elements",
+      "CombinePerKey is preferred when the aggregation is associative and commutative (sums, averages, max/min) — it applies partial aggregation on each worker before shuffling, dramatically reducing network data transfer vs. GroupByKey which shuffles all raw elements",
       "Both have identical performance characteristics; choose based on code readability",
       "GroupByKey is always faster because it avoids the overhead of CombineFn"
     ],
@@ -248,14 +248,14 @@
       "Dataflow automatically extends Pub/Sub acknowledgment deadlines; no configuration needed"
     ],
     "ans": 1,
-    "explain": "If P99 processing time exceeds 600 seconds, messages are redelivered causing duplicates. Solutions: (1) increase ack deadline to cover P99; (2) implement modifyAckDeadline to periodically extend the lease while processing. Dataflow's Pub/Sub IO does extend deadlines automatically \u2014 verify it's configured correctly.",
+    "explain": "If P99 processing time exceeds 600 seconds, messages are redelivered causing duplicates. Solutions: (1) increase ack deadline to cover P99; (2) implement modifyAckDeadline to periodically extend the lease while processing. Dataflow's Pub/Sub IO does extend deadlines automatically — verify it's configured correctly.",
     "concept": "Pub/Sub acknowledgment deadline, message redelivery, lease extension"
   },
   {
     "q": "Which Dataflow feature allows you to process a bounded dataset using the same code that processes unbounded streams?",
     "opts": [
       "Batch mode in Dataflow requires a completely different code structure from streaming mode",
-      "Apache Beam's unified programming model \u2014 the same pipeline code runs on both bounded (batch) and unbounded (streaming) datasets; only the runner configuration and windowing/trigger strategy change",
+      "Apache Beam's unified programming model — the same pipeline code runs on both bounded (batch) and unbounded (streaming) datasets; only the runner configuration and windowing/trigger strategy change",
       "Dataflow Flex Templates automatically detect bounded vs unbounded input",
       "Batch mode requires using BigQueryIO while streaming mode requires PubSubIO; pipelines cannot be shared"
     ],
@@ -267,43 +267,43 @@
     "q": "A Cloud Composer environment is running Airflow 2. A DAG fails with 'Task exited with return code 1' with no other information. How do you diagnose the root cause?",
     "opts": [
       "Check the BigQuery console for related query errors",
-      "View Airflow task logs via the Composer UI (Task Instance Details \u2192 Logs); also check Cloud Logging for the Composer environment filter on airflow-worker container logs",
+      "View Airflow task logs via the Composer UI (Task Instance Details → Logs); also check Cloud Logging for the Composer environment filter on airflow-worker container logs",
       "Run the failed task manually from the command line using gcloud composer environments run",
       "Restart the Airflow scheduler to clear the error state"
     ],
     "ans": 1,
-    "explain": "Airflow task failure diagnosis: (1) Composer UI \u2192 DAG \u2192 Task Instance \u2192 Logs shows the full stderr/stdout of the failed task; (2) Cloud Logging with filter resource.type='cloud_composer_environment' and container='airflow-worker' shows all worker logs. These are the primary diagnostic tools.",
+    "explain": "Airflow task failure diagnosis: (1) Composer UI → DAG → Task Instance → Logs shows the full stderr/stdout of the failed task; (2) Cloud Logging with filter resource.type='cloud_composer_environment' and container='airflow-worker' shows all worker logs. These are the primary diagnostic tools.",
     "concept": "Cloud Composer debugging, Airflow task logs, Cloud Logging"
   },
   {
     "q": "You need to perform a one-time migration of 200 TB from Amazon S3 to Google Cloud Storage. Which service handles this?",
     "opts": [
       "gsutil with multi-threading directly from an EC2 instance in AWS",
-      "Cloud Storage Transfer Service \u2014 configure a transfer job from S3 (with AWS access keys) to GCS; handles parallel transfer, retries, and checksum validation",
-      "Transfer Appliance \u2014 ship a physical device to AWS data center",
+      "Cloud Storage Transfer Service — configure a transfer job from S3 (with AWS access keys) to GCS; handles parallel transfer, retries, and checksum validation",
+      "Transfer Appliance — ship a physical device to AWS data center",
       "Dataflow pipeline reading from S3 via KafkaIO and writing to GCS"
     ],
     "ans": 1,
-    "explain": "Cloud Storage Transfer Service is the managed solution for S3-to-GCS migration. It handles parallel multipart transfer, automatic retries, data verification (checksums), incremental sync, and scheduling \u2014 without any infrastructure management.",
+    "explain": "Cloud Storage Transfer Service is the managed solution for S3-to-GCS migration. It handles parallel multipart transfer, automatic retries, data verification (checksums), incremental sync, and scheduling — without any infrastructure management.",
     "concept": "Cloud Storage Transfer Service, S3 to GCS migration, managed data transfer"
   },
   {
     "q": "A streaming Dataflow pipeline must guarantee that each transaction is processed exactly once even if the pipeline job is restarted after a failure. Which mechanism ensures this?",
     "opts": [
       "Pub/Sub message deduplication handles exactly-once automatically",
-      "Dataflow checkpointing with the Streaming Engine \u2014 Dataflow persists state and offsets; on restart, it resumes from the last checkpoint without reprocessing already-committed records",
+      "Dataflow checkpointing with the Streaming Engine — Dataflow persists state and offsets; on restart, it resumes from the last checkpoint without reprocessing already-committed records",
       "Add a BigQuery deduplication step after every restart",
       "Use Cloud Spanner as a state store with conditional writes"
     ],
     "ans": 1,
-    "explain": "Dataflow's Streaming Engine checkpoint mechanism persists processing state and source offsets (Pub/Sub cursor positions) durably. On job restart (failure recovery), Dataflow resumes from the last checkpoint \u2014 elements before the checkpoint are not reprocessed.",
+    "explain": "Dataflow's Streaming Engine checkpoint mechanism persists processing state and source offsets (Pub/Sub cursor positions) durably. On job restart (failure recovery), Dataflow resumes from the last checkpoint — elements before the checkpoint are not reprocessed.",
     "concept": "Dataflow checkpointing, Streaming Engine, failure recovery, exactly-once processing"
   },
   {
     "q": "What is the recommended way to handle schema changes (column additions) when using Datastream to replicate from MySQL to BigQuery?",
     "opts": [
       "Establish a Cloud Logging sink that triggers a Cloud Function to execute an ALTER TABLE statement in BigQuery prior to mysql replication",
-      "Datastream automatically detects MySQL schema changes (DDL events) and propagates them to BigQuery \u2014 BigQuery adds the new column as NULLABLE automatically",
+      "Datastream automatically detects MySQL schema changes (DDL events) and propagates them to BigQuery — BigQuery adds the new column as NULLABLE automatically",
       "Deploy a dbt continuous integration pipeline that runs dry-runs in BigQuery whenever DDL matches GitHub schema repository updates",
       "Configure the Datastream profile to reject schema drift and pause replication until a database administrator updates the destination table schema"
     ],
@@ -315,12 +315,12 @@
     "q": "You have a Spark job on Dataproc that reads a 10 TB dataset and produces a 100 MB output. The job takes 2 hours. The cluster has 50 workers. The last 30 minutes are spent with only 1 worker active. What is the problem?",
     "opts": [
       "The Dataproc cluster is too large; reduce to 10 workers",
-      "The final reduce stage has insufficient parallelism \u2014 only 1 partition remains. Fix: increase spark.sql.shuffle.partitions and/or add repartition() before the final reduce to ensure parallelism throughout",
+      "The final reduce stage has insufficient parallelism — only 1 partition remains. Fix: increase spark.sql.shuffle.partitions and/or add repartition() before the final reduce to ensure parallelism throughout",
       "The output is too small for Spark to parallelize effectively",
       "The job needs more memory, not more parallelism"
     ],
     "ans": 1,
-    "explain": "Insufficient shuffle partitions after a final aggregation/join leaves only 1 or a few reducers \u2014 49 workers sit idle. Increase spark.sql.shuffle.partitions (default 200 may be too low for 10 TB) to match the cluster size. Also use repartition() before final reduces.",
+    "explain": "Insufficient shuffle partitions after a final aggregation/join leaves only 1 or a few reducers — 49 workers sit idle. Increase spark.sql.shuffle.partitions (default 200 may be too low for 10 TB) to match the cluster size. Also use repartition() before final reduces.",
     "concept": "Spark shuffle partitions, parallelism, stragglers, Dataproc tuning"
   },
   {
@@ -344,38 +344,38 @@
       "The CSV has more than 10 million rows which exceeds BigQuery load job limits"
     ],
     "ans": 1,
-    "explain": "BigQuery load jobs fail by default on any error (max_bad_records=0). Check the job's error details in BigQuery UI or bq show job_id \u2014 it shows which rows failed and why (type mismatch, extra delimiter, encoding issues). Fix source data or raise max_bad_records if tolerable.",
+    "explain": "BigQuery load jobs fail by default on any error (max_bad_records=0). Check the job's error details in BigQuery UI or bq show job_id — it shows which rows failed and why (type mismatch, extra delimiter, encoding issues). Fix source data or raise max_bad_records if tolerable.",
     "concept": "BigQuery load job error handling, max_bad_records, data quality"
   },
   {
     "q": "You are running a Dataproc cluster for interactive Spark SQL analysis. Users run queries throughout the day. The cluster must be available within 2 minutes of a query request. What cluster mode is best?",
     "opts": [
-      "Ephemeral cluster created per query \u2014 minimum cost",
-      "Persistent cluster with autoscaling that scales to minimum workers during idle periods \u2014 provides fast availability",
-      "Dataproc Serverless Spark \u2014 zero startup time",
+      "Ephemeral cluster created per query — minimum cost",
+      "Persistent cluster with autoscaling that scales to minimum workers during idle periods — provides fast availability",
+      "Dataproc Serverless Spark — zero startup time",
       "Dataproc cluster with preemptible workers only for cost savings"
     ],
     "ans": 1,
-    "explain": "For interactive analysis requiring < 2 minute availability, a persistent cluster with autoscaling is the right choice. The cluster is always available (no 3-5 minute startup); autoscaling scales down during idle periods to minimize cost. Ephemeral clusters take 3-5 minutes to provision \u2014 too slow for interactive use.",
+    "explain": "For interactive analysis requiring < 2 minute availability, a persistent cluster with autoscaling is the right choice. The cluster is always available (no 3-5 minute startup); autoscaling scales down during idle periods to minimize cost. Ephemeral clusters take 3-5 minutes to provision — too slow for interactive use.",
     "concept": "Dataproc persistent vs ephemeral clusters, interactive workloads, autoscaling"
   },
   {
     "q": "A Beam pipeline uses state and timers API. What is the key constraint when using stateful processing in Apache Beam?",
     "opts": [
       "State is shared across all elements in a pipeline, enabling global aggregations",
-      "State is per-key-and-window \u2014 each unique combination of key and window has its own state cell. Stateful operations require the data to first be key-value pairs, and operations are keyed",
+      "State is per-key-and-window — each unique combination of key and window has its own state cell. Stateful operations require the data to first be key-value pairs, and operations are keyed",
       "State can be any Python/Java object; Beam handles serialization automatically",
       "Timers are not available in streaming mode; only batch pipelines can use timers"
     ],
     "ans": 1,
-    "explain": "Beam state and timers API is always per-key-and-window. You must have a KV<K,V> PCollection. Each key's state is independent. This is fundamental \u2014 stateful processing adds per-key memory cost proportional to the number of unique keys.",
+    "explain": "Beam state and timers API is always per-key-and-window. You must have a KV<K,V> PCollection. Each key's state is independent. This is fundamental — stateful processing adds per-key memory cost proportional to the number of unique keys.",
     "concept": "Beam state and timers API, per-key state, stateful processing constraints"
   },
   {
     "q": "You need to ingest 100 GB of Salesforce CRM data into BigQuery daily. Which is the most appropriate GCP solution?",
     "opts": [
       "Write a Serverless Cloud Run service that queries the Salesforce REST API page-by-page and streams the output directly using BigQuery Storage Write API",
-      "Use BigQuery Data Transfer Service with the Salesforce connector \u2014 managed, scheduled, no-code ingestion",
+      "Use BigQuery Data Transfer Service with the Salesforce connector — managed, scheduled, no-code ingestion",
       "Build a Dataproc Spark job using a third-party JDBC driver to fetch and partition the Salesforce data into Cloud Storage",
       "Implement a continuous real-time streaming architecture using Pub/Sub integrated with Salesforce Streaming Webhooks feeding into a 24/7 Dataflow pipeline"
     ],
@@ -392,7 +392,7 @@
       "Use a separate Dataflow pipeline per day and write to separate daily tables"
     ],
     "ans": 1,
-    "explain": "BigQueryIO write supports withTimePartitioning to configure date/timestamp-based partitioning on the destination table. Specifying the field name ('event_date') partitions data by that column value \u2014 Dataflow correctly routes each row to the appropriate partition.",
+    "explain": "BigQueryIO write supports withTimePartitioning to configure date/timestamp-based partitioning on the destination table. Specifying the field name ('event_date') partitions data by that column value — Dataflow correctly routes each row to the appropriate partition.",
     "concept": "BigQueryIO partitioned writes, Dataflow-to-BigQuery, time partitioning"
   },
   {
@@ -404,16 +404,16 @@
       "They are moved to a dead-letter topic"
     ],
     "ans": 0,
-    "explain": "Pub/Sub messages are deleted after the retention duration (1 minute to 7 days, default 7 days) expires, regardless of whether they were consumed. This means if a subscription is inactive or processing is stopped for > 7 days, messages are permanently lost \u2014 plan for this in DR scenarios.",
+    "explain": "Pub/Sub messages are deleted after the retention duration (1 minute to 7 days, default 7 days) expires, regardless of whether they were consumed. This means if a subscription is inactive or processing is stopped for > 7 days, messages are permanently lost — plan for this in DR scenarios.",
     "concept": "Pub/Sub message retention, message expiry, data loss scenarios"
   },
   {
     "q": "You are designing a real-time pipeline where Dataflow reads IoT events and you need to detect when a device has not reported for more than 5 minutes (absence detection). Which Beam feature handles this?",
     "opts": [
-      "Set allowedLateness to 5 minutes \u2014 absence detection is automatic",
-      "Use a stateful DoFn with a processing-time timer: on each event, reset a 5-minute timer. If the timer fires without a new event, the device is silent \u2014 emit an alert",
+      "Set allowedLateness to 5 minutes — absence detection is automatic",
+      "Use a stateful DoFn with a processing-time timer: on each event, reset a 5-minute timer. If the timer fires without a new event, the device is silent — emit an alert",
       "Use AfterCount trigger with count=0 to detect empty windows",
-      "Use Pub/Sub message expiry \u2014 if a message expires, trigger an alert"
+      "Use Pub/Sub message expiry — if a message expires, trigger an alert"
     ],
     "ans": 1,
     "explain": "Absence detection pattern: stateful DoFn maintains a last-seen timer per device key. On each event, clear and reset the timer for 5 minutes. If no event arrives and the timer fires, emit a silence alert. This is the canonical Beam pattern for detecting missing events.",
@@ -428,7 +428,7 @@
       "Keep Oracle for transformation logic; use BigQuery only for storage"
     ],
     "ans": 1,
-    "explain": "BigQuery uses standard SQL (not PL/SQL). Oracle migrations require translating: stored procedures \u2192 BigQuery scripting or dbt/Dataform models; complex business logic \u2192 Dataflow; data movement \u2192 Datastream or Batch Transfer. The Cloud Migration Center provides Oracle-to-BigQuery SQL translation tools.",
+    "explain": "BigQuery uses standard SQL (not PL/SQL). Oracle migrations require translating: stored procedures → BigQuery scripting or dbt/Dataform models; complex business logic → Dataflow; data movement → Datastream or Batch Transfer. The Cloud Migration Center provides Oracle-to-BigQuery SQL translation tools.",
     "concept": "Oracle to BigQuery migration, PL/SQL translation, Dataform, migration strategy"
   },
   {
@@ -437,7 +437,7 @@
       "Increase maxNumWorkers to distribute memory pressure",
       "The 2 GB file is too large for an in-memory side input. Refactor: either reduce the side input data (filter to only needed keys), store in Bigtable and do per-element lookups, or use a hash join pattern with repartitioned main input",
       "Reduce the window size to process fewer elements per worker",
-      "Switch from Java SDK to Python SDK \u2014 it handles large side inputs better"
+      "Switch from Java SDK to Python SDK — it handles large side inputs better"
     ],
     "ans": 1,
     "explain": "Side inputs must fit in worker heap memory. 2 GB approaching worker memory limits. Solutions: (1) filter the side input to only the keys present in the main input; (2) use Bigtable/Spanner for remote lookups if memory is genuinely insufficient; (3) upgrade to a higher-memory machine type.",
@@ -471,7 +471,7 @@
     "q": "Apache Beam's ParDo transform is analogous to which operation in traditional data processing?",
     "opts": [
       "SQL GROUP BY aggregation",
-      "Map operation in MapReduce \u2014 applies a function to each element independently; can produce 0, 1, or many output elements per input element",
+      "Map operation in MapReduce — applies a function to each element independently; can produce 0, 1, or many output elements per input element",
       "SQL JOIN operation between two tables",
       "SQL ORDER BY with window functions"
     ],
@@ -495,7 +495,7 @@
     "q": "A streaming Dataflow pipeline processes transactions and must enrich each transaction with the current exchange rate. Exchange rates update every minute. What is the best approach?",
     "opts": [
       "Restart the Dataflow pipeline every minute with the new exchange rate hardcoded",
-      "Use a ValueProvider for the exchange rate \u2014 it allows runtime parameter updates without pipeline restart",
+      "Use a ValueProvider for the exchange rate — it allows runtime parameter updates without pipeline restart",
       "Store exchange rates in Cloud Firestore; the DoFn queries Firestore per transaction (one read per event)",
       "Use a Dataflow side input with watchForNewFiles() pointing to an exchange rate file that updates every minute; Dataflow reloads automatically"
     ],
@@ -507,12 +507,12 @@
     "q": "A Dataflow job experiences 'out of memory' on workers when processing a very wide BigQuery table (5000 columns). What optimization reduces memory pressure?",
     "opts": [
       "Increase worker machine memory type (e.g., n2-highmem-8)",
-      "Project only the columns needed in BigQueryIO.read().withSelectedFields() \u2014 this reduces data scanned and memory used per element",
+      "Project only the columns needed in BigQueryIO.read().withSelectedFields() — this reduces data scanned and memory used per element",
       "Increase the number of workers to distribute memory",
       "Split the pipeline into 50 separate pipelines each reading 100 columns"
     ],
     "ans": 1,
-    "explain": "withSelectedFields() in BigQueryIO uses column projection at the BigQuery Storage Read API level \u2014 only the specified columns are transferred to Dataflow workers. Reading 5000 columns when only 20 are needed wastes 250x the memory and network. Always project only needed columns.",
+    "explain": "withSelectedFields() in BigQueryIO uses column projection at the BigQuery Storage Read API level — only the specified columns are transferred to Dataflow workers. Reading 5000 columns when only 20 are needed wastes 250x the memory and network. Always project only needed columns.",
     "concept": "BigQueryIO column projection, withSelectedFields, memory optimization"
   },
   {
@@ -543,12 +543,12 @@
     "q": "A Dataflow batch pipeline reads 10 TB from Cloud Storage and writes to BigQuery. The job uses 100 workers for 2 hours. How do you estimate the Dataflow cost?",
     "opts": [
       "Dataflow batch jobs are free; you only pay for BigQuery",
-      "Dataflow charges per vCPU-hour, per GB RAM-hour, and per PD GB-hour. Estimate: 100 workers \u00d7 machine vCPUs \u00d7 2 hours \u00d7 vCPU price + similar for RAM and PD",
+      "Dataflow charges per vCPU-hour, per GB RAM-hour, and per PD GB-hour. Estimate: 100 workers × machine vCPUs × 2 hours × vCPU price + similar for RAM and PD",
       "Dataflow charges per GB of data processed, similar to BigQuery",
       "Dataflow cost is included in the BigQuery slot cost"
     ],
     "ans": 1,
-    "explain": "Dataflow pricing: vCPU-hour + GB RAM-hour + PD GB-hour. For example, n1-standard-4 workers: 100 workers \u00d7 4 vCPUs \u00d7 $0.056/vCPU-hr \u00d7 2 hrs = $44.80 for CPU alone. Add RAM and disk. Use the Dataflow Pricing Calculator for accurate estimates.",
+    "explain": "Dataflow pricing: vCPU-hour + GB RAM-hour + PD GB-hour. For example, n1-standard-4 workers: 100 workers × 4 vCPUs × $0.056/vCPU-hr × 2 hrs = $44.80 for CPU alone. Add RAM and disk. Use the Dataflow Pricing Calculator for accurate estimates.",
     "concept": "Dataflow pricing model, vCPU-hour, cost estimation"
   },
   {
@@ -560,14 +560,14 @@
       "Both B and C are valid; choose based on team expertise and cost requirements"
     ],
     "ans": 3,
-    "explain": "Both Dataflow (AvroIO \u2192 ParquetIO) and Dataproc Spark (read.avro().write.parquet()) accomplish this task. Dataflow is fully serverless; Dataproc requires cluster management but may be cheaper for large-scale conversions. The correct choice depends on team skills and scale.",
+    "explain": "Both Dataflow (AvroIO → ParquetIO) and Dataproc Spark (read.avro().write.parquet()) accomplish this task. Dataflow is fully serverless; Dataproc requires cluster management but may be cheaper for large-scale conversions. The correct choice depends on team skills and scale.",
     "concept": "File format conversion, Dataflow vs Dataproc, Avro to Parquet"
   },
   {
     "q": "When using Dataflow for streaming, what does 'watermark' represent?",
     "opts": [
       "The maximum memory usage of Dataflow workers during pipeline execution",
-      "A timestamp estimate of how far behind the current processing is relative to event time \u2014 all events with timestamps before the watermark are assumed to have been received",
+      "A timestamp estimate of how far behind the current processing is relative to event time — all events with timestamps before the watermark are assumed to have been received",
       "The point at which Dataflow scales down workers due to reduced load",
       "The threshold at which messages are moved from Pub/Sub to dead-letter topic"
     ],
@@ -578,22 +578,22 @@
   {
     "q": "A BigQuery dataset contains a table updated via streaming inserts. You run the same SELECT query twice 5 seconds apart and get different results. Is this expected?",
     "opts": [
-      "No \u2014 BigQuery is strongly consistent; the same query must return the same result",
-      "Yes \u2014 BigQuery streaming inserts become available within a few seconds. The query results change as new rows are committed. For consistent snapshots, use FOR SYSTEM_TIME AS OF with a specific timestamp",
+      "No — BigQuery is strongly consistent; the same query must return the same result",
+      "Yes — BigQuery streaming inserts become available within a few seconds. The query results change as new rows are committed. For consistent snapshots, use FOR SYSTEM_TIME AS OF with a specific timestamp",
       "BigQuery returns random results due to distributed execution; this is a known limitation",
       "Streaming inserts have a 30-second latency before becoming visible to queries"
     ],
     "ans": 1,
-    "explain": "BigQuery streaming inserts are visible within seconds but subsequent queries do see new rows as they arrive. This is expected behavior \u2014 BigQuery is not a strongly-consistent read-your-own-writes OLTP system. For a consistent snapshot, use FOR SYSTEM_TIME AS OF to pin to a specific timestamp.",
+    "explain": "BigQuery streaming inserts are visible within seconds but subsequent queries do see new rows as they arrive. This is expected behavior — BigQuery is not a strongly-consistent read-your-own-writes OLTP system. For a consistent snapshot, use FOR SYSTEM_TIME AS OF to pin to a specific timestamp.",
     "concept": "BigQuery streaming insert visibility, eventual consistency, SYSTEM_TIME AS OF"
   },
   {
     "q": "Which Dataproc feature allows you to run Spark jobs without creating or managing a cluster?",
     "opts": [
-      "Dataproc Autoscaling \u2014 scales cluster to minimum between jobs",
-      "Dataproc Serverless Spark \u2014 submit Spark batch or interactive workloads; GCP provisions resources on-demand and tears them down when complete",
-      "Dataproc on GKE \u2014 runs Spark on an existing GKE cluster",
-      "Dataproc Workflow Templates \u2014 automates cluster creation and deletion"
+      "Dataproc Autoscaling — scales cluster to minimum between jobs",
+      "Dataproc Serverless Spark — submit Spark batch or interactive workloads; GCP provisions resources on-demand and tears them down when complete",
+      "Dataproc on GKE — runs Spark on an existing GKE cluster",
+      "Dataproc Workflow Templates — automates cluster creation and deletion"
     ],
     "ans": 1,
     "explain": "Dataproc Serverless Spark eliminates cluster lifecycle management. Submit a Spark batch job via gcloud or API; GCP provisions compute, runs the job, and releases resources. No cluster to manage, scale, or pay for when idle.",
@@ -614,7 +614,7 @@
   {
     "q": "A Dataflow pipeline processes credit card transactions. You need to add a fraud score feature by calling an external ML API. The API has a rate limit of 1000 requests/sec. How should you design the integration?",
     "opts": [
-      "Call the API synchronously for each transaction in a ParDo \u2014 Dataflow handles rate limiting automatically",
+      "Call the API synchronously for each transaction in a ParDo — Dataflow handles rate limiting automatically",
       "Use GroupIntoBatches to batch transactions into groups of 100; call the API once per batch using a BatchRequest if the API supports it; add exponential backoff on throttling errors",
       "Increase Dataflow workers to increase throughput beyond the rate limit",
       "Store transactions in BigQuery first, then call the API via a BigQuery ML remote function"
@@ -626,13 +626,13 @@
   {
     "q": "Which file format is recommended for BigQuery exports that will be consumed by downstream Dataflow pipelines for maximum efficiency?",
     "opts": [
-      "CSV \u2014 universal format readable by all tools",
-      "Avro \u2014 splittable, schema-embedded, binary format that Dataflow reads efficiently with high throughput",
-      "JSON Lines \u2014 human-readable and flexible",
-      "XML \u2014 supports rich hierarchical data structures"
+      "CSV — universal format readable by all tools",
+      "Avro — splittable, schema-embedded, binary format that Dataflow reads efficiently with high throughput",
+      "JSON Lines — human-readable and flexible",
+      "XML — supports rich hierarchical data structures"
     ],
     "ans": 1,
-    "explain": "Avro is the recommended format for BigQuery exports consumed by Dataflow: (1) schema is embedded in the file header; (2) binary format with fast serialization/deserialization; (3) splittable \u2014 multiple workers read different file segments in parallel; (4) native support in both BigQuery export and Beam AvroIO.",
+    "explain": "Avro is the recommended format for BigQuery exports consumed by Dataflow: (1) schema is embedded in the file header; (2) binary format with fast serialization/deserialization; (3) splittable — multiple workers read different file segments in parallel; (4) native support in both BigQuery export and Beam AvroIO.",
     "concept": "BigQuery export formats, Avro, Dataflow file reading, splittable formats"
   },
   {
@@ -656,15 +656,15 @@
       "Dataproc cannot use Cloud Storage; HDFS is required for all Spark workloads"
     ],
     "ans": 1,
-    "explain": "HDFS provides data locality \u2014 Spark tasks can be scheduled on nodes holding the data they process, minimizing network I/O. Cloud Storage has no data locality; all reads are network transfers. However, GCP's high-bandwidth internal network mitigates this significantly, and the ephemeral cluster model (no persistent HDFS cluster) more than compensates operationally.",
+    "explain": "HDFS provides data locality — Spark tasks can be scheduled on nodes holding the data they process, minimizing network I/O. Cloud Storage has no data locality; all reads are network transfers. However, GCP's high-bandwidth internal network mitigates this significantly, and the ephemeral cluster model (no persistent HDFS cluster) more than compensates operationally.",
     "concept": "Cloud Storage vs HDFS, data locality, Dataproc architecture"
   },
   {
     "q": "A team needs to implement a streaming pipeline that joins two Pub/Sub streams: orders and payments, matching by order_id within a 5-minute window. Which Beam transform is used?",
     "opts": [
-      "CoGroupByKey \u2014 combine two keyed PCollections (orders and payments keyed by order_id) and process matched pairs within a window",
+      "CoGroupByKey — combine two keyed PCollections (orders and payments keyed by order_id) and process matched pairs within a window",
       "Standard SQL JOIN applied to both Pub/Sub topics",
-      "Dataflow side input \u2014 load payments as a side input from orders",
+      "Dataflow side input — load payments as a side input from orders",
       "Cloud Spanner as a join buffer: write both streams and query"
     ],
     "ans": 0,
@@ -680,7 +680,7 @@
       "Use Eventarc to trigger on a timer event"
     ],
     "ans": 1,
-    "explain": "Both Cloud Scheduler + Cloud Function and BigQuery Scheduled Queries can schedule daily BigQuery exports. Scheduled Queries (via Data Transfer Service) is simpler for pure BigQuery \u2192 GCS exports. Cloud Scheduler + Cloud Function is more flexible for custom logic. Cloud Composer adds orchestration overhead for a simple daily export.",
+    "explain": "Both Cloud Scheduler + Cloud Function and BigQuery Scheduled Queries can schedule daily BigQuery exports. Scheduled Queries (via Data Transfer Service) is simpler for pure BigQuery → GCS exports. Cloud Scheduler + Cloud Function is more flexible for custom logic. Cloud Composer adds orchestration overhead for a simple daily export.",
     "concept": "Scheduled BigQuery exports, Cloud Scheduler, Data Transfer Service"
   },
   {
@@ -688,7 +688,7 @@
     "opts": [
       "No recovery is possible if no backup exists",
       "Use BigQuery table recovery: within 7 days, the table can be restored using bq cp 'project:dataset.table@-3600000' project:dataset.table_recovered (time travel); or use FOR SYSTEM_TIME AS OF to recover data before deletion",
-      "Contact Google Cloud Support \u2014 they can restore any deleted BigQuery table",
+      "Contact Google Cloud Support — they can restore any deleted BigQuery table",
       "Restore from the last nightly BigQuery export to Cloud Storage"
     ],
     "ans": 1,
@@ -704,7 +704,7 @@
       "1 GB"
     ],
     "ans": 1,
-    "explain": "Pub/Sub has a maximum message size of 10 MB. For data exceeding this, store the payload in Cloud Storage and publish only the GCS URI in the Pub/Sub message \u2014 the claim-check pattern. This is also more efficient for large payloads that don't benefit from Pub/Sub's routing features.",
+    "explain": "Pub/Sub has a maximum message size of 10 MB. For data exceeding this, store the payload in Cloud Storage and publish only the GCS URI in the Pub/Sub message — the claim-check pattern. This is also more efficient for large payloads that don't benefit from Pub/Sub's routing features.",
     "concept": "Pub/Sub limits, maximum message size, claim-check pattern"
   },
   {
@@ -728,7 +728,7 @@
       "Switch to Dataflow which doesn't require cluster creation"
     ],
     "ans": 1,
-    "explain": "Dataproc custom images pre-install all dependencies during image build time. When a cluster is created from the custom image, initialization actions are minimal or none \u2014 reducing startup from 5 minutes to 1-2 minutes. This is the most effective technique for accelerating ephemeral cluster startup.",
+    "explain": "Dataproc custom images pre-install all dependencies during image build time. When a cluster is created from the custom image, initialization actions are minimal or none — reducing startup from 5 minutes to 1-2 minutes. This is the most effective technique for accelerating ephemeral cluster startup.",
     "concept": "Dataproc custom images, cluster startup optimization, ephemeral clusters"
   },
   {
@@ -746,9 +746,9 @@
   {
     "q": "You need to read 1 billion rows from BigQuery into a Dataflow pipeline as fast as possible. Which BigQueryIO read method is most appropriate?",
     "opts": [
-      "BigQueryIO.read().from(tableRef) \u2014 default export-based read",
-      "BigQueryIO.read().from(tableRef).withMethod(Method.DIRECT_READ) \u2014 uses BigQuery Storage Read API for parallel, high-throughput streaming without intermediate GCS export",
-      "BigQueryIO.readTableRows() \u2014 optimized for large tables",
+      "BigQueryIO.read().from(tableRef) — default export-based read",
+      "BigQueryIO.read().from(tableRef).withMethod(Method.DIRECT_READ) — uses BigQuery Storage Read API for parallel, high-throughput streaming without intermediate GCS export",
+      "BigQueryIO.readTableRows() — optimized for large tables",
       "BigQueryIO.read() with EXPORT then read the exported Avro files"
     ],
     "ans": 1,
@@ -758,13 +758,13 @@
   {
     "q": "You have a Cloud Data Fusion pipeline that transforms data from Cloud Storage to BigQuery. The pipeline runs daily and you want to process only new files (incremental). Which Data Fusion feature handles this?",
     "opts": [
-      "Configure Cloud Data Fusion to delete processed files \u2014 only new files remain each run",
+      "Configure Cloud Data Fusion to delete processed files — only new files remain each run",
       "Use the Delta plugin or configure the Cloud Storage Source with file tracking state to skip already-processed files in subsequent runs",
       "Schedule the pipeline to run hourly and process all files each time",
       "Use a Cloud Composer DAG to track processed files in a BigQuery table and pass new file lists to Data Fusion"
     ],
     "ans": 1,
-    "explain": "Cloud Data Fusion supports incremental processing via the file tracking plugin or Delta plugins that maintain state about previously processed files. This enables idempotent, incremental execution \u2014 only new/changed files are processed on each run without external state management.",
+    "explain": "Cloud Data Fusion supports incremental processing via the file tracking plugin or Delta plugins that maintain state about previously processed files. This enables idempotent, incremental execution — only new/changed files are processed on each run without external state management.",
     "concept": "Cloud Data Fusion incremental processing, file tracking, idempotent pipelines"
   },
   {
@@ -772,7 +772,7 @@
     "opts": [
       "Reject all files that don't match a strict schema",
       "In the parsing DoFn, read each row as a generic map; apply per-vendor schema config to extract required fields; route unmappable rows to a dead-letter output. Use vendor ID from filename to select the correct schema config",
-      "Use BigQuery auto-detection \u2014 it handles schema differences automatically",
+      "Use BigQuery auto-detection — it handles schema differences automatically",
       "Require all vendors to standardize their schemas before uploading"
     ],
     "ans": 1,
@@ -794,10 +794,10 @@
   {
     "q": "A streaming Dataflow pipeline must process events in order per user_id. How do you guarantee ordered processing per key in Beam?",
     "opts": [
-      "Beam processes all elements globally in timestamp order \u2014 no key-level configuration needed",
+      "Beam processes all elements globally in timestamp order — no key-level configuration needed",
       "Use stateful processing: apply a GroupByKey or a stateful DoFn with per-key-and-window state. Within a key-window, Beam delivers elements sorted by event timestamp when using sorted state buffers",
       "Beam cannot guarantee ordered processing in streaming mode",
-      "Use Pub/Sub ordering keys \u2014 Beam inherits the order from Pub/Sub automatically"
+      "Use Pub/Sub ordering keys — Beam inherits the order from Pub/Sub automatically"
     ],
     "ans": 1,
     "explain": "Beam does not guarantee global ordering, but within a key-window in a stateful DoFn, you can maintain a sorted buffer of elements. Alternatively, use the Beam ordered list state (added in Beam 2.46+) which maintains sorted order per key. Pub/Sub ordering keys ensure ordered delivery to the source, but in-pipeline processing order still requires stateful handling.",
@@ -809,19 +809,19 @@
       "Export Cloud Spanner to Cloud Storage as Avro, then load to BigQuery daily",
       "Use Cloud Spanner Change Streams with a Dataflow template (SpannerChangeStreams to BigQuery) for near-real-time replication",
       "Use Datastream for Cloud Spanner CDC (same as MySQL/PostgreSQL)",
-      "Use BigQuery federated queries to query Spanner directly \u2014 no replication needed"
+      "Use BigQuery federated queries to query Spanner directly — no replication needed"
     ],
     "ans": 1,
-    "explain": "Cloud Spanner Change Streams capture row-level changes as they occur. The managed Dataflow template 'Spanner Change Streams to BigQuery' reads from a Change Stream and writes incrementally to BigQuery with < 1 minute latency. This is Google's recommended pattern for Spanner \u2192 BigQuery analytics replication.",
+    "explain": "Cloud Spanner Change Streams capture row-level changes as they occur. The managed Dataflow template 'Spanner Change Streams to BigQuery' reads from a Change Stream and writes incrementally to BigQuery with < 1 minute latency. This is Google's recommended pattern for Spanner → BigQuery analytics replication.",
     "concept": "Spanner Change Streams, Spanner to BigQuery, near-real-time replication"
   },
   {
     "q": "When running a Dataflow job, you want to monitor the fraction of keys that are 'hot' (processing significantly more elements than average). Which tool provides this?",
     "opts": [
-      "Cloud Monitoring \u2014 Dataflow exports hot-key metrics automatically",
-      "Dataflow UI \u2014 the pipeline graph shows per-step element counts; a hot key is visible as a skewed distribution in the 'Elements added' metric per worker in the Dataflow job details",
-      "Dataflow logs in Cloud Logging \u2014 hot keys emit WARN-level log messages",
-      "BigQuery INFORMATION_SCHEMA \u2014 shows uneven data distribution"
+      "Cloud Monitoring — Dataflow exports hot-key metrics automatically",
+      "Dataflow UI — the pipeline graph shows per-step element counts; a hot key is visible as a skewed distribution in the 'Elements added' metric per worker in the Dataflow job details",
+      "Dataflow logs in Cloud Logging — hot keys emit WARN-level log messages",
+      "BigQuery INFORMATION_SCHEMA — shows uneven data distribution"
     ],
     "ans": 1,
     "explain": "The Dataflow monitoring UI shows per-step throughput metrics. Hot key skew is visible as some workers processing many more elements than others (visible in 'Wall time' and element count per worker). Dataflow also emits hot key warnings in Cloud Logging when the key skew exceeds a threshold.",
@@ -855,20 +855,20 @@
     "q": "What is the primary purpose of Dataproc Workflow Templates?",
     "opts": [
       "To replace Cloud Composer for all Dataproc orchestration needs",
-      "To define a complete multi-step Dataproc workflow (create cluster \u2192 run jobs \u2192 delete cluster) as a single reusable template that can be instantiated with parameters",
+      "To define a complete multi-step Dataproc workflow (create cluster → run jobs → delete cluster) as a single reusable template that can be instantiated with parameters",
       "To configure Dataproc cluster autoscaling policies",
       "To store Dataproc job configurations in a version-controlled repository"
     ],
     "ans": 1,
-    "explain": "Dataproc Workflow Templates define a complete workflow: managed cluster lifecycle (create \u2192 jobs \u2192 delete) or use an existing cluster. Templates are parameterized and instantiated via API, gcloud, or Cloud Composer. They encapsulate the full cluster-create \u2192 multiple-job-run \u2192 cluster-delete pattern in a single atomic operation.",
+    "explain": "Dataproc Workflow Templates define a complete workflow: managed cluster lifecycle (create → jobs → delete) or use an existing cluster. Templates are parameterized and instantiated via API, gcloud, or Cloud Composer. They encapsulate the full cluster-create → multiple-job-run → cluster-delete pattern in a single atomic operation.",
     "concept": "Dataproc Workflow Templates, cluster lifecycle automation, parameterized workflows"
   },
   {
     "q": "A Dataflow batch pipeline processes 1 TB of data but only uses 5% of worker CPU. The job takes too long. What is the likely cause?",
     "opts": [
-      "The pipeline is CPU-bound \u2014 increase machine type",
+      "The pipeline is CPU-bound — increase machine type",
       "The pipeline is I/O-bound: reading from Cloud Storage or writing to BigQuery is the bottleneck. Increase the number of workers to increase parallel I/O throughput",
-      "Dataflow batch pipelines cannot process more than 1 TB \u2014 migrate to Dataproc",
+      "Dataflow batch pipelines cannot process more than 1 TB — migrate to Dataproc",
       "Reduce the number of Dataflow transforms to decrease pipeline overhead"
     ],
     "ans": 1,
@@ -903,7 +903,7 @@
     "q": "A Pub/Sub topic has high publishing throughput (1 million messages/sec). Publishers are receiving RESOURCE_EXHAUSTED errors. What should you do?",
     "opts": [
       "Create multiple Pub/Sub topics and shard messages across them",
-      "Pub/Sub is fully managed and scales to millions of messages/sec automatically \u2014 RESOURCE_EXHAUSTED indicates a quota limit. Request a quota increase via Cloud Console, or ensure publisher clients are using batching and flow control",
+      "Pub/Sub is fully managed and scales to millions of messages/sec automatically — RESOURCE_EXHAUSTED indicates a quota limit. Request a quota increase via Cloud Console, or ensure publisher clients are using batching and flow control",
       "Add more Pub/Sub subscriptions to distribute load",
       "Compress messages before publishing to reduce throughput"
     ],
@@ -920,7 +920,7 @@
       "Use Cloud Storage for storage. Link data as permanent tables in BigQuery and turn on the \"Automatically detect\" option in the Schema section of BigQuery."
     ],
     "ans": 1,
-    "explain": "Correct answer is B as the requirement is to support occasionally (schema) changing JSON files and aggregate ANSI SQL queries: you need to use BigQuery, and it is quickest to use 'Automatically detect' for schema changes.\n\nRefer GCP documentation - BigQuery Auto-Detection: - https://cloud.google.com/bigquery/docs/schema-detect;\n\nSchema auto-detection is available when you load data into BigQuery, and when you query an external data source.\n\nWhen auto-detection is enabled, BigQuery starts the inference process by selecting a random file in the data source and scanning up to 100 rows of data to use as a representative sample. BigQuery then examines each field and attempts to assign a data type to that field based on the values in the sample.\n\nA is not correct because you should not provide format files: you can simply turn on the 'Automatically detect' schema changes flag.\n\nC and D are not correct as Cloud Storage is not ideal for this scenario; it is cumbersome, adds latency and doesn't add value.",
+    "explain": "The correct answer is \"Use BigQuery for storage. Select \"Automatically detect\" in the Schema section.\" because the requirement is to support occasionally (schema) changing JSON files and aggregate ANSI SQL queries: you need to use BigQuery, and it is quickest to use 'Automatically detect' for schema changes.\n\nRefer GCP documentation - BigQuery Auto-Detection: - https://cloud.google.com/bigquery/docs/schema-detect;\n\nSchema auto-detection is available when you load data into BigQuery, and when you query an external data source.\n\nWhen auto-detection is enabled, BigQuery starts the inference process by selecting a random file in the data source and scanning up to 100 rows of data to use as a representative sample. BigQuery then examines each field and attempts to assign a data type to that field based on the values in the sample.\n\nA is not correct because you should not provide format files: you can simply turn on the 'Automatically detect' schema changes flag.\n\nC and D are not correct as Cloud Storage is not ideal for this scenario; it is cumbersome, adds latency and doesn't add value.",
     "concept": "BigQuery, Cloud Storage"
   },
   {
@@ -932,7 +932,7 @@
       "Use a Kubernetes Engine cluster to host your model. Monitor the status of Operation object for 'error' results."
     ],
     "ans": 1,
-    "explain": "Correct answer is B as the requirement is to host a Machine Learning Deep Neural Network job it is ideal to use the Cloud Machine Learning service. Monitoring works on Jobs object.\n\nRefer GCP documentation - ML Engine Managing Jobs: - https://cloud.google.com/ml-engine/docs/tensorflow/managing-models-jobs;\n\nOption A is wrong as monitoring should not be on Operation object to monitor failures.\n\nOptions C & D are wrong as you should not use a Kubernetes Engine cluster for Machine Learning jobs.",
+    "explain": "The correct answer is \"Use Cloud Machine Learning to host your model. Monitor the status of the Jobs object for 'failed' job states.\" because the requirement is to host a Machine Learning Deep Neural Network job it is ideal to use the Cloud Machine Learning service. Monitoring works on Jobs object.\n\nRefer GCP documentation - ML Engine Managing Jobs: - https://cloud.google.com/ml-engine/docs/tensorflow/managing-models-jobs;\n\nThe option \"Use Cloud Machine Learning to host your model. Monitor the status of the Operation object for 'error' results.\" is incorrect because monitoring should not be on Operation object to monitor failures.\n\nThe options \"Use a Kubernetes Engine cluster to host your model. Monitor the status of the Jobs object for 'failed' job states.\" and \"Use a Kubernetes Engine cluster to host your model. Monitor the status of Operation object for 'error' results.\" are incorrect because you should not use a Kubernetes Engine cluster for Machine Learning jobs.",
     "concept": "GCP Data Engineering"
   },
   {
@@ -944,7 +944,7 @@
       "Create a Dataflow job to manage the conversion of Avro data to CSV format, then export to Cloud Storage."
     ],
     "ans": 2,
-    "explain": "Correct answer is C as BigQuery can export Avro data natively to Cloud Storage.\n\nRefer GCP documentation - BigQuery Exporting Data: - https://cloud.google.com/bigquery/docs/exporting-data;\n\nAfter you've loaded your data into BigQuery, you can export the data in several formats. BigQuery can export up to 1 GB of data to a single file. If you are exporting more than 1 GB of data, you must export your data to multiple files. When you export your data to multiple files, the size of the files will vary.\n\nYou cannot export data to a local file or to Google Drive, but you can save query results to a local file. The only supported export location is Google Cloud Storage.\n\nFor Export format, choose the format for your exported data: CSV, JSON (Newline Delimited), or Avro.\n\nOption A is wrong as BigQuery can export Avro data natively to Cloud Storage and does not need to be converted to CSV format.\n\nOption B is wrong as BigQuery Transfer Service is for moving BigQuery data to Google SaaS applications (AdWords, DoubleClick, etc.). You will want to do a normal export of data, which works with Avro formatted data.\n\nOption D is wrong as Google Cloud Dataflow can be used to read data from BigQuery instead of manually exporting it, but doesn't work through console.",
+    "explain": "The correct answer is \"Click on Export Table in BigQuery, and provide the Cloud Storage location to export to\" because BigQuery can export Avro data natively to Cloud Storage.\n\nRefer GCP documentation - BigQuery Exporting Data: - https://cloud.google.com/bigquery/docs/exporting-data;\n\nAfter you've loaded your data into BigQuery, you can export the data in several formats. BigQuery can export up to 1 GB of data to a single file. If you are exporting more than 1 GB of data, you must export your data to multiple files. When you export your data to multiple files, the size of the files will vary.\n\nYou cannot export data to a local file or to Google Drive, but you can save query results to a local file. The only supported export location is Google Cloud Storage.\n\nFor Export format, choose the format for your exported data: CSV, JSON (Newline Delimited), or Avro.\n\nThe option \"Convert the data to CSV format the BigQuery export options, then make the transfer.\" is incorrect because BigQuery can export Avro data natively to Cloud Storage and does not need to be converted to CSV format.\n\nThe option \"Use the BigQuery Transfer Service to transfer Avro data to Cloud Storage.\" is incorrect because BigQuery Transfer Service is for moving BigQuery data to Google SaaS applications (AdWords, DoubleClick, etc.). You will want to do a normal export of data, which works with Avro formatted data.\n\nThe option \"Create a Dataflow job to manage the conversion of Avro data to CSV format, then export to Cloud Storage.\" is incorrect because Google Cloud Dataflow can be used to read data from BigQuery instead of manually exporting it, but doesn't work through console.",
     "concept": "BigQuery, Cloud Storage, Dataflow"
   },
   {
@@ -956,7 +956,7 @@
       "App Engine, Cloud Dataflow, BigQuery"
     ],
     "ans": 2,
-    "explain": "Correct answer is C as the need to ingest it, transform and store the Cloud Pub/Sub, Cloud Dataflow, BigQuery is ideal stack to handle the IoT data.\n\nRefer GCP documentation - IoT: - https://cloud.google.com/solutions/iot-overview#ingestion;\n\nGoogle Cloud Pub/Sub provides a globally durable message ingestion service. By creating topics for streams or channels, you can enable different components of your application to subscribe to specific streams of data without needing to construct subscriber-specific channels on each device. Cloud Pub/Sub also natively connects to other Cloud Platform services, helping you to connect ingestion, data pipelines, and storage systems.\n\nGoogle Cloud Dataflow provides the open Apache Beam programming model as a managed service for processing data in multiple ways, including batch operations, extract-transform-load (ETL) patterns, and continuous, streaming computation. Cloud Dataflow can be particularly useful for managing the high-volume data processing pipelines required for IoT scenarios. Cloud Dataflow is also designed to integrate seamlessly with the other Cloud Platform services you choose for your pipeline.\n\nGoogle BigQuery provides a fully managed data warehouse with a familiar SQL interface, so you can store your IoT data alongside any of your other enterprise analytics and logs. The performance and cost of BigQuery means you might keep your valuable data longer, instead of deleting it just to save disk space.\n\nSample Arch - Mobile Gaming Analysis Telemetry: - https://cloud.google.com/solutions/mobile/mobile-gaming-analysis-telemetry;\n\nProcessing game client and game server events in real time;\n\nOption A is wrong as the stack is correct, however the order is not correct.\n\nOption B is wrong as Dataproc is not an ideal tool for analysis. Cloud Dataproc is a fast, easy-to-use, fully-managed cloud service for running Apache Spark and Apache Hadoop clusters in a simpler, more cost-efficient way.\n\nOption D is wrong as App Engine is not an ideal ingestion tool to handle IoT data.",
+    "explain": "The correct answer is \"Cloud Pub/Sub, Cloud Dataflow, BigQuery\" because the need to ingest it, transform and store the Cloud Pub/Sub, Cloud Dataflow, BigQuery is ideal stack to handle the IoT data.\n\nRefer GCP documentation - IoT: - https://cloud.google.com/solutions/iot-overview#ingestion;\n\nGoogle Cloud Pub/Sub provides a globally durable message ingestion service. By creating topics for streams or channels, you can enable different components of your application to subscribe to specific streams of data without needing to construct subscriber-specific channels on each device. Cloud Pub/Sub also natively connects to other Cloud Platform services, helping you to connect ingestion, data pipelines, and storage systems.\n\nGoogle Cloud Dataflow provides the open Apache Beam programming model as a managed service for processing data in multiple ways, including batch operations, extract-transform-load (ETL) patterns, and continuous, streaming computation. Cloud Dataflow can be particularly useful for managing the high-volume data processing pipelines required for IoT scenarios. Cloud Dataflow is also designed to integrate seamlessly with the other Cloud Platform services you choose for your pipeline.\n\nGoogle BigQuery provides a fully managed data warehouse with a familiar SQL interface, so you can store your IoT data alongside any of your other enterprise analytics and logs. The performance and cost of BigQuery means you might keep your valuable data longer, instead of deleting it just to save disk space.\n\nSample Arch - Mobile Gaming Analysis Telemetry: - https://cloud.google.com/solutions/mobile/mobile-gaming-analysis-telemetry;\n\nProcessing game client and game server events in real time;\n\nThe option \"Cloud Dataflow, Cloud Pub/Sub, BigQuery\" is incorrect because the stack is correct, however the order is not correct.\n\nThe option \"Cloud Pub/Sub, Cloud Dataflow, Cloud Dataproc\" is incorrect because Dataproc is not an ideal tool for analysis. Cloud Dataproc is a fast, easy-to-use, fully-managed cloud service for running Apache Spark and Apache Hadoop clusters in a simpler, more cost-efficient way.\n\nThe option \"App Engine, Cloud Dataflow, BigQuery\" is incorrect because App Engine is not an ideal ingestion tool to handle IoT data.",
     "concept": "BigQuery, Pub/Sub, Dataflow"
   },
   {
@@ -980,7 +980,7 @@
       "Switch Cloud Dataflow to pull messages from Cloud Pub/Sub instead of Cloud Pub/Sub pushing messages to Cloud Dataflow."
     ],
     "ans": 1,
-    "explain": "Correct answer is B as the issue can be debugged by running a fixed dataset and checking the output.\n\nRefer GCP documentation - Dataflow logging: - https://cloud.google.com/dataflow/docs/guides/logging;\n\nOption A is wrong as the Dashboard uses data provided by Dataflow, the input source for Dashboard seems to be the issue;\n\nOption C is wrong as Monitoring would not help find missing messages in Cloud Pub/Sub.\n\nOption D is wrong as Dataflow cannot be configured as Push endpoint with Cloud Pub/Sub.",
+    "explain": "The correct answer is \"Run a fixed dataset through the Cloud Dataflow pipeline and analyze the output.\" because the issue can be debugged by running a fixed dataset and checking the output.\n\nRefer GCP documentation - Dataflow logging: - https://cloud.google.com/dataflow/docs/guides/logging;\n\nThe option \"Check the dashboard application to see if it is not displaying correctly.\" is incorrect because the Dashboard uses data provided by Dataflow, the input source for Dashboard seems to be the issue;\n\nThe option \"Use Google Stackdriver Monitoring on Cloud Pub/Sub to find the missing messages.\" is incorrect because Monitoring would not help find missing messages in Cloud Pub/Sub.\n\nThe option \"Switch Cloud Dataflow to pull messages from Cloud Pub/Sub instead of Cloud Pub/Sub pushing messages to Cloud Dataflow.\" is incorrect because Dataflow cannot be configured as Push endpoint with Cloud Pub/Sub.",
     "concept": "Pub/Sub, Dataflow"
   },
   {
@@ -992,7 +992,7 @@
       "Enable your IoT devices to generate a timestamp when sending messages. Use Cloud Pub/Sub to process messages by timestamp and fix out of order issues."
     ],
     "ans": 1,
-    "explain": "Correct answer is B as Cloud Pub/Sub can help handle the streaming data. However, Cloud Pub/Sub does not handle the ordering, which can be done using Dataflow and adding watermarks to the messages from the source.\n\nRefer GCP documentation - Cloud Pub/Sub ordering & Subscriber: - https://cloud.google.com/pubsub/docs/ordering;\n\nHow do you assign an order to messages published from different publishers? Either the publishers themselves have to coordinate, or the message delivery service itself has to attach a notion of order to every incoming message. Each message would need to include the ordering information. The order information could be a timestamp (though it has to be a timestamp that all servers get from the same source in order to avoid issues of clock drift), or a sequence number (acquired from a single source with ACID guarantees). Other messaging systems that guarantee ordering of messages require settings that effectively limit the system to multiple publishers sending messages through a single server to a single subscriber.\n\nTypically, Cloud Pub/Sub delivers each message once and in the order in which it was published. However, messages may sometimes be delivered out of order or more than once. In general, accommodating more-than-once delivery requires your subscriber to be idempotent when processing messages. You can achieve exactly once processing of Cloud Pub/Sub message streams using Cloud Dataflow PubsubIO. PubsubIO de-duplicates messages on custom message identifiers or those assigned by Cloud Pub/Sub. You can also achieve ordered processing with Cloud Dataflow by using the standard sorting APIs of the service. Alternatively, to achieve ordering, the publisher of the topic to which you subscribe can include a sequence token in the message.\n\nOptions A & C are wrong as SQL and BigQuery do not support ingestion and ordering of IoT data and would need other services like Pub/Sub.\n\nOption D is wrong as Cloud Pub/Sub does not perform ordering of messages.",
+    "explain": "The correct answer is \"Enable your IoT devices to generate a timestamp when sending messages. Use Cloud Dataflow to process messages, and use windows, watermarks (timestamp), and triggers to process late data.\" because Cloud Pub/Sub can help handle the streaming data. However, Cloud Pub/Sub does not handle the ordering, which can be done using Dataflow and adding watermarks to the messages from the source.\n\nRefer GCP documentation - Cloud Pub/Sub ordering & Subscriber: - https://cloud.google.com/pubsub/docs/ordering;\n\nHow do you assign an order to messages published from different publishers? Either the publishers themselves have to coordinate, or the message delivery service itself has to attach a notion of order to every incoming message. Each message would need to include the ordering information. The order information could be a timestamp (though it has to be a timestamp that all servers get from the same source in order to avoid issues of clock drift), or a sequence number (acquired from a single source with ACID guarantees). Other messaging systems that guarantee ordering of messages require settings that effectively limit the system to multiple publishers sending messages through a single server to a single subscriber.\n\nTypically, Cloud Pub/Sub delivers each message once and in the order in which it was published. However, messages may sometimes be delivered out of order or more than once. In general, accommodating more-than-once delivery requires your subscriber to be idempotent when processing messages. You can achieve exactly once processing of Cloud Pub/Sub message streams using Cloud Dataflow PubsubIO. PubsubIO de-duplicates messages on custom message identifiers or those assigned by Cloud Pub/Sub. You can also achieve ordered processing with Cloud Dataflow by using the standard sorting APIs of the service. Alternatively, to achieve ordering, the publisher of the topic to which you subscribe can include a sequence token in the message.\n\nThe options \"Use Cloud SQL to process the delayed messages.\" and \"Use SQL queries in BigQuery to analyze data by timestamp.\" are incorrect because SQL and BigQuery do not support ingestion and ordering of IoT data and would need other services like Pub/Sub.\n\nThe option \"Enable your IoT devices to generate a timestamp when sending messages. Use Cloud Pub/Sub to process messages by timestamp and fix out of order issues.\" is incorrect because Cloud Pub/Sub does not perform ordering of messages.",
     "concept": "BigQuery, Pub/Sub, Dataflow"
   },
   {
@@ -1008,7 +1008,7 @@
     "concept": "Dataproc BigQuery connector, Spark integration, Hadoop input/output formats"
   },
   {
-    "q": "You are working on a sensitive project involving private user data. You have set up a project on Google Cloud Platform to house your work internally. An external consultant is going to assist with coding a complex transformation in a Google Cloud Dataflow pipeline for your project. How should you maintain users\u2019 privacy?",
+    "q": "You are working on a sensitive project involving private user data. You have set up a project on Google Cloud Platform to house your work internally. An external consultant is going to assist with coding a complex transformation in a Google Cloud Dataflow pipeline for your project. How should you maintain users’ privacy?",
     "opts": [
       "Grant the consultant the Viewer role on the project.",
       "Grant the consultant the Cloud Dataflow Developer role on the project.",
@@ -1016,7 +1016,7 @@
       "Create an anonymized sample of the data for the consultant to work with in a different project."
     ],
     "ans": 1,
-    "explain": "Correct answer is B as the Dataflow developer role would help provide the third-party consultant access to create and work on the Dataflow pipeline. However, it does not provide access to view the data, thus maintaining user's privacy.\n\nRefer GCP documentation - Dataflow roles: - https://cloud.google.com/dataflow/docs/concepts/access-control#roles;\n\nOption A is wrong as it would not allow the consultant to work on the pipeline.\n\nOption C is wrong as the consultant cannot use the service account to login.\n\nOption D is wrong as it does not enable collabaration.",
+    "explain": "The correct answer is \"Grant the consultant the Cloud Dataflow Developer role on the project.\" because the Dataflow developer role would help provide the third-party consultant access to create and work on the Dataflow pipeline. However, it does not provide access to view the data, thus maintaining user's privacy.\n\nRefer GCP documentation - Dataflow roles: - https://cloud.google.com/dataflow/docs/concepts/access-control#roles;\n\nThe option \"Grant the consultant the Viewer role on the project.\" is incorrect because it would not allow the consultant to work on the pipeline.\n\nThe option \"Create a service account and allow the consultant to log on with it.\" is incorrect because the consultant cannot use the service account to login.\n\nThe option \"Create an anonymized sample of the data for the consultant to work with in a different project.\" is incorrect because it does not enable collabaration.",
     "concept": "Dataflow"
   },
   {
@@ -1028,7 +1028,7 @@
       "Import the pipeline into BigQuery."
     ],
     "ans": 0,
-    "explain": "Correct answer is A as the PCollection indicates it is a Cloud Dataflow pipeline. And the Cloud Runner will enable the pipeline to scale to production levels.\n\nRefer documentation - Dataflow Cloud Runner: - https://cloud.google.com/dataflow/docs/;\n\nOptions B & D are wrong as PCollections are related to Dataflow;\n\nOption C is wrong as Local runner is execute the pipeline locally.",
+    "explain": "The correct answer is \"They should use the Cloud Dataflow Cloud Runner.\" because the PCollection indicates it is a Cloud Dataflow pipeline. And the Cloud Runner will enable the pipeline to scale to production levels.\n\nRefer documentation - Dataflow Cloud Runner: - https://cloud.google.com/dataflow/docs/;\n\nThe options \"They should upload the pipeline to Cloud Dataproc.\" and \"Import the pipeline into BigQuery.\" are incorrect because PCollections are related to Dataflow;\n\nThe option \"They should use the local version of runner.\" is incorrect because Local runner is execute the pipeline locally.",
     "concept": "Dataflow"
   },
   {
@@ -1040,7 +1040,7 @@
       "Use Cloud Dataflow's built-in timestamps for ordering and filtering."
     ],
     "ans": 0,
-    "explain": "Correct answer is A as Cloud Pub/Sub does not maintain message order and Dataflow can be used to order the messages and as well as calculate average using Sliding Time window.\n\nRefer GCP documentation - Pub/Sub Subscriber: - https://cloud.google.com/pubsub/docs/subscriber;\n\nCloud Pub/Sub delivers each message once and in the order in which it was published. However, messages may sometimes be delivered out of order or more than once. In general, accommodating more-than-once delivery requires your subscriber to be idempotent when processing messages. You can achieve exactly once processing of Cloud Pub/Sub message streams using Cloud Dataflow PubsubIO. PubsubIO de-duplicates messages on custom message identifiers or those assigned by Cloud Pub/Sub. You can also achieve ordered processing with Cloud Dataflow by using the standard sorting APIs of the service. Alternatively, to achieve ordering, the publisher of the topic to which you subscribe can include a sequence token in the message.\n\nOption B is wrong as Data Studio is more of a visualization tool and does not help in analysis or ordering of messages.\n\nOption C is wrong as Cloud Pub/Sub does not guarantee order and arrival.\n\nOption D is wrong as Dataflow does not provide built-in timestamps for ordering and filtering. It needs to use the watermark/timestamp introduced either by the publisher source or Cloud Pub/Sub.",
+    "explain": "The correct answer is \"Use Cloud Pub/Sub and Cloud Dataflow with Sliding Time Windows.\" because Cloud Pub/Sub does not maintain message order and Dataflow can be used to order the messages and as well as calculate average using Sliding Time window.\n\nRefer GCP documentation - Pub/Sub Subscriber: - https://cloud.google.com/pubsub/docs/subscriber;\n\nCloud Pub/Sub delivers each message once and in the order in which it was published. However, messages may sometimes be delivered out of order or more than once. In general, accommodating more-than-once delivery requires your subscriber to be idempotent when processing messages. You can achieve exactly once processing of Cloud Pub/Sub message streams using Cloud Dataflow PubsubIO. PubsubIO de-duplicates messages on custom message identifiers or those assigned by Cloud Pub/Sub. You can also achieve ordered processing with Cloud Dataflow by using the standard sorting APIs of the service. Alternatively, to achieve ordering, the publisher of the topic to which you subscribe can include a sequence token in the message.\n\nThe option \"Use Cloud Pub/Sub and Google Data Studio.\" is incorrect because Data Studio is more of a visualization tool and does not help in analysis or ordering of messages.\n\nThe option \"Cloud Pub/Sub can guarantee timely arrival and order.\" is incorrect because Cloud Pub/Sub does not guarantee order and arrival.\n\nThe option \"Use Cloud Dataflow's built-in timestamps for ordering and filtering.\" is incorrect because Dataflow does not provide built-in timestamps for ordering and filtering. It needs to use the watermark/timestamp introduced either by the publisher source or Cloud Pub/Sub.",
     "concept": "Pub/Sub, Dataflow"
   },
   {
@@ -1052,7 +1052,7 @@
       "Dataproc Editor"
     ],
     "ans": 0,
-    "explain": "Correct answer is A as the compute engine should have Dataproc Worker role assigned.\n\nRefer GCP documentation - Dataproc Service Accounts: - https://cloud.google.com/dataproc/docs/concepts/configuring-clusters/service-accounts#important_notes;\n\nService accounts have IAM roles granted to them. Specifying a user-managed service account when creating a Cloud Dataproc cluster allows you to create and utilize clusters with fine-grained access and control to Cloud resources. Using multiple user-managed service accounts with different Cloud Dataproc clusters allows for clusters with different access to Cloud resources.\n\nService accounts used with Cloud Dataproc must have Dataproc/Dataproc Worker role (or have all the permissions granted by Dataproc Worker role).",
+    "explain": "The correct answer is \"Dataproc Worker\" because the compute engine should have Dataproc Worker role assigned.\n\nRefer GCP documentation - Dataproc Service Accounts: - https://cloud.google.com/dataproc/docs/concepts/configuring-clusters/service-accounts#important_notes;\n\nService accounts have IAM roles granted to them. Specifying a user-managed service account when creating a Cloud Dataproc cluster allows you to create and utilize clusters with fine-grained access and control to Cloud resources. Using multiple user-managed service accounts with different Cloud Dataproc clusters allows for clusters with different access to Cloud resources.\n\nService accounts used with Cloud Dataproc must have Dataproc/Dataproc Worker role (or have all the permissions granted by Dataproc Worker role).",
     "concept": "Dataproc"
   },
   {
@@ -1064,11 +1064,11 @@
       "Create a new pipeline that has a new Cloud Pub/Sub subscription and cancel the old pipeline."
     ],
     "ans": 0,
-    "explain": "Correct answer is A as the key requirement is not to lose the data, the Dataflow pipeline can be stopped using the Drain option. Drain options would cause Dataflow to stop any new processing, but would also allow the existing processing to complete;\n\nRefer GCP documentation - Dataflow Stopping a Pipeline: - https://cloud.google.com/dataflow/docs/guides/stopping-a-pipeline;\n\nUsing the Drain option to stop your job tells the Cloud Dataflow service to finish your job in its current state. Your job will immediately stop ingesting new data from input sources. However, the Cloud Dataflow service will preserve any existing resources, such as worker instances, to finish processing and writing any buffered data in your pipeline. When all pending processing and write operations are complete, the Cloud Dataflow service will clean up the GCP resources associated with your job.\n\nNote: Your pipeline will continue to incur the cost of maintaining any associated GCP resources until all processing and writing has completed.\n\nUse the Drain option to stop your job if you want to prevent data loss as you bring down your pipeline.\n\nEffects of draining a job;\n\nWhen you issue the Drain command, Cloud Dataflow immediately closes any in-process windows and fires all triggers. The system does not wait for any outstanding time-based windows to finish. For example, if your pipeline is ten minutes into a two-hour window when you issue the Drain command, Cloud Dataflow won't wait for the remainder of the window to finish. It will close the window immediately with partial results.",
+    "explain": "The correct answer is \"Update the current pipeline and use the drain flag.\" because the key requirement is not to lose the data, the Dataflow pipeline can be stopped using the Drain option. Drain options would cause Dataflow to stop any new processing, but would also allow the existing processing to complete;\n\nRefer GCP documentation - Dataflow Stopping a Pipeline: - https://cloud.google.com/dataflow/docs/guides/stopping-a-pipeline;\n\nUsing the Drain option to stop your job tells the Cloud Dataflow service to finish your job in its current state. Your job will immediately stop ingesting new data from input sources. However, the Cloud Dataflow service will preserve any existing resources, such as worker instances, to finish processing and writing any buffered data in your pipeline. When all pending processing and write operations are complete, the Cloud Dataflow service will clean up the GCP resources associated with your job.\n\nNote: Your pipeline will continue to incur the cost of maintaining any associated GCP resources until all processing and writing has completed.\n\nUse the Drain option to stop your job if you want to prevent data loss as you bring down your pipeline.\n\nEffects of draining a job;\n\nWhen you issue the Drain command, Cloud Dataflow immediately closes any in-process windows and fires all triggers. The system does not wait for any outstanding time-based windows to finish. For example, if your pipeline is ten minutes into a two-hour window when you issue the Drain command, Cloud Dataflow won't wait for the remainder of the window to finish. It will close the window immediately with partial results.",
     "concept": "Pub/Sub, Dataflow"
   },
   {
-    "q": "You company\u2019s on-premises Hadoop and Spark jobs have been migrated to Cloud Dataproc. When using Cloud Dataproc clusters, you can access the YARN web interface by configuring a browser to connect through which proxy?",
+    "q": "You company’s on-premises Hadoop and Spark jobs have been migrated to Cloud Dataproc. When using Cloud Dataproc clusters, you can access the YARN web interface by configuring a browser to connect through which proxy?",
     "opts": [
       "HTTPS",
       "VPN",
@@ -1076,7 +1076,7 @@
       "HTTP"
     ],
     "ans": 2,
-    "explain": "Correct answer is C as the internal services can be accessed using the SOCKS proxy server.\n\nRefer GCP documentation - Dataproc - Connecting to web interfaces: - https://cloud.google.com/dataproc/docs/concepts/accessing/cluster-web-interfaces;\n\nYou can connect to web interfaces running on a Cloud Dataproc cluster using your project's Cloud Shell or the Cloud SDK gcloud command-line tool:\n\nCloud Shell: The Cloud Shell in the Google Cloud Platform Console has the Cloud SDK commands and utilities pre-installed, and it provides a Web Preview feature that allows you to quickly connect through an SSH tunnel to a web interface port on a cluster. However, a connection to the cluster from Cloud Shell uses local port forwarding, which opens a connection to only one port on a cluster web interface\u2014multiple commands are needed to connect to multiple ports. Also, Cloud Shell sessions automatically terminate after a period of inactivity (30 minutes).\n\ngcloud command-line tool: The gcloud compute ssh command with dynamic port forwarding allows you to establish an SSH tunnel and run a SOCKS proxy server on top of the tunnel. After issuing this command, you must configure your local browser to use the SOCKS proxy. This connection method allows you to connect to multiple ports on a cluster web interface.",
+    "explain": "The correct answer is \"SOCKS\" because the internal services can be accessed using the SOCKS proxy server.\n\nRefer GCP documentation - Dataproc - Connecting to web interfaces: - https://cloud.google.com/dataproc/docs/concepts/accessing/cluster-web-interfaces;\n\nYou can connect to web interfaces running on a Cloud Dataproc cluster using your project's Cloud Shell or the Cloud SDK gcloud command-line tool:\n\nCloud Shell: The Cloud Shell in the Google Cloud Platform Console has the Cloud SDK commands and utilities pre-installed, and it provides a Web Preview feature that allows you to quickly connect through an SSH tunnel to a web interface port on a cluster. However, a connection to the cluster from Cloud Shell uses local port forwarding, which opens a connection to only one port on a cluster web interface—multiple commands are needed to connect to multiple ports. Also, Cloud Shell sessions automatically terminate after a period of inactivity (30 minutes).\n\ngcloud command-line tool: The gcloud compute ssh command with dynamic port forwarding allows you to establish an SSH tunnel and run a SOCKS proxy server on top of the tunnel. After issuing this command, you must configure your local browser to use the SOCKS proxy. This connection method allows you to connect to multiple ports on a cluster web interface.",
     "concept": "Dataproc"
   },
   {
@@ -1088,7 +1088,7 @@
       "Migrate from Cloud Dataproc to an open source Hadoop Cluster hosted on Compute Engine, because this is the only way to get all the Hadoop customizations needed for efficiency."
     ],
     "ans": 2,
-    "explain": "Correct answer is C as Storing persistent data off the cluster allows the cluster to be shut down when not processing data. And it allows separate clusters to be started per job or per kind of work, so tuning is less important.\n\nRefer GCP documentation - Dataproc Cloud Storage: - https://cloud.google.com/dataproc/docs/concepts/connectors/cloud-storage;\n\nDirect data access \u2013 Store your data in Cloud Storage and access it directly, with no need to transfer it into HDFS first.\n\nHDFS compatibility \u2013 You can easily access your data in Cloud Storage using the gs:// prefix instead of hdfs://.\n\nInteroperability \u2013 Storing data in Cloud Storage enables seamless interoperability between Spark, Hadoop, and Google services.\n\nData accessibility \u2013 When you shut down a Hadoop cluster, you still have access to your data in Cloud Storage, unlike HDFS.\n\nHigh data availability \u2013 Data stored in Cloud Storage is highly available and globally replicated without a loss of performance.\n\nNo storage management overhead \u2013 Unlike HDFS, Cloud Storage requires no routine maintenance such as checking the file system, upgrading or rolling back to a previous version of the file system, etc.\n\nQuick startup \u2013 In HDFS, a MapReduce job can't start until the NameNode is out of safe mode\u2014a process that can take from a few seconds to many minutes depending on the size and state of your data. With Cloud Storage, you can start your job as soon as the task nodes start, leading to significant cost savings over time.",
+    "explain": "The correct answer is \"Store persistent data off-cluster. Start a cluster for one kind of work then shut it down when it is not processing data.\" because Storing persistent data off the cluster allows the cluster to be shut down when not processing data. And it allows separate clusters to be started per job or per kind of work, so tuning is less important.\n\nRefer GCP documentation - Dataproc Cloud Storage: - https://cloud.google.com/dataproc/docs/concepts/connectors/cloud-storage;\n\nDirect data access – Store your data in Cloud Storage and access it directly, with no need to transfer it into HDFS first.\n\nHDFS compatibility – You can easily access your data in Cloud Storage using the gs:// prefix instead of hdfs://.\n\nInteroperability – Storing data in Cloud Storage enables seamless interoperability between Spark, Hadoop, and Google services.\n\nData accessibility – When you shut down a Hadoop cluster, you still have access to your data in Cloud Storage, unlike HDFS.\n\nHigh data availability – Data stored in Cloud Storage is highly available and globally replicated without a loss of performance.\n\nNo storage management overhead – Unlike HDFS, Cloud Storage requires no routine maintenance such as checking the file system, upgrading or rolling back to a previous version of the file system, etc.\n\nQuick startup – In HDFS, a MapReduce job can't start until the NameNode is out of safe mode—a process that can take from a few seconds to many minutes depending on the size and state of your data. With Cloud Storage, you can start your job as soon as the task nodes start, leading to significant cost savings over time.",
     "concept": "Cloud Storage, Dataproc"
   },
   {
@@ -1100,7 +1100,7 @@
       "Queries and streaming inserts."
     ],
     "ans": 0,
-    "explain": "Correct answer is A as BigQuery charges for Storage, Queries and Streaming inserts. Loading and Exporting of data are free operations and not charged by BigQuery.\n\nRefer GCP documentation - BigQuery Pricing: - https://cloud.google.com/bigquery/pricing;\n\nOptions B & C are wrong as Loading and Exporting data are not charged.\n\nOption D is wrong as Storage is also charged.",
+    "explain": "The correct answer is \"Storage, queries, and streaming inserts.\" because BigQuery charges for Storage, Queries and Streaming inserts. Loading and Exporting of data are free operations and not charged by BigQuery.\n\nRefer GCP documentation - BigQuery Pricing: - https://cloud.google.com/bigquery/pricing;\n\nThe options \"Storage, queries, and loading data from a file.\" and \"Storage, queries, and exporting data.\" are incorrect because Loading and Exporting data are not charged.\n\nThe option \"Queries and streaming inserts.\" is incorrect because Storage is also charged.",
     "concept": "BigQuery"
   },
   {
@@ -1124,7 +1124,7 @@
       "Utilize Cloud Pub/Sub to collect the inbound sensor data, analyze the data with Dataflow and save the results to Bigtable."
     ],
     "ans": 1,
-    "explain": "Correct answer is B as Cloud Pub/Sub provides elastic and scalable ingestion, Dataflow provides processing and BigQuery analytics.\n\nRefer GCP documentation - IoT: - https://cloud.google.com/solutions/iot-overview;\n\nGoogle Cloud Pub/Sub provides a globally durable message ingestion service. By creating topics for streams or channels, you can enable different components of your application to subscribe to specific streams of data without needing to construct subscriber-specific channels on each device. Cloud Pub/Sub also natively connects to other Cloud Platform services, helping you to connect ingestion, data pipelines, and storage systems.\n\nGoogle Cloud Dataflow provides the open Apache Beam programming model as a managed service for processing data in multiple ways, including batch operations, extract-transform-load (ETL) patterns, and continuous, streaming computation. Cloud Dataflow can be particularly useful for managing the high-volume data processing pipelines required for IoT scenarios. Cloud Dataflow is also designed to integrate seamlessly with the other Cloud Platform services you choose for your pipeline.\n\nGoogle BigQuery provides a fully managed data warehouse with a familiar SQL interface, so you can store your IoT data alongside any of your other enterprise analytics and logs. The performance and cost of BigQuery means you might keep your valuable data longer, instead of deleting it just to save disk space.\n\nOption A is wrong as Cloud Storage is not an ideal ingestion service for real time high frequency data. Also Dataproc is a fast, easy-to-use, fully-managed cloud service for running Apache Spark and Apache Hadoop clusters in a simpler, more cost-efficient way.\n\nOption C is wrong as Cloud SQL is a relational database and not suited for analytics data storage.\n\nOption D is wrong as Bigtable is not ideal for long term analytics data storage.",
+    "explain": "The correct answer is \"Utilize Cloud Pub/Sub to collect the inbound sensor data, analyze the data with Dataflow and save the results to BigQuery.\" because Cloud Pub/Sub provides elastic and scalable ingestion, Dataflow provides processing and BigQuery analytics.\n\nRefer GCP documentation - IoT: - https://cloud.google.com/solutions/iot-overview;\n\nGoogle Cloud Pub/Sub provides a globally durable message ingestion service. By creating topics for streams or channels, you can enable different components of your application to subscribe to specific streams of data without needing to construct subscriber-specific channels on each device. Cloud Pub/Sub also natively connects to other Cloud Platform services, helping you to connect ingestion, data pipelines, and storage systems.\n\nGoogle Cloud Dataflow provides the open Apache Beam programming model as a managed service for processing data in multiple ways, including batch operations, extract-transform-load (ETL) patterns, and continuous, streaming computation. Cloud Dataflow can be particularly useful for managing the high-volume data processing pipelines required for IoT scenarios. Cloud Dataflow is also designed to integrate seamlessly with the other Cloud Platform services you choose for your pipeline.\n\nGoogle BigQuery provides a fully managed data warehouse with a familiar SQL interface, so you can store your IoT data alongside any of your other enterprise analytics and logs. The performance and cost of BigQuery means you might keep your valuable data longer, instead of deleting it just to save disk space.\n\nThe option \"Utilize Cloud Storage to collect the inbound sensor data, analyze data with Dataproc and save the results to BigQuery.\" is incorrect because Cloud Storage is not an ideal ingestion service for real time high frequency data. Also Dataproc is a fast, easy-to-use, fully-managed cloud service for running Apache Spark and Apache Hadoop clusters in a simpler, more cost-efficient way.\n\nThe option \"Utilize Cloud Pub/Sub to collect the inbound sensor data, analyze the data with Dataflow and save the results to Cloud SQL.\" is incorrect because Cloud SQL is a relational database and not suited for analytics data storage.\n\nThe option \"Utilize Cloud Pub/Sub to collect the inbound sensor data, analyze the data with Dataflow and save the results to Bigtable.\" is incorrect because Bigtable is not ideal for long term analytics data storage.",
     "concept": "BigQuery, Bigtable, Cloud SQL"
   },
   {
@@ -1136,7 +1136,7 @@
       "Decrease the size of the Hadoop cluster but also rewrite the job in Hive."
     ],
     "ans": 1,
-    "explain": "Correct answer is B as Spark can improve the performance as it performs lazy in-memory execution.\n\nSpark is important because it does part of its pipeline processing in memory rather than copying from disk. For some applications, this makes Spark extremely fast. With a Spark pipeline, you have two different kinds of operations, transforms and actions. Spark builds its pipeline used an abstraction called a directed graph. Each transform builds additional nodes into the graph but spark doesn't execute the pipeline until it sees an action.\n\nSpark waits until it has the whole story, all the information. This allows Spark to choose the best way to distribute the work and run the pipeline. The process of waiting on transforms and executing on actions is called, lazy execution. For a transformation, the input is an RDD and the output is an RDD. When Spark sees a transformation, it registers it in the directed graph and then it waits. An action triggers Spark to process the pipeline, the output is usually a result format, such as a text file, rather than an RDD.\n\nOption A is wrong as Pig is wrapper and would initiate Map Reduce jobs;\n\nOption C is wrong as it would increase the cost.\n\nOption D is wrong Hive is wrapper and would initiate Map Reduce jobs. Also, reducing the size would reduce performance.",
+    "explain": "The correct answer is \"Rewrite the job in Apache Spark.\" because Spark can improve the performance as it performs lazy in-memory execution.\n\nSpark is important because it does part of its pipeline processing in memory rather than copying from disk. For some applications, this makes Spark extremely fast. With a Spark pipeline, you have two different kinds of operations, transforms and actions. Spark builds its pipeline used an abstraction called a directed graph. Each transform builds additional nodes into the graph but spark doesn't execute the pipeline until it sees an action.\n\nSpark waits until it has the whole story, all the information. This allows Spark to choose the best way to distribute the work and run the pipeline. The process of waiting on transforms and executing on actions is called, lazy execution. For a transformation, the input is an RDD and the output is an RDD. When Spark sees a transformation, it registers it in the directed graph and then it waits. An action triggers Spark to process the pipeline, the output is usually a result format, such as a text file, rather than an RDD.\n\nThe option \"Rewrite the job in Pig.\" is incorrect because Pig is wrapper and would initiate Map Reduce jobs;\n\nThe option \"Increase the size of the Hadoop cluster.\" is incorrect because it would increase the cost.\n\nOption D is wrong Hive is wrapper and would initiate Map Reduce jobs. Also, reducing the size would reduce performance.",
     "concept": "GCP Data Engineering"
   },
   {
@@ -1148,7 +1148,7 @@
       "Pause"
     ],
     "ans": 1,
-    "explain": "Correct answer is B as Drain command helps Dataflow process and complete in-flight messages and stops accepting any new ones.\n\nRefer GCP documentation - Dataflow stopping a pipeline: - https://cloud.google.com/dataflow/docs/guides/stopping-a-pipeline;\n\nIf you need to stop a running Cloud Dataflow job, you can do so by issuing a command using either the Cloud Dataflow Monitoring Interface or the Cloud Dataflow Command-line Interface. There are two possible commands you can issue to stop your job: Cancel and Drain.\n\nNote: The Drain command is supported for streaming pipelines only.\n\nUsing the Drain option to stop your job tells the Cloud Dataflow service to finish your job in its current state. Your job will immediately stop ingesting new data from input sources. However, the Cloud Dataflow service will preserve any existing resources, such as worker instances, to finish processing and writing any buffered data in your pipeline. When all pending processing and write operations are complete, the Cloud Dataflow service will clean up the GCP resources associated with your job.\n\nNote: Your pipeline will continue to incur the cost of maintaining any associated GCP resources until all processing and writing has completed.\n\nUse the Drain option to stop your job if you want to prevent data loss as you bring down your pipeline.\n\nOption A is wrong as Cancel does not handle in-flight messages and it might result in data loss.\n\nOptions C & D are wrong as Stop and Pause option do not exist.",
+    "explain": "The correct answer is \"Drain\" because Drain command helps Dataflow process and complete in-flight messages and stops accepting any new ones.\n\nRefer GCP documentation - Dataflow stopping a pipeline: - https://cloud.google.com/dataflow/docs/guides/stopping-a-pipeline;\n\nIf you need to stop a running Cloud Dataflow job, you can do so by issuing a command using either the Cloud Dataflow Monitoring Interface or the Cloud Dataflow Command-line Interface. There are two possible commands you can issue to stop your job: Cancel and Drain.\n\nNote: The Drain command is supported for streaming pipelines only.\n\nUsing the Drain option to stop your job tells the Cloud Dataflow service to finish your job in its current state. Your job will immediately stop ingesting new data from input sources. However, the Cloud Dataflow service will preserve any existing resources, such as worker instances, to finish processing and writing any buffered data in your pipeline. When all pending processing and write operations are complete, the Cloud Dataflow service will clean up the GCP resources associated with your job.\n\nNote: Your pipeline will continue to incur the cost of maintaining any associated GCP resources until all processing and writing has completed.\n\nUse the Drain option to stop your job if you want to prevent data loss as you bring down your pipeline.\n\nThe option \"Cancel\" is incorrect because Cancel does not handle in-flight messages and it might result in data loss.\n\nThe options \"Stop\" and \"Pause\" are incorrect because Stop and Pause option do not exist.",
     "concept": "Dataflow"
   },
   {
@@ -1160,7 +1160,7 @@
       "Use BigQuery to export the data for the table to a CSV file. Create a Google Cloud Dataproc job to process the CSV file and output a new CSV file containing the proper values for FirstName, LastName and FullName. Run a BigQuery load job to load the new CSV file into BigQuery."
     ],
     "ans": 2,
-    "explain": "Correct answer is C as the best option is to create a new table with the updated columns. Dataflow provides a serverless NoOps option to convert data.\n\nOption A is wrong as it is better to create materialized tables instead of views as the query would be executed everytime. Refer BigQuery Best Practices;\n\nBest practice: If possible, materialize your query results in stages.\n\nIf you create a large, multi-stage query, each time you run it, BigQuery reads all the data that is required by the query. You are billed for all the data that is read each time the query is run.\n\nInstead, break your query into stages where each stage materializes the query results by writing them to a destination table. Querying the smaller destination table reduces the amount of data that is read and lowers costs. The cost of storing the materialized results is much less than the cost of processing large amounts of data.\n\nOption B is wrong as DML are limited by quotas.\n\nMaximum number of combined UPDATE, DELETE, and MERGE statements per day per table \u2014 200;\n\nOption D is wrong as Dataproc would need provisioning of servers and writing scripts. ;",
+    "explain": "The correct answer is \"Create a Google Cloud Dataflow job that queries BigQuery for the entire Users table, concatenates the FirstName value and LastName value for each user, and loads the proper values for FirstName, LastName, and FullName into a new table in BigQuery.\" because the best option is to create a new table with the updated columns. Dataflow provides a serverless NoOps option to convert data.\n\nThe option \"Create a view in BigQuery that concatenates the FirstName and LastName field values to produce the FullName.\" is incorrect because it is better to create materialized tables instead of views as the query would be executed everytime. Refer BigQuery Best Practices;\n\nBest practice: If possible, materialize your query results in stages.\n\nIf you create a large, multi-stage query, each time you run it, BigQuery reads all the data that is required by the query. You are billed for all the data that is read each time the query is run.\n\nInstead, break your query into stages where each stage materializes the query results by writing them to a destination table. Querying the smaller destination table reduces the amount of data that is read and lowers costs. The cost of storing the materialized results is much less than the cost of processing large amounts of data.\n\nThe option \"Add a new column called FullName to the Users table. Run an UPDATE statement that updates the FullName column for each user with the concatenation of the FirstName and LastName values.\" is incorrect because DML are limited by quotas.\n\nMaximum number of combined UPDATE, DELETE, and MERGE statements per day per table — 200;\n\nThe option \"Use BigQuery to export the data for the table to a CSV file. Create a Google Cloud Dataproc job to process the CSV file and output a new CSV file containing the proper values for FirstName, LastName and FullName. Run a BigQuery load job to load the new CSV file into BigQuery.\" is incorrect because Dataproc would need provisioning of servers and writing scripts. ;",
     "concept": "BigQuery, Dataflow, Dataproc"
   },
   {
@@ -1172,7 +1172,7 @@
       "BigQuery"
     ],
     "ans": 1,
-    "explain": "Correct answer is B as Bigtable is an HBase managed service alternative on Google Cloud. However, it does not support Coprocessors. So the best solution is to use HBase with Dataproc which can be installed using initialization actions.\n\nRefer GCP documentation - Bigtable HBase differences: - https://cloud.google.com/bigtable/docs/hbase-differences#coprocessors;\n\nCoprocessors are not supported. You cannot create classes that implement the interfaceorg.apache.hadoop.hbase.coprocessor.\n\nOptions A & D are wrong as Dataflow and BigQuery are not HBase alternative;\n\nOption C is wrong as Bigtable does not support Coprocessors.",
+    "explain": "The correct answer is \"HBase on Dataproc\" because Bigtable is an HBase managed service alternative on Google Cloud. However, it does not support Coprocessors. So the best solution is to use HBase with Dataproc which can be installed using initialization actions.\n\nRefer GCP documentation - Bigtable HBase differences: - https://cloud.google.com/bigtable/docs/hbase-differences#coprocessors;\n\nCoprocessors are not supported. You cannot create classes that implement the interfaceorg.apache.hadoop.hbase.coprocessor.\n\nThe options \"Dataflow\" and \"BigQuery\" are incorrect because Dataflow and BigQuery are not HBase alternative;\n\nThe option \"Bigtable\" is incorrect because Bigtable does not support Coprocessors.",
     "concept": "BigQuery, Bigtable, Dataflow"
   },
   {
@@ -1184,20 +1184,8 @@
       "Export logs in batch to Google Cloud Storage and then spin up a Google Cloud SQL instance, import the data from Cloud Storage, and run an analysis as needed."
     ],
     "ans": 1,
-    "explain": "Correct answer is B as the need to ingest it, transform and store the Cloud Pub/Sub, Cloud Dataflow, BigQuery is ideal stack to handle the IoT data.\n\nRefer GCP documentation - IoT: - https://cloud.google.com/solutions/iot-overview#ingestion;\n\nGoogle Cloud Pub/Sub provides a globally durable message ingestion service. By creating topics for streams or channels, you can enable different components of your application to subscribe to specific streams of data without needing to construct subscriber-specific channels on each device. Cloud Pub/Sub also natively connects to other Cloud Platform services, helping you to connect ingestion, data pipelines, and storage systems.\n\nGoogle Cloud Dataflow provides the open Apache Beam programming model as a managed service for processing data in multiple ways, including batch operations, extract-transform-load (ETL) patterns, and continuous, streaming computation. Cloud Dataflow can be particularly useful for managing the high-volume data processing pipelines required for IoT scenarios. Cloud Dataflow is also designed to integrate seamlessly with the other Cloud Platform services you choose for your pipeline.\n\nGoogle BigQuery provides a fully managed data warehouse with a familiar SQL interface, so you can store your IoT data alongside any of your other enterprise analytics and logs. The performance and cost of BigQuery means you might keep your valuable data longer, instead of deleting it just to save disk space.\n\nSample Arch - Mobile Gaming Analysis Telemetry: - https://cloud.google.com/solutions/mobile/mobile-gaming-analysis-telemetry;\n\nOption A is wrong as the Datastore is not an ideal ingestion service.\n\nOption C is wrong as Cloud Storage is not an ideal ingestion service and Dataproc is not a data warehousing solution.\n\nOption D is wrong as Cloud SQL is not a data warehousing solution.",
+    "explain": "The correct answer is \"Send the data to Google Cloud Pub/Sub, stream Cloud Pub/Sub to Google Cloud Dataflow, and store the data in Google BigQuery.\" because the need to ingest it, transform and store the Cloud Pub/Sub, Cloud Dataflow, BigQuery is ideal stack to handle the IoT data.\n\nRefer GCP documentation - IoT: - https://cloud.google.com/solutions/iot-overview#ingestion;\n\nGoogle Cloud Pub/Sub provides a globally durable message ingestion service. By creating topics for streams or channels, you can enable different components of your application to subscribe to specific streams of data without needing to construct subscriber-specific channels on each device. Cloud Pub/Sub also natively connects to other Cloud Platform services, helping you to connect ingestion, data pipelines, and storage systems.\n\nGoogle Cloud Dataflow provides the open Apache Beam programming model as a managed service for processing data in multiple ways, including batch operations, extract-transform-load (ETL) patterns, and continuous, streaming computation. Cloud Dataflow can be particularly useful for managing the high-volume data processing pipelines required for IoT scenarios. Cloud Dataflow is also designed to integrate seamlessly with the other Cloud Platform services you choose for your pipeline.\n\nGoogle BigQuery provides a fully managed data warehouse with a familiar SQL interface, so you can store your IoT data alongside any of your other enterprise analytics and logs. The performance and cost of BigQuery means you might keep your valuable data longer, instead of deleting it just to save disk space.\n\nSample Arch - Mobile Gaming Analysis Telemetry: - https://cloud.google.com/solutions/mobile/mobile-gaming-analysis-telemetry;\n\nThe option \"Send the data to Google Cloud Datastore and then export to BigQuery.\" is incorrect because the Datastore is not an ideal ingestion service.\n\nThe option \"Send the data to Cloud Storage and then spin up an Apache Hadoop cluster as needed in Google Cloud Dataproc whenever analysis is required.\" is incorrect because Cloud Storage is not an ideal ingestion service and Dataproc is not a data warehousing solution.\n\nThe option \"Export logs in batch to Google Cloud Storage and then spin up a Google Cloud SQL instance, import the data from Cloud Storage, and run an analysis as needed.\" is incorrect because Cloud SQL is not a data warehousing solution.",
     "concept": "BigQuery, Cloud SQL, Cloud Storage"
-  },
-  {
-    "q": "For this Question , refer to the Flowlogistic case study @ https://cloud.google.com/certification/guides/data-engineer/casestudy-flowlogistic ;\n\nFlowlogistic wants to use Google BigQuery as their primary analysis system, but they still have Apache Hadoop and Spark workloads that they cannot move to BigQuery. Flowlogistic does not know how to store the data that is common to both workloads. What should they do?",
-    "opts": [
-      "Store the common data in BigQuery as partitioned tables.",
-      "Store the common data in BigQuery and expose authorized views.",
-      "Store the common data encoded as Avro in Google Cloud Storage.",
-      "Store the common data in the HDFS storage for a Google Cloud Dataproc cluster."
-    ],
-    "ans": 2,
-    "explain": "Correct answer is C as the common data in Avro can be shared using Cloud Storage. BigQuery can use load the data from Cloud Storage as Avro. Hadoop & Spark jobs can also use Cloud Storage data using Cloud Storage connector.\n\nOptions A & B are wrong as Dataproc can easily read through Cloud Storage. Dataproc can use BigQuery Connector however it uses Cloud Storage as its temporary storage anyways.\n\nYou can use a BigQuery connector to enable programmatic read/write access to BigQuery. This is an ideal way to process data that is stored in BigQuery.Additionally, the BigQuery connector downloads data into a Cloud Storage bucket before running a Hadoop job. After the Hadoop job successfully completes, the data is deleted from Cloud Storage. You are charged for storage according to Cloud Storage pricing. To avoid excess charges, check your Cloud Storage account and make sure to remove unneeded temporary files.\n\nOption D is wrong as HDFS storage cannot be shared with BiqQuery.",
-    "concept": "BigQuery, Cloud Storage, Dataproc"
   },
   {
     "q": "You are selecting a streaming service for log messages that must include final result message ordering as part of building a data pipeline on Google Cloud. You want to stream input for 5 days and be able to query the most recent message value. You will be storing the data in a searchable repository. How should you set up the input messages?",
@@ -1208,7 +1196,7 @@
       "Use Apache Kafka on Compute Engine for input. Attach a unique identifier to every message in the publisher."
     ],
     "ans": 0,
-    "explain": "Correct answer is A as Cloud Pub/Sub does not maintain the order of the messages, and it is recommended to have it timestamped or watermarked from the publisher and ordered using Dataflow.\n\nRefer GCP documentation - Pub/Sub Ordering Messages: - https://cloud.google.com/pubsub/docs/ordering;\n\nHow do you assign an order to messages published from different publishers? Either the publishers themselves have to coordinate, or the message delivery service itself has to attach a notion of order to every incoming message. Each message would need to include the ordering information. The order information could be a timestamp (though it has to be a timestamp that all servers get from the same source in order to avoid issues of clock drift), or a sequence number (acquired from a single source with ACID guarantees). Other messaging systems that guarantee ordering of messages require settings that effectively limit the system to multiple publishers sending messages through a single server to a single subscriber.\n\nOption B is wrong as you should not attach a GUID to each message to support the scenario.\n\nOptions C & D are wrong as you should not use Apache Kafka for this scenario (it is overly complex compared to using Cloud Pub/Sub, which can support all of the requirements).",
+    "explain": "The correct answer is \"Use Cloud Pub/Sub for input. Attach a timestamp to every message in the publisher.\" because Cloud Pub/Sub does not maintain the order of the messages, and it is recommended to have it timestamped or watermarked from the publisher and ordered using Dataflow.\n\nRefer GCP documentation - Pub/Sub Ordering Messages: - https://cloud.google.com/pubsub/docs/ordering;\n\nHow do you assign an order to messages published from different publishers? Either the publishers themselves have to coordinate, or the message delivery service itself has to attach a notion of order to every incoming message. Each message would need to include the ordering information. The order information could be a timestamp (though it has to be a timestamp that all servers get from the same source in order to avoid issues of clock drift), or a sequence number (acquired from a single source with ACID guarantees). Other messaging systems that guarantee ordering of messages require settings that effectively limit the system to multiple publishers sending messages through a single server to a single subscriber.\n\nThe option \"Use Cloud Pub/Sub for input. Attach a unique identifier to every message in the publisher.\" is incorrect because you should not attach a GUID to each message to support the scenario.\n\nThe options \"Use Apache Kafka on Compute Engine for input. Attach a timestamp to every message in the publisher.\" and \"Use Apache Kafka on Compute Engine for input. Attach a unique identifier to every message in the publisher.\" are incorrect because you should not use Apache Kafka for this scenario (it is overly complex compared to using Cloud Pub/Sub, which can support all of the requirements).",
     "concept": "Pub/Sub, Dataflow"
   },
   {
@@ -1220,7 +1208,7 @@
       "DataProc, BigQueryIO and PubSubIO, SideOutputs"
     ],
     "ans": 1,
-    "explain": "Correct answer is B as Dataflow is needed for real time streaming pipeline with the ability to enrich and transform using SideInputs. BigQueryIO and PubSubIO to interact with BigQuery and Pub/Sub.\n\nRefer GCP documentation - Dataflow Use Case Patterns: - https://cloud.google.com/blog/products/gcp/guide-to-common-cloud-dataflow-use-case-patterns-part-1;\n\nIn streaming mode, lookup tables need to be accessible by your pipeline. If the lookup table never changes, then the standard Cloud Dataflow SideInput pattern reading from a bounded source such as BigQuery is a perfect fit. However, if the lookup data changes over time, in streaming mode there are additional considerations and options. The pattern described here focuses on slowly-changing data \u2014 for example, a table that's updated daily rather than every few hours.\n\nOptions C & D are wrong as Dataproc is not ideal for handling real time streaming data.\n\nOptions A & D are wrong as the lookup tables can be referred using SideInputs.",
+    "explain": "The correct answer is \"Dataflow, BigQueryIO and PubSubIO, SideInputs\" because Dataflow is needed for real time streaming pipeline with the ability to enrich and transform using SideInputs. BigQueryIO and PubSubIO to interact with BigQuery and Pub/Sub.\n\nRefer GCP documentation - Dataflow Use Case Patterns: - https://cloud.google.com/blog/products/gcp/guide-to-common-cloud-dataflow-use-case-patterns-part-1;\n\nIn streaming mode, lookup tables need to be accessible by your pipeline. If the lookup table never changes, then the standard Cloud Dataflow SideInput pattern reading from a bounded source such as BigQuery is a perfect fit. However, if the lookup data changes over time, in streaming mode there are additional considerations and options. The pattern described here focuses on slowly-changing data — for example, a table that's updated daily rather than every few hours.\n\nThe options \"DataProc, BigQueryIO and PubSubIO, SideInputs\" and \"DataProc, BigQueryIO and PubSubIO, SideOutputs\" are incorrect because Dataproc is not ideal for handling real time streaming data.\n\nThe options \"Dataflow, BigQueryIO and PubSubIO, SideOutputs\" and \"DataProc, BigQueryIO and PubSubIO, SideOutputs\" are incorrect because the lookup tables can be referred using SideInputs.",
     "concept": "BigQuery, Pub/Sub, Dataflow"
   },
   {
@@ -1232,7 +1220,7 @@
       "App Engine, Dataflow, DataStudio"
     ],
     "ans": 2,
-    "explain": "Correct answer is C as the focus is more on NoOps, the App Engine can be used to capture and insert the data into BigQuery using streaming inserts. The data can then be analyzed and visualized using DataStudio.\n\nOptions A & D are wrong as Dataflow and Dataproc would need processing and storage.\n\nOption B is wrong as Compute Engine would not be Ops free.",
+    "explain": "The correct answer is \"App Engine, BigQuery Streaming Inserts, DataStudio\" because the focus is more on NoOps, the App Engine can be used to capture and insert the data into BigQuery using streaming inserts. The data can then be analyzed and visualized using DataStudio.\n\nThe options \"App Engine, Dataproc, DataStudio\" and \"App Engine, Dataflow, DataStudio\" are incorrect because Dataflow and Dataproc would need processing and storage.\n\nThe option \"Compute Engine, BigQuery Streaming Inserts, DataStudio\" is incorrect because Compute Engine would not be Ops free.",
     "concept": "BigQuery, Dataflow, Dataproc"
   },
   {
@@ -1244,7 +1232,7 @@
       "Pass the --update option with --jobname parameter to the new job name you want to update"
     ],
     "ans": 2,
-    "explain": "Correct answer is C as Dataflow allows updates to the existing pipeline in case of compatible changes while saving the intermediate state data.\n\nRefer GCP documentation - Dataflow Updating a Pipeline: - https://cloud.google.com/dataflow/docs/guides/updating-a-pipeline;\n\nOption A is wrong as with Drain option the windows and triggers would closed immediately.\n\nOption B is wrong as Cancel immediately halts processing, you may lose any \"\"in-flight\"\" data.\n\nOption D is wrong as the job name should be the same.",
+    "explain": "The correct answer is \"Pass the --update option with --jobname parameter to the same name as the job you want to update\" because Dataflow allows updates to the existing pipeline in case of compatible changes while saving the intermediate state data.\n\nRefer GCP documentation - Dataflow Updating a Pipeline: - https://cloud.google.com/dataflow/docs/guides/updating-a-pipeline;\n\nThe option \"Stop with pipeline using the drain option and use new Dataflow pipeline\" is incorrect because with Drain option the windows and triggers would closed immediately.\n\nThe option \"Stop with pipeline using the cancel option and use new Dataflow pipeline\" is incorrect because Cancel immediately halts processing, you may lose any \"\"in-flight\"\" data.\n\nThe option \"Pass the --update option with --jobname parameter to the new job name you want to update\" is incorrect because the job name should be the same.",
     "concept": "Dataflow"
   },
   {
@@ -1256,7 +1244,7 @@
       "Use Dataproc and store the data in BigQuery and aggregate the same"
     ],
     "ans": 1,
-    "explain": "Correct answer is B as Dataflow would help in performing real time analytics and data count aggregation over a window. Session windows to track the session for the aggregate click count by the user.\n\nRefer GCP documentation - Beam Windowing Basics: - https://beam.apache.org/documentation/programming-guide/#windowing-basics;\n\nA session window function defines windows that contain elements that are within a certain gap duration of another element. Session windowing applies on a per-key basis and is useful for data that is irregularly distributed with respect to time. For example, a data stream representing user mouse activity may have long periods of idle time interspersed with high concentrations of clicks. If data arrives after the minimum specified gap duration time, this initiates the start of a new window.\n\nOptions A & C are wrong as Fixed and Global windowing would not work.\n\nOption D is wrong as Dataproc and BigQuery would not provide real time analytics.",
+    "explain": "The correct answer is \"Use Dataflow and Session windowing with gap duration of 30 minutes\" because Dataflow would help in performing real time analytics and data count aggregation over a window. Session windows to track the session for the aggregate click count by the user.\n\nRefer GCP documentation - Beam Windowing Basics: - https://beam.apache.org/documentation/programming-guide/#windowing-basics;\n\nA session window function defines windows that contain elements that are within a certain gap duration of another element. Session windowing applies on a per-key basis and is useful for data that is irregularly distributed with respect to time. For example, a data stream representing user mouse activity may have long periods of idle time interspersed with high concentrations of clicks. If data arrives after the minimum specified gap duration time, this initiates the start of a new window.\n\nThe options \"Use Dataflow and fixed windowing of 30 minutes\" and \"Use Dataflow and Global window with gap duration of 30 minutes\" are incorrect because Fixed and Global windowing would not work.\n\nThe option \"Use Dataproc and store the data in BigQuery and aggregate the same\" is incorrect because Dataproc and BigQuery would not provide real time analytics.",
     "concept": "BigQuery, Dataflow, Dataproc"
   },
   {
@@ -1268,7 +1256,7 @@
       "Set up a cluster in Standard mode with the default machine types. Add 10 additional local SSDs."
     ],
     "ans": 2,
-    "explain": "Correct answer is C as Dataproc is a managed service which handles Spark and Hadoop jobs and Spark and high-memory machines only need the Standard mode. Also, using Preemptible nodes provides cost-efficiency as this is not mission-critical.\n\nRefer GCP documentation - Dataproc pricing: - https://cloud.google.com/dataproc/pricing;\n\nNote: Preemptible instances can be used to lower your Compute Engine costs for Cloud Dataproc clusters, but do not change the way you are billed for the Cloud Dataproc premium.\n\nOptions A & B are wrong as this scenario does not call for High Availability mode because it handles non-critical experiments.\n\nOption D is wrong as local SSDs would cost more; instead, use Preemptible nodes to meet your objective of delivering a cost-effective solution.",
+    "explain": "The correct answer is \"Set up a cluster in Standard mode with high-memory machine types. Add 10 additional Preemptible worker nodes.\" because Dataproc is a managed service which handles Spark and Hadoop jobs and Spark and high-memory machines only need the Standard mode. Also, using Preemptible nodes provides cost-efficiency as this is not mission-critical.\n\nRefer GCP documentation - Dataproc pricing: - https://cloud.google.com/dataproc/pricing;\n\nNote: Preemptible instances can be used to lower your Compute Engine costs for Cloud Dataproc clusters, but do not change the way you are billed for the Cloud Dataproc premium.\n\nThe options \"Set up a cluster in High Availability mode with high-memory machine types. Add 10 additional local SSDs.\" and \"Set up a cluster in High Availability mode with default machine types. Add 10 additional Preemptible worker nodes.\" are incorrect because this scenario does not call for High Availability mode because it handles non-critical experiments.\n\nThe option \"Set up a cluster in Standard mode with the default machine types. Add 10 additional local SSDs.\" is incorrect because local SSDs would cost more; instead, use Preemptible nodes to meet your objective of delivering a cost-effective solution.",
     "concept": "Dataproc"
   },
   {
@@ -1280,7 +1268,7 @@
       "Use Cloud Dataprep to preview the data distributions in sample source data table columns. Click on each column name, click on each appropriate suggested transformation, and then click 'Add' to add each transformation to the Cloud Dataprep job."
     ],
     "ans": 3,
-    "explain": "Correct answer is D as the requirements is to prepare/clean source data, use Cloud Dataprep suggested transformations to quickly build a transformation job.\n\nRefer GCP documentation - Dataprep: - https://cloud.google.com/dataprep/;\n\nCloud Dataprep by Trifacta is an intelligent data service for visually exploring, cleaning, and preparing structured and unstructured data for analysis. Cloud Dataprep is serverless and works at any scale. There is no infrastructure to deploy or manage. Easy data preparation with clicks and no code.\n\nCloud Dataprep automatically identifies data anomalies and helps you to take corrective action fast. Get data transformation suggestions based on your usage pattern. Standardize, structure, and join datasets easily with a guided approach.\n\nOption C is wrong as you can simply use the suggested transformations instead of writing custom recipe in Cloud Dataprep;\n\nOptions A & B are wrong as you should not use Apache Spark and Cloud Dataflow or Cloud Dataproc for this scenario.",
+    "explain": "The correct answer is \"Use Cloud Dataprep to preview the data distributions in sample source data table columns. Click on each column name, click on each appropriate suggested transformation, and then click 'Add' to add each transformation to the Cloud Dataprep job.\" because the requirements is to prepare/clean source data, use Cloud Dataprep suggested transformations to quickly build a transformation job.\n\nRefer GCP documentation - Dataprep: - https://cloud.google.com/dataprep/;\n\nCloud Dataprep by Trifacta is an intelligent data service for visually exploring, cleaning, and preparing structured and unstructured data for analysis. Cloud Dataprep is serverless and works at any scale. There is no infrastructure to deploy or manage. Easy data preparation with clicks and no code.\n\nCloud Dataprep automatically identifies data anomalies and helps you to take corrective action fast. Get data transformation suggestions based on your usage pattern. Standardize, structure, and join datasets easily with a guided approach.\n\nThe option \"Use Cloud Dataprep to preview the data distributions in sample source data table columns. Write a recipe to transform the data and add it to the Cloud Dataprep job.\" is incorrect because you can simply use the suggested transformations instead of writing custom recipe in Cloud Dataprep;\n\nThe options \"Write an Apache Spark job with a series of steps for Cloud Dataflow. The first step will examine the source data, and the second and third steps step will perform data transformations.\" and \"Write an Apache Spark job with a series of steps for Cloud Dataproc. The first step will examine the source data, and the second and third steps step will perform data transformations.\" are incorrect because you should not use Apache Spark and Cloud Dataflow or Cloud Dataproc for this scenario.",
     "concept": "Dataflow, Dataproc"
   },
   {
@@ -1292,20 +1280,8 @@
       "Use Cloud Storage for storage. Write a Cloud Dataprep job to split the data into partitioned tables."
     ],
     "ans": 0,
-    "explain": "Correct answer is A as its an event data (time series) and need to be restricted to individual values over time windows, it is best to use Bigtable with tall and narrow tables.\n\nRefer GCP documentation - Bigtable Time series schema: - https://cloud.google.com/bigtable/docs/schema-design-time-series#use_tall_and_narrow_tables;\n\nFor time series, you should generally use tall and narrow tables. This is for two reasons: Storing one event per row makes it easier to run queries against your data. Storing many events per row makes it more likely that the total row size will exceed the recommended maximum.\n\nAs an optimization, you can use short and wide tables, but avoid unbounded numbers of events. For example, if you usually need to retrieve an entire month of events at once, the temperature table above is a reasonable optimization\u2014the row is bounded in size to the number of days in a month.\n\nOption B is wrong as short and wide tables and are ideal for storing time series data.\n\nOptions C & D are wrong as you do not need to use GCS/BQ for this scenario.",
+    "explain": "The correct answer is \"Use Cloud Bigtable for storage. Design tall and narrow tables, and use a new row for each single event version.\" because its an event data (time series) and need to be restricted to individual values over time windows, it is best to use Bigtable with tall and narrow tables.\n\nRefer GCP documentation - Bigtable Time series schema: - https://cloud.google.com/bigtable/docs/schema-design-time-series#use_tall_and_narrow_tables;\n\nFor time series, you should generally use tall and narrow tables. This is for two reasons: Storing one event per row makes it easier to run queries against your data. Storing many events per row makes it more likely that the total row size will exceed the recommended maximum.\n\nAs an optimization, you can use short and wide tables, but avoid unbounded numbers of events. For example, if you usually need to retrieve an entire month of events at once, the temperature table above is a reasonable optimization—the row is bounded in size to the number of days in a month.\n\nThe option \"Use Cloud Bigtable for storage. Design short and wide tables, and use a new column for each single event version.\" is incorrect because short and wide tables and are ideal for storing time series data.\n\nThe options \"Use Cloud Storage for storage. Join the raw file data with a BigQuery log table.\" and \"Use Cloud Storage for storage. Write a Cloud Dataprep job to split the data into partitioned tables.\" are incorrect because you do not need to use GCS/BQ for this scenario.",
     "concept": "Bigtable"
-  },
-  {
-    "q": "For this Question , refer to the Flowlogistic case study @ https://cloud.google.com/certification/guides/data-engineer/casestudy-flowlogistic;\n\nFlowlogistic's Kafka server cluster has been unable to scale to the demands of their data ingest needs. How can they migrate this functionality to Google Cloud to be able to scale for future growth?",
-    "opts": [
-      "Create a Computer Engine managed instance group that is configured to autoscale to 150% of peak demand. Use a managed instance template with Kafka installed to automatically scale as needed, and direct traffic to this autoscaling cluster.",
-      "Create a single Pub/Sub topic. Configure endpoints to publish to the Pub/Sub topic, and configure Cloud Dataflow to subscribe to the same topic to process messages as they come in.",
-      "Create a Kubernetes Engine cluster in each region needed. Install Kafka on the cluster. Use an HTTP load balancer to serve each Kubernetes cluster region. Configure a new Cloud Dataflow pipeline in each region to process requests forwarded from the Kubernetes cluster.",
-      "Create a separate Pub/Sub topic for each region. Configure endpoints to publish to the Pub/Sub topic closest to their location, and configure a new Cloud Dataflow pipeline in each region to subscribe to the equivalent Pub/Sub topic to process messages as they come in."
-    ],
-    "ans": 1,
-    "explain": "Correct answer is B as Pub/Sub provides a direct replacement for Kafka on Google Cloud as a messaging service. It is also fully managed and scalable. Pub/Sub is global and can be used a single endpoint with Dataflow to process the messages.\n\nOptions A & C are wrong as using Compute engine and Kubernetes engine are not cost-effective and are not actually completely managed no-ops solutions.\n\nOption D is wrong as separate endpoints are not required for each region.",
-    "concept": "Pub/Sub, Dataflow"
   },
   {
     "q": "A company wants to transfer petabyte scale of data to Google Cloud for their analytics, however are constrained on their internet connectivity? Which GCP service can help them transfer the data quickly?",
@@ -1316,20 +1292,8 @@
       "Transfer appliance and rehydrator to decrypt the data"
     ],
     "ans": 3,
-    "explain": "Correct answer is D as the data is huge it should be transferred using Transfer Appliance and use a Rehydrator to decrypt the data.\n\nRefer GCP documentation - Data Rehydration: - https://cloud.google.com/transfer-appliance/docs/2.0/data-rehydration;\n\nOption A is wrong as Dataprep does not help is decrypting the data.\n\nOption B is wrong as Google Transfer Service does not support importing data from on-premises data center. It only supports online imports.\n\nOption C is wrong as the data is huge transferring it with gsutil would take a long time.",
+    "explain": "The correct answer is \"Transfer appliance and rehydrator to decrypt the data\" because the data is huge it should be transferred using Transfer Appliance and use a Rehydrator to decrypt the data.\n\nRefer GCP documentation - Data Rehydration: - https://cloud.google.com/transfer-appliance/docs/2.0/data-rehydration;\n\nThe option \"Transfer appliance and Dataprep to decrypt the data\" is incorrect because Dataprep does not help is decrypting the data.\n\nThe option \"Google Transfer service using multiple VPN connections\" is incorrect because Google Transfer Service does not support importing data from on-premises data center. It only supports online imports.\n\nThe option \"gustil with multiple VPN connections\" is incorrect because the data is huge transferring it with gsutil would take a long time.",
     "concept": "GCP Data Engineering"
-  },
-  {
-    "q": "For this Question , refer to the MJTelco case study @ https://cloud.google.com/certification/guides/data-engineer/casestudy-mjtelco;\n\nMJTelco needs to be able to reliably handle ever-increasing amounts of streaming telemetry data, process it, and economically store analyzed data. What services should they use for this task?",
-    "opts": [
-      "Cloud Pub/Sub, Cloud Dataflow, BigQuery",
-      "Cloud Pub/Sub, Cloud Dataproc, Bigtable",
-      "Kubernetes Engine, Cloud Dataflow, Cloud Datastore",
-      "Stackdriver, Cloud Dataproc, Cloud Spanner"
-    ],
-    "ans": 0,
-    "explain": "Correct answer is A as the need to ingest it, transform and store the Cloud Pub/Sub, Cloud Dataflow, BigQuery is ideal stack to handle the IoT data, while storing it economically for analysis.\n\nRefer GCP documentation - IoT: - https://cloud.google.com/solutions/iot-overview#ingestion;\n\nOption B is wrong as Dataproc is not completely serverless and would need Hadoop and Spark jobs. Also, Bigtable is an expensive storage option.\n\nOption C is wrong as Kubernetes Engine is not an ingestion service and would not be cost effective. Also, Datastore is not ideal solution for analytics.\n\nOption D is wrong as Dataproc is not completely serverless and would need Hadoop and Spark jobs. Stackdriver is not an ingestion service.",
-    "concept": "BigQuery, Bigtable, Pub/Sub"
   },
   {
     "q": "As part of a complex rollout, you have hired a third party developer consultant to assist with creating your Dataflow processing pipeline. The data that this pipeline will process is very confidential, and the consultant cannot be allowed to view the data itself. What actions should you take so that they have the ability to help build the pipeline but cannot see the data it will process?",
@@ -1340,11 +1304,11 @@
       "Anonymize the data before it gets to the Dataflow pipeline."
     ],
     "ans": 0,
-    "explain": "Correct answer is A as the Dataflow developer role would help provide the third-party consultant access to create and cancel jobs. However, it does not provide access to view the data.\n\nRefer GCP documentation - Dataflow roles: - https://cloud.google.com/dataflow/docs/concepts/access-control#roles;\n\nOptions B,C & D are wrong as that would need additional steps and the access can be easily controlled using IAM roles.",
+    "explain": "The correct answer is \"Assign the consultant the Dataflow Developer IAM role.\" because the Dataflow developer role would help provide the third-party consultant access to create and cancel jobs. However, it does not provide access to view the data.\n\nRefer GCP documentation - Dataflow roles: - https://cloud.google.com/dataflow/docs/concepts/access-control#roles;\n\nThe options \"Apply custom encryption to the data before it goes through the pipeline.\", \"Use a separate development project to construct the pipeline with example data, therefore not exposing the live data to the developer's work environment.\", and \"Anonymize the data before it gets to the Dataflow pipeline.\" are incorrect because that would need additional steps and the access can be easily controlled using IAM roles.",
     "concept": "Dataflow"
   },
   {
-    "q": "You are asked to design next generation of smart helmet for accident detection and reporting system. Each helmet will push 10kb of biometric data In JSON format every 1 second to a collection platform that will process and use trained machine learning model to predict and detect if an accident happens and send notification. Management has tasked you to architect the platform ensuring the following requirements are met:\n\n\u00b7 Provide the ability for real-time analytics of the inbound biometric data;\n\n\u00b7 Ensure ingestion and processing of the biometric data is highly durable. Elastic and parallel;\n\n\u00b7 The results of the analytic processing should be persisted for data mining to improve the accident detection ML model in the future.\n\nWhich architecture outlined below will meet the initial requirements for the platform?",
+    "q": "You are asked to design next generation of smart helmet for accident detection and reporting system. Each helmet will push 10kb of biometric data In JSON format every 1 second to a collection platform that will process and use trained machine learning model to predict and detect if an accident happens and send notification. Management has tasked you to architect the platform ensuring the following requirements are met:\n\n· Provide the ability for real-time analytics of the inbound biometric data;\n\n· Ensure ingestion and processing of the biometric data is highly durable. Elastic and parallel;\n\n· The results of the analytic processing should be persisted for data mining to improve the accident detection ML model in the future.\n\nWhich architecture outlined below will meet the initial requirements for the platform?",
     "opts": [
       "Utilize Cloud Storage to collect the inbound sensor data, analyze data with Dataproc and save the results to BigQuery.",
       "Utilize Cloud Pub/Sub to collect the inbound sensor data, analyze the data with Dataflow and save the results to BigQuery.",
@@ -1352,7 +1316,7 @@
       "Utilize Cloud Pub/Sub to collect the inbound sensor data, analyze the data with Dataflow and save the results to Bigtable."
     ],
     "ans": 1,
-    "explain": "Correct answer is B as Cloud Pub/Sub provides elastic and scalable ingestion, Dataflow provides processing and BigQuery analytics.\n\nRefer GCP documentation - IoT: - https://cloud.google.com/solutions/iot-overview;\n\nGoogle Cloud Pub/Sub provides a globally durable message ingestion service. By creating topics for streams or channels, you can enable different components of your application to subscribe to specific streams of data without needing to construct subscriber-specific channels on each device. Cloud Pub/Sub also natively connects to other Cloud Platform services, helping you to connect ingestion, data pipelines, and storage systems.\n\nGoogle Cloud Dataflow provides the open Apache Beam programming model as a managed service for processing data in multiple ways, including batch operations, extract-transform-load (ETL) patterns, and continuous, streaming computation. Cloud Dataflow can be particularly useful for managing the high-volume data processing pipelines required for IoT scenarios. Cloud Dataflow is also designed to integrate seamlessly with the other Cloud Platform services you choose for your pipeline.\n\nGoogle BigQuery provides a fully managed data warehouse with a familiar SQL interface, so you can store your IoT data alongside any of your other enterprise analytics and logs. The performance and cost of BigQuery means you might keep your valuable data longer, instead of deleting it just to save disk space.\n\nOption A is wrong as Cloud Storage is not an ideal ingestion service for real time high frequency data. Also Dataproc is a fast, easy-to-use, fully-managed cloud service for running Apache Spark and Apache Hadoop clusters in a simpler, more cost-efficient way.\n\nOption C is wrong as Cloud SQL is a relational database and not suited for analytics data storage.\n\nOption D is wrong as Bigtable is not ideal for long term analytics data storage.",
+    "explain": "The correct answer is \"Utilize Cloud Pub/Sub to collect the inbound sensor data, analyze the data with Dataflow and save the results to BigQuery.\" because Cloud Pub/Sub provides elastic and scalable ingestion, Dataflow provides processing and BigQuery analytics.\n\nRefer GCP documentation - IoT: - https://cloud.google.com/solutions/iot-overview;\n\nGoogle Cloud Pub/Sub provides a globally durable message ingestion service. By creating topics for streams or channels, you can enable different components of your application to subscribe to specific streams of data without needing to construct subscriber-specific channels on each device. Cloud Pub/Sub also natively connects to other Cloud Platform services, helping you to connect ingestion, data pipelines, and storage systems.\n\nGoogle Cloud Dataflow provides the open Apache Beam programming model as a managed service for processing data in multiple ways, including batch operations, extract-transform-load (ETL) patterns, and continuous, streaming computation. Cloud Dataflow can be particularly useful for managing the high-volume data processing pipelines required for IoT scenarios. Cloud Dataflow is also designed to integrate seamlessly with the other Cloud Platform services you choose for your pipeline.\n\nGoogle BigQuery provides a fully managed data warehouse with a familiar SQL interface, so you can store your IoT data alongside any of your other enterprise analytics and logs. The performance and cost of BigQuery means you might keep your valuable data longer, instead of deleting it just to save disk space.\n\nThe option \"Utilize Cloud Storage to collect the inbound sensor data, analyze data with Dataproc and save the results to BigQuery.\" is incorrect because Cloud Storage is not an ideal ingestion service for real time high frequency data. Also Dataproc is a fast, easy-to-use, fully-managed cloud service for running Apache Spark and Apache Hadoop clusters in a simpler, more cost-efficient way.\n\nThe option \"Utilize Cloud Pub/Sub to collect the inbound sensor data, analyze the data with Dataflow and save the results to Cloud SQL.\" is incorrect because Cloud SQL is a relational database and not suited for analytics data storage.\n\nThe option \"Utilize Cloud Pub/Sub to collect the inbound sensor data, analyze the data with Dataflow and save the results to Bigtable.\" is incorrect because Bigtable is not ideal for long term analytics data storage.",
     "concept": "BigQuery, Bigtable, Cloud SQL"
   },
   {
@@ -1364,7 +1328,7 @@
       "Update the job application to use all of the available cores"
     ],
     "ans": 2,
-    "explain": "Correct answer is C as the number of cores used by the executor can be increased by passing the spark.executor.cores parameter.\n\nRefer documentation - Spark configuration;\n\nOption A is wrong as Spark driver cores is for the driver only. The executor performance would not improve.\n\nOption B is wrong as increasing the task nodes would improve performance. However, it does not improve efficiency of using the current machines.\n\nOption D is wrong as the job application cannot be modified to use all cores and it needs to be at the scheduler level.\"",
+    "explain": "The correct answer is \"Pass the spark.executor.cores parameter to tune the number of cores used\" because the number of cores used by the executor can be increased by passing the spark.executor.cores parameter.\n\nRefer documentation - Spark configuration;\n\nThe option \"Pass the spark.driver.cores to parameter tune the number of cores used\" is incorrect because Spark driver cores is for the driver only. The executor performance would not improve.\n\nThe option \"Increase the number of task nodes\" is incorrect because increasing the task nodes would improve performance. However, it does not improve efficiency of using the current machines.\n\nThe option \"Update the job application to use all of the available cores\" is incorrect because the job application cannot be modified to use all cores and it needs to be at the scheduler level.\"",
     "concept": "Dataproc"
   },
   {
@@ -1376,7 +1340,7 @@
       "Supply your own encryption key, and reference it as part of your API service calls to encrypt your data in Cloud Storage and your Kafka node hosted on Compute Engine."
     ],
     "ans": 3,
-    "explain": "Correct answer is D as the scenario requires you to use your own key and also to not store your key on Compute Engine.\n\nRefer GCP documentation - Encryption at Rest: - https://cloud.google.com/security/encryption-at-rest/;\n\nOption A is wrong as the scenario states that you must supply your own encryption key instead of using one generated by Google Cloud Platform.\n\nOption B is wrong as the scenario states that you should use, but not store, your own key with Google Cloud Platform services.\n\nOption C is wrong as it does not meet the scenario requirement of not storing the keys on Google Platform services.",
+    "explain": "The correct answer is \"Supply your own encryption key, and reference it as part of your API service calls to encrypt your data in Cloud Storage and your Kafka node hosted on Compute Engine.\" because the scenario requires you to use your own key and also to not store your key on Compute Engine.\n\nRefer GCP documentation - Encryption at Rest: - https://cloud.google.com/security/encryption-at-rest/;\n\nThe option \"Create a dedicated service account, and use encryption at rest to reference your data stored in Cloud Storage and Compute Engine data as part of your API service calls.\" is incorrect because the scenario states that you must supply your own encryption key instead of using one generated by Google Cloud Platform.\n\nThe option \"Upload your own encryption key to Cloud Key Management Service, and use it to encrypt your data in Cloud Storage. Use your uploaded encryption key and reference it as part of your API service calls to encrypt your data in the Kafka node hosted on Compute Engine.\" is incorrect because the scenario states that you should use, but not store, your own key with Google Cloud Platform services.\n\nThe option \"Upload your own encryption key to Cloud Key Management Service, and use it to encrypt your data in your Kafka node hosted on Compute Engine.\" is incorrect because it does not meet the scenario requirement of not storing the keys on Google Platform services.",
     "concept": "Cloud Storage"
   },
   {
@@ -1388,7 +1352,7 @@
       "Use BigQuery Data Transfer Service to import the data from Google Analytics"
     ],
     "ans": 3,
-    "explain": "Correct answer is D as BigQuery Data Transfer Service helps to automate importing of data from Google Analytics.\n\nRefer GCP documentation - BigQuery Data Transfer Service: - https://cloud.google.com/bigquery/docs/loading-data#data_transfer_service;\n\nOptions A, B & C are wrong as the options are not supported.",
+    "explain": "The correct answer is \"Use BigQuery Data Transfer Service to import the data from Google Analytics\" because BigQuery Data Transfer Service helps to automate importing of data from Google Analytics.\n\nRefer GCP documentation - BigQuery Data Transfer Service: - https://cloud.google.com/bigquery/docs/loading-data#data_transfer_service;\n\nThe options \"Configure a scheduler in Google Analytics to convert the Google Analytics data to JSON format, then import directly into BigQuery using bq command line.\", \"Use gsutil to export the Google Analytics data to Cloud Storage, then import into BigQuery and schedule it using Cron.\", and \"Import data to BigQuery directly from Google Analytics using Cron\" are incorrect because the options are not supported.",
     "concept": "BigQuery"
   },
   {
@@ -1412,7 +1376,7 @@
       "Using the Stackdriver API, create a project sink with advanced log filter to export to Pub/Sub, and subscribe to the topic from your monitoring tool."
     ],
     "ans": 3,
-    "explain": "Correct answer is D as the key requirement is to have notification on a particular table. It can be achieved using advanced log filter to filter only the table logs and create a project sink to Cloud Pub/Sub for notification.\n\nRefer GCP documentation - Advanced Logs Filters: - https://cloud.google.com/logging/docs/view/advanced-filters;\n\nOption A is wrong as advanced filter will help in filtering. However, there is no notification service.\n\nOption B is wrong as it would send all the logs and BigQuery does not provide notifications.\n\nOption C is wrong as it would send all the logs.",
+    "explain": "The correct answer is \"Using the Stackdriver API, create a project sink with advanced log filter to export to Pub/Sub, and subscribe to the topic from your monitoring tool.\" because the key requirement is to have notification on a particular table. It can be achieved using advanced log filter to filter only the table logs and create a project sink to Cloud Pub/Sub for notification.\n\nRefer GCP documentation - Advanced Logs Filters: - https://cloud.google.com/logging/docs/view/advanced-filters;\n\nThe option \"Make a call to the Stackdriver API to list all logs, and apply an advanced filter.\" is incorrect because advanced filter will help in filtering. However, there is no notification service.\n\nThe option \"In the Stackdriver logging admin interface, and enable a log sink export to BigQuery.\" is incorrect because it would send all the logs and BigQuery does not provide notifications.\n\nThe option \"In the Stackdriver logging admin interface, enable a log sink export to Google Cloud Pub/Sub, and subscribe to the topic from your monitoring tool.\" is incorrect because it would send all the logs.",
     "concept": "BigQuery, Pub/Sub"
   },
   {
@@ -1424,7 +1388,7 @@
       "Your custom endpoint is not acknowledging messages within the acknowledgement deadline."
     ],
     "ans": 3,
-    "explain": "Correct answer is D as the Cloud Pub/Sub will deliver duplicate messages only if there has been no acknowledgement from the subscriber.\n\nRefer GCP documentation - Cloud Pub/Sub FAQs - Duplicates: - https://cloud.google.com/pubsub/docs/faq#duplicates;\n\nWhy are there too many duplicate messages?\n\nCloud Pub/Sub guarantees at-least-once message delivery, which means that occasional duplicates are to be expected. However, a high rate of duplicates may indicate that the client is not acknowledging messages within the configured ack_deadline_seconds, and Cloud Pub/Sub is retrying the message delivery.",
+    "explain": "The correct answer is \"Your custom endpoint is not acknowledging messages within the acknowledgement deadline.\" because the Cloud Pub/Sub will deliver duplicate messages only if there has been no acknowledgement from the subscriber.\n\nRefer GCP documentation - Cloud Pub/Sub FAQs - Duplicates: - https://cloud.google.com/pubsub/docs/faq#duplicates;\n\nWhy are there too many duplicate messages?\n\nCloud Pub/Sub guarantees at-least-once message delivery, which means that occasional duplicates are to be expected. However, a high rate of duplicates may indicate that the client is not acknowledging messages within the configured ack_deadline_seconds, and Cloud Pub/Sub is retrying the message delivery.",
     "concept": "Pub/Sub"
   },
   {
@@ -1436,7 +1400,7 @@
       "List the jobs."
     ],
     "ans": 3,
-    "explain": "Correct answer is D as with Data Viewer role, the users would only be able to perform get and list operations.\n\nRefer GCP documentation - Dataproc IAM Access Control: - https://cloud.google.com/dataproc/docs/concepts/iam/iam;\n\nIdentity and Access Management (IAM) Cloud Dataproc roles are a bundle of one or more permissions. You grant roles to users or groups to allow them to perform actions on the Cloud Dataproc resources in your project. For example, the Dataproc Viewerrole contains the dataproc.*.get and dataproc.*.list permissions, which allow a user to get and list Cloud Dataproc clusters, jobs, and operations in a project.",
+    "explain": "The correct answer is \"List the jobs.\" because with Data Viewer role, the users would only be able to perform get and list operations.\n\nRefer GCP documentation - Dataproc IAM Access Control: - https://cloud.google.com/dataproc/docs/concepts/iam/iam;\n\nIdentity and Access Management (IAM) Cloud Dataproc roles are a bundle of one or more permissions. You grant roles to users or groups to allow them to perform actions on the Cloud Dataproc resources in your project. For example, the Dataproc Viewerrole contains the dataproc.*.get and dataproc.*.list permissions, which allow a user to get and list Cloud Dataproc clusters, jobs, and operations in a project.",
     "concept": "Dataproc"
   },
   {
@@ -1460,7 +1424,7 @@
       "Use Cloud Pub/Sub to buffer the data, and then use Cloud Dataflow for ETL."
     ],
     "ans": 3,
-    "explain": "Correct answer is D as unpredictable data would require a buffer which can be provided using Cloud Pub/Sub and Cloud Dataflow can help perform transformations on the fly before the data is stored in any storage medium.\n\nRefer GCP documentation - Cloud Pub/Sub: - https://cloud.google.com/pubsub/;\n\nOption A, B & C are wrong as either the ingestion is not ideal for bursts or the data needs to be stored and the ETL performed as batch operation.",
+    "explain": "The correct answer is \"Use Cloud Pub/Sub to buffer the data, and then use Cloud Dataflow for ETL.\" because unpredictable data would require a buffer which can be provided using Cloud Pub/Sub and Cloud Dataflow can help perform transformations on the fly before the data is stored in any storage medium.\n\nRefer GCP documentation - Cloud Pub/Sub: - https://cloud.google.com/pubsub/;\n\nOption A, B & C are wrong as either the ingestion is not ideal for bursts or the data needs to be stored and the ETL performed as batch operation.",
     "concept": "Pub/Sub, Dataflow"
   },
   {
@@ -1472,7 +1436,7 @@
       "Use DATE BETWEEN in the WHERE clause"
     ],
     "ans": 2,
-    "explain": "Correct answer is C as for ingestion-time partitioned tables, two columns _PARTITIONTIME and _PARTITIONDATE and available to query the partition.\n\nRefer GCP documentation - BigQuery Querying Partitioned Tables: - https://cloud.google.com/bigquery/docs/querying-partitioned-tables#ingestion-time_partitioned_table_pseudo_columns;\n\nIngestion-time partitioned tables;\n\nWhen you create a table partitioned by ingestion time, BigQuery automatically loads data into daily, date-based partitions that reflect the data's ingestion or arrival date. Pseudo column and suffix identifiers allow you to restate (replace) and redirect data to partitions for a specific day.\n\nIngestion-time partitioned tables include a pseudo column named _PARTITIONTIME that contains a date-based timestamp for data that is loaded into the table. Queries against time-partitioned tables can restrict the data read by supplying _PARTITIONTIME filters that represent a partition's location. All the data in the specified partition is read by the query, but the _PARTITIONTIME predicate filter restricts the number of partitions scanned.\n\nWhen you create an ingestion-time partitioned table, two pseudo columns are added to the table: a _PARTITIONTIME pseudo column and a _PARTITIONDATE pseudo column. The _PARTITIONTIME pseudo column contains a date-based timestamp for data that is loaded into the table. The _PARTITIONDATE pseudo column contains a date representation. Both pseudo column names are reserved, which means that you cannot create a column with either name in any of your tables.\n\n_PARTITIONTIME and _PARTITIONDATE are available only in ingestion-time partitioned tables. Partitioned tables do not have pseudo columns.",
+    "explain": "The correct answer is \"Use the _PARTITIONTIME pseudo-column in the WHERE clause\" because for ingestion-time partitioned tables, two columns _PARTITIONTIME and _PARTITIONDATE and available to query the partition.\n\nRefer GCP documentation - BigQuery Querying Partitioned Tables: - https://cloud.google.com/bigquery/docs/querying-partitioned-tables#ingestion-time_partitioned_table_pseudo_columns;\n\nIngestion-time partitioned tables;\n\nWhen you create a table partitioned by ingestion time, BigQuery automatically loads data into daily, date-based partitions that reflect the data's ingestion or arrival date. Pseudo column and suffix identifiers allow you to restate (replace) and redirect data to partitions for a specific day.\n\nIngestion-time partitioned tables include a pseudo column named _PARTITIONTIME that contains a date-based timestamp for data that is loaded into the table. Queries against time-partitioned tables can restrict the data read by supplying _PARTITIONTIME filters that represent a partition's location. All the data in the specified partition is read by the query, but the _PARTITIONTIME predicate filter restricts the number of partitions scanned.\n\nWhen you create an ingestion-time partitioned table, two pseudo columns are added to the table: a _PARTITIONTIME pseudo column and a _PARTITIONDATE pseudo column. The _PARTITIONTIME pseudo column contains a date-based timestamp for data that is loaded into the table. The _PARTITIONDATE pseudo column contains a date representation. Both pseudo column names are reserved, which means that you cannot create a column with either name in any of your tables.\n\n_PARTITIONTIME and _PARTITIONDATE are available only in ingestion-time partitioned tables. Partitioned tables do not have pseudo columns.",
     "concept": "BigQuery"
   },
   {
@@ -1484,7 +1448,7 @@
       "Use Transfer Appliance to move the data to Cloud Storage"
     ],
     "ans": 2,
-    "explain": "Correct answer is C as BigQuery Data Service Transfer can help automate the data movement from data sources such as Google Ads and Google AD Manager.\n\nRefer GCP documentation - BigQuery Data Transfer Service: - https://cloud.google.com/bigquery/docs/transfer-service-overview;\n\nOption A is wrong as Storage Transfer Service cannot move the data from Google Ads to BigQuery and Cloud Storage cannot help in analytics directly.\n\nOption B is wrong as Storage Transfer Service cannot move the data from Google Ads to BigQuery;\n\nOption D is wrong as Transfer Appliance are for one time huge transfers.",
+    "explain": "The correct answer is \"Use BigQuery Data Transfer Service to move the data to BigQuery\" because BigQuery Data Service Transfer can help automate the data movement from data sources such as Google Ads and Google AD Manager.\n\nRefer GCP documentation - BigQuery Data Transfer Service: - https://cloud.google.com/bigquery/docs/transfer-service-overview;\n\nThe option \"Use Storage Transfer Service to move the data to Cloud Storage\" is incorrect because Storage Transfer Service cannot move the data from Google Ads to BigQuery and Cloud Storage cannot help in analytics directly.\n\nThe option \"Use Storage Transfer Service to move the data to BigQuery\" is incorrect because Storage Transfer Service cannot move the data from Google Ads to BigQuery;\n\nThe option \"Use Transfer Appliance to move the data to Cloud Storage\" is incorrect because Transfer Appliance are for one time huge transfers.",
     "concept": "BigQuery, Cloud Storage"
   },
   {
@@ -1496,7 +1460,7 @@
       "Google Container Engine"
     ],
     "ans": 1,
-    "explain": "Correct answer is B as Cloud Dataproc allows running of Apache Spark and Hadoop jobs.\n\nRefer GCP documentation - Cloud Dataproc: - https://cloud.google.com/dataproc/;\n\nCloud Dataproc is a fast, easy-to-use, fully-managed cloud service for running Apache Spark and Apache Hadoop clusters in a simpler, more cost-efficient way. Operations that used to take hours or days take seconds or minutes instead, and you pay only for the resources you use (with per-second billing). Cloud Dataproc also easily integrates with other Google Cloud Platform (GCP) services, giving you a powerful and complete platform for data processing, analytics and machine learning;\n\nOption A is wrong as Cloud Dataflow is a fully-managed service for transforming and enriching data in stream (real time) and batch (historical) modes with equal reliability and expressiveness -- no more complex workarounds or compromises needed.\n\nOptions C & D are wrong as they are not suited for big data processing.",
+    "explain": "The correct answer is \"Google Cloud Dataproc\" because Cloud Dataproc allows running of Apache Spark and Hadoop jobs.\n\nRefer GCP documentation - Cloud Dataproc: - https://cloud.google.com/dataproc/;\n\nCloud Dataproc is a fast, easy-to-use, fully-managed cloud service for running Apache Spark and Apache Hadoop clusters in a simpler, more cost-efficient way. Operations that used to take hours or days take seconds or minutes instead, and you pay only for the resources you use (with per-second billing). Cloud Dataproc also easily integrates with other Google Cloud Platform (GCP) services, giving you a powerful and complete platform for data processing, analytics and machine learning;\n\nThe option \"Google Cloud Dataflow\" is incorrect because Cloud Dataflow is a fully-managed service for transforming and enriching data in stream (real time) and batch (historical) modes with equal reliability and expressiveness -- no more complex workarounds or compromises needed.\n\nThe options \"Google Compute Engine\" and \"Google Container Engine\" are incorrect because they are not suited for big data processing.",
     "concept": "Dataflow, Dataproc"
   },
   {
@@ -1520,7 +1484,7 @@
       "VPC Network Peering"
     ],
     "ans": 0,
-    "explain": "Cloud VPN provides secure, encrypted tunnels over the public internet and supports data transfers up to around 3 Gbps. It balances security, flexibility, and ease of deployment without physical provisioning \u2014 ideal when the migration is not urgent. Dedicated Interconnect is suitable for large-scale, high-throughput migrations but requires physical connectivity at a Google Point of Presence, adding setup time and cost. Partner Interconnect is better suited when VPN bandwidth is insufficient or the migration is time-critical. VPC Peering is used for private connectivity between Google Cloud VPCs, not for connecting on-premises environments to Google Cloud.",
+    "explain": "Cloud VPN provides secure, encrypted tunnels over the public internet and supports data transfers up to around 3 Gbps. It balances security, flexibility, and ease of deployment without physical provisioning — ideal when the migration is not urgent. Dedicated Interconnect is suitable for large-scale, high-throughput migrations but requires physical connectivity at a Google Point of Presence, adding setup time and cost. Partner Interconnect is better suited when VPN bandwidth is insufficient or the migration is time-critical. VPC Peering is used for private connectivity between Google Cloud VPCs, not for connecting on-premises environments to Google Cloud.",
     "concept": "Cloud VPN, data migration, network connectivity, on-premises to GCP"
   },
   {
@@ -1544,7 +1508,7 @@
       "Use the bq command-line tool for a one-time transfer"
     ],
     "ans": 0,
-    "explain": "Datastream is designed for continuous replication of relational databases to Google Cloud services like BigQuery, including change data capture (CDC) and structured output. Database Migration Service is designed for migrating databases with a goal to turn down source systems \u2014 not for ongoing replication. Storage Transfer Service is designed for moving large datasets to Cloud Storage, not for replicating a database to BigQuery. The bq command is used for loading data into BigQuery in batch mode, not continuous replication.",
+    "explain": "Datastream is designed for continuous replication of relational databases to Google Cloud services like BigQuery, including change data capture (CDC) and structured output. Database Migration Service is designed for migrating databases with a goal to turn down source systems — not for ongoing replication. Storage Transfer Service is designed for moving large datasets to Cloud Storage, not for replicating a database to BigQuery. The bq command is used for loading data into BigQuery in batch mode, not continuous replication.",
     "concept": "Datastream, CDC, PostgreSQL replication, continuous ingestion, BigQuery"
   },
   {

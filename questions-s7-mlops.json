@@ -1412,7 +1412,7 @@
       "This is normal model behavior and requires no action"
     ],
     "ans": 0,
-    "explain": "Prediction drift with stable inputs suggests changes in the model or preprocessing pipeline, not data drift. Common causes: new model deployment, changes in feature engineering, bugs in serving logic. Check deployment logs and compare preprocessing code. Data drift (option B) would show in input distributions. Caching (option C) wouldn't change distribution patterns. Prediction drift always warrants investigation (option D is incorrect).",
+    "explain": "Prediction drift with stable inputs suggests changes in the model or preprocessing pipeline, not data drift. Common causes: new model deployment, changes in feature engineering, bugs in serving logic. Check deployment logs and compare preprocessing code. Data drift (option B) would show in input distributions. Caching (option C) wouldn't change distribution patterns. Prediction drift always warrants investigation (The option \"This is normal model behavior and requires no action\" is incorrect).",
     "concept": "Prediction drift + stable inputs = model/pipeline change. Check: deployment history, feature engineering code, serving configuration. Different from data drift (input change) or concept drift (X-Y relationship change)."
   },
   {

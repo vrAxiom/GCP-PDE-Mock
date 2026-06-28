@@ -7,8 +7,8 @@ const path = require('path');
 const SECTION_Q_COUNT = 20;
 const FULL_TEST_DIST = [4, 4, 4, 4, 4, 10, 10, 10];
 const FULL_TOTAL = FULL_TEST_DIST.reduce((a, b) => a + b, 0); // 50
-const EXPECTED_POOL = [173, 134, 172, 137, 117, 105, 180, 100];
-const EXPECTED_TOTAL_POOL = EXPECTED_POOL.reduce((a, b) => a + b, 0); // 1118
+const EXPECTED_POOL = [172, 131, 172, 136, 116, 105, 180, 100];
+const EXPECTED_TOTAL_POOL = EXPECTED_POOL.reduce((a, b) => a + b, 0); // 1112
 
 // ── Mock question factory ─────────────────────────────────────────────
 // ans is always 0 pre-shuffle so we can use state.questions[i].ans after shuffle
@@ -150,7 +150,7 @@ test.describe('JSON Data Integrity', function () {
     })(si);
   }
 
-  test('grand total across all 8 files = 1118', function () {
+  test('grand total across all 8 files = 1112', function () {
     var total = 0;
     for (var i = 1; i <= 8; i++) {
       var fileName = FILE_NAMES[i - 1];
@@ -204,7 +204,7 @@ test.describe('Home Screen', function () {
     var cards = page.locator('.section-card');
     await expect(cards).toHaveCount(8);
 
-    var poolSizes = ['173 Qs', '134 Qs', '172 Qs', '137 Qs', '117 Qs', '105 Qs', '180 Qs', '100 Qs'];
+    var poolSizes = ['172 Qs', '131 Qs', '172 Qs', '136 Qs', '116 Qs', '105 Qs', '180 Qs', '100 Qs'];
     for (var i = 0; i < 8; i++) {
       await expect(cards.nth(i)).toContainText(poolSizes[i]);
     }

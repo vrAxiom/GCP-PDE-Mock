@@ -896,20 +896,8 @@
       "Build and train a classification model with TensorFlow. Deploy the model using Vertex AI Prediction. Inspect the generated MID values to supply the image labels."
     ],
     "ans": 1,
-    "explain": "Correct answer is B as the requirement is to quickly develop a model that generates landmark labels from photos, it can be easily supported by Cloud Vision API.\n\nRefer GCP documentation - Cloud Vision: - https://cloud.google.com/vision/docs/;\n\nCloud Vision offers both pretrained models via an API and the ability to build custom models using AutoML Vision to provide flexibility depending on your use case.\n\nCloud Vision API enables developers to understand the content of an image by encapsulating powerful machine learning models in an easy-to-use REST API. It quickly classifies images into thousands of categories (such as, “sailboat”), detects individual objects and faces within images, and reads printed words contained within images. You can build metadata on your image catalog, moderate offensive content, or enable new marketing scenarios through image sentiment analysis.\n\nOption A is wrong as you should not inspect the generated MID values; instead, you should simply pass the image locations to the API and use the labels, which are output.\n\nOptions C & D are wrong as you should not build a custom classification TF model for this scenario, as it would require time.",
+    "explain": "The correct answer is \"Build an application that calls the Cloud Vision API. Pass landmark locations as base64-encoded strings.\" because the requirement is to quickly develop a model that generates landmark labels from photos, it can be easily supported by Cloud Vision API.\n\nRefer GCP documentation - Cloud Vision: - https://cloud.google.com/vision/docs/;\n\nCloud Vision offers both pretrained models via an API and the ability to build custom models using AutoML Vision to provide flexibility depending on your use case.\n\nCloud Vision API enables developers to understand the content of an image by encapsulating powerful machine learning models in an easy-to-use REST API. It quickly classifies images into thousands of categories (such as, “sailboat”), detects individual objects and faces within images, and reads printed words contained within images. You can build metadata on your image catalog, moderate offensive content, or enable new marketing scenarios through image sentiment analysis.\n\nThe option \"Build an application that calls the Cloud Vision API. Inspect the generated MID values to supply the image labels.\" is incorrect because you should not inspect the generated MID values; instead, you should simply pass the image locations to the API and use the labels, which are output.\n\nThe options \"Build and train a classification model with TensorFlow. Deploy the model using Vertex AI Prediction. Pass landmark locations as base64-encoded strings.\" and \"Build and train a classification model with TensorFlow. Deploy the model using Vertex AI Prediction. Inspect the generated MID values to supply the image labels.\" are incorrect because you should not build a custom classification TF model for this scenario, as it would require time.",
     "concept": "GCP Data Engineering"
-  },
-  {
-    "q": "For this Question , refer to the Flowlogistic case study @ https://cloud.google.com/certification/guides/data-engineer/casestudy-flowlogistic;\n\nFlowlogistic’s CEO wants to gain rapid insight into their customer base, so his sales team can be better informed in the field. This team is not very technical, so they’ve purchased a visualization tool to simplify the creation of BigQuery reports. However, they’ve been overwhelmed by all the data in the table, and are spending a lot of money on queries trying to find the data they need. You want to solve their problem in the most cost-effective way. What should you do?",
-    "opts": [
-      "Export the data into a Google Sheet for virtualization.",
-      "Export the data into a Google Sheet for virtualization.",
-      "Create a view on the table to present to the virtualization tool.",
-      "Create identity and access management (IAM) roles on the appropriate columns, so only they appear in a query."
-    ],
-    "ans": 2,
-    "explain": "Correct answer is C as the best way to limit and expose number of columns and access is to create a View. With BigQuery, the access can only be controlled on Datasets and Views, but not on tables.\n\nRefer GCP documentation - BigQuery Views: - https://cloud.google.com/bigquery/docs/views-intro;\n\nOption A is wrong as only limited amount of data can be imported.\n\nOption B is wrong as additional table would increase the cost.\n\nOption D is wrong as IAM cannot be applied on columns or tables, but only on datasets and views.",
-    "concept": "BigQuery"
   },
   {
     "q": "Your company has hired a new data scientist who wants to perform complicated analyses across very large datasets stored in Google Cloud Storage and in a Cassandra cluster on Google Compute Engine. The scientist primarily wants to create labelled data sets for machine learning projects, along with some visualization tasks. She reports that her laptop is not powerful enough to perform her tasks and it is slowing her down. You want to help her perform her tasks. What should you do?",
@@ -920,7 +908,7 @@
       "Deploy Google Vertex AI Workbench to a virtual machine (VM) on Google Compute Engine."
     ],
     "ans": 3,
-    "explain": "Correct answer is D as Vertex AI Workbench provides a powerful interactive, scalable tool on Google Cloud with the ability to analyze, visualize data.\n\nRefer GCP documentation - Vertex AI Workbench: - https://cloud.google.com/datalab/;\n\nVertex AI Workbench is a powerful interactive tool created to explore, analyze, transform and visualize data and build machine learning models on Google Cloud Platform. It runs on Google Compute Engine and connects to multiple cloud services easily so you can focus on your data science tasks.\n\nVertex AI Workbench is built on Jupyter (formerly IPython), which boasts a thriving ecosystem of modules and a robust knowledge base. Vertex AI Workbench enables analysis of your data on Google BigQuery, Vertex AI Prediction, Google Compute Engine, and Google Cloud Storage using Python, SQL, and JavaScript (for BigQuery user-defined functions).\n\nWhether you're analyzing megabytes or terabytes, Vertex AI Workbench has you covered. Query terabytes of data in BigQuery, run local analysis on sampled data and run training jobs on terabytes of data in Vertex AI Prediction seamlessly.\n\nUse Vertex AI Workbench to gain insight from your data. Interactively explore, transform, analyze, and visualize your data using BigQuery, Cloud Storage and Python.\n\nGo from data to deployed machine-learning (ML) models ready for prediction. Explore data, build, evaluate and optimize Machine Learning models using TensorFlow or Vertex AI Prediction.\n\nOptions A, B & C do not provides all the abilities.",
+    "explain": "The correct answer is \"Deploy Google Vertex AI Workbench to a virtual machine (VM) on Google Compute Engine.\" because Vertex AI Workbench provides a powerful interactive, scalable tool on Google Cloud with the ability to analyze, visualize data.\n\nRefer GCP documentation - Vertex AI Workbench: - https://cloud.google.com/datalab/;\n\nVertex AI Workbench is a powerful interactive tool created to explore, analyze, transform and visualize data and build machine learning models on Google Cloud Platform. It runs on Google Compute Engine and connects to multiple cloud services easily so you can focus on your data science tasks.\n\nVertex AI Workbench is built on Jupyter (formerly IPython), which boasts a thriving ecosystem of modules and a robust knowledge base. Vertex AI Workbench enables analysis of your data on Google BigQuery, Vertex AI Prediction, Google Compute Engine, and Google Cloud Storage using Python, SQL, and JavaScript (for BigQuery user-defined functions).\n\nWhether you're analyzing megabytes or terabytes, Vertex AI Workbench has you covered. Query terabytes of data in BigQuery, run local analysis on sampled data and run training jobs on terabytes of data in Vertex AI Prediction seamlessly.\n\nUse Vertex AI Workbench to gain insight from your data. Interactively explore, transform, analyze, and visualize your data using BigQuery, Cloud Storage and Python.\n\nGo from data to deployed machine-learning (ML) models ready for prediction. Explore data, build, evaluate and optimize Machine Learning models using TensorFlow or Vertex AI Prediction.\n\nOptions A, B & C do not provides all the abilities.",
     "concept": "BigQuery, Cloud Storage"
   },
   {
@@ -932,7 +920,7 @@
       "Clear your browser history for the past hour then reload the tab showing the visualizations."
     ],
     "ans": 0,
-    "explain": "Correct answer is A as Looker Studio caches data for performance and as the latest data is not shown, the caching can be disabled to fetch the latest data.\n\nRefer GCP documentation - Looker Studio Caching: - https://support.google.com/datastudio/answer/7020039?hl=en;\n\nOption B is wrong as BigQuery does not cache the data.\n\nOptions C & D are wrong this would not allow fetching of latest data.",
+    "explain": "The correct answer is \"Disable caching by editing the report settings.\" because Looker Studio caches data for performance and as the latest data is not shown, the caching can be disabled to fetch the latest data.\n\nRefer GCP documentation - Looker Studio Caching: - https://support.google.com/datastudio/answer/7020039?hl=en;\n\nThe option \"Disable caching in BigQuery by editing table details.\" is incorrect because BigQuery does not cache the data.\n\nOptions C & D are wrong this would not allow fetching of latest data.",
     "concept": "BigQuery"
   },
   {
@@ -944,7 +932,7 @@
       "The model is perfectly fit. You do not need to continue training."
     ],
     "ans": 1,
-    "explain": "Correct answer is B as the 100% accuracy is an indicator that the validation data may have somehow gotten mixed in with the training data. You will need new validation data to generate recognizable error.\n\nOverfitting results when a model performs well on the training set, generating only a small error, but struggles with new or unknown data. In other words, the model overfits itself to the data. Instead of training a model to pick out general features in a given type of data, an overtrained model learns only how to pick out specific features found in the training set.",
+    "explain": "The correct answer is \"The model is overfit. There is a problem.\" because the 100% accuracy is an indicator that the validation data may have somehow gotten mixed in with the training data. You will need new validation data to generate recognizable error.\n\nOverfitting results when a model performs well on the training set, generating only a small error, but struggles with new or unknown data. In other words, the model overfits itself to the data. Instead of training a model to pick out general features in a given type of data, an overtrained model learns only how to pick out specific features found in the training set.",
     "concept": "GCP Data Engineering"
   },
   {
@@ -956,7 +944,7 @@
       "Clustering"
     ],
     "ans": 3,
-    "explain": "Correct answer is D as the data is unlabelled, unsupervised learning technique of Clustering can be applied to categorize the data.\n\nRefer GCP documentation - Machine Learning: - https://developers.google.com/machine-learning/problem-framing/cases;\n\nIn unsupervised learning, the goal is to identify meaningful patterns in the data. To accomplish this, the machine must learn from an unlabeled data set. In other words, the model has no hints how to categorize each piece of data and must infer its own rules for doing so.\n\nOptions A & B are wrong as they are supervised learning techniques.\n\nIn supervised machine learning, you feed the features and their corresponding labels into an algorithm in a process called training. During training, the algorithm gradually determines the relationship between features and their corresponding labels. This relationship is called the model. Often times in machine learning, the model is very complex.\n\nOption C is wrong as Association rules is mainly to identify relationship.",
+    "explain": "The correct answer is \"Clustering\" because the data is unlabelled, unsupervised learning technique of Clustering can be applied to categorize the data.\n\nRefer GCP documentation - Machine Learning: - https://developers.google.com/machine-learning/problem-framing/cases;\n\nIn unsupervised learning, the goal is to identify meaningful patterns in the data. To accomplish this, the machine must learn from an unlabeled data set. In other words, the model has no hints how to categorize each piece of data and must infer its own rules for doing so.\n\nThe options \"Classification\" and \"Regression\" are incorrect because they are supervised learning techniques.\n\nIn supervised machine learning, you feed the features and their corresponding labels into an algorithm in a process called training. During training, the algorithm gradually determines the relationship between features and their corresponding labels. This relationship is called the model. Often times in machine learning, the model is very complex.\n\nThe option \"Association\" is incorrect because Association rules is mainly to identify relationship.",
     "concept": "GCP Data Engineering"
   },
   {
@@ -968,7 +956,7 @@
       "Use Cloud Vision API and Develop an REST based wrapper over it"
     ],
     "ans": 3,
-    "explain": "Correct answer is D as Cloud Vision API provide pre-built models to identify and detect objects and faces within images.\n\nRefer GCP documentation - AI Products: - https://cloud.google.com/products/ai/;\n\nCloud Vision API enables you to derive insight from your images with our powerful pretrained API models or easily train custom vision models with AutoML Vision Beta. The API quickly classifies images into thousands of categories (such as “sailboat” or “Eiffel Tower”), detects individual objects and faces within images, and finds and reads printed words contained within images. AutoML Vision lets you build and train custom ML models with minimal ML expertise to meet domain-specific business needs.",
+    "explain": "The correct answer is \"Use Cloud Vision API and Develop an REST based wrapper over it\" because Cloud Vision API provide pre-built models to identify and detect objects and faces within images.\n\nRefer GCP documentation - AI Products: - https://cloud.google.com/products/ai/;\n\nCloud Vision API enables you to derive insight from your images with our powerful pretrained API models or easily train custom vision models with AutoML Vision Beta. The API quickly classifies images into thousands of categories (such as “sailboat” or “Eiffel Tower”), detects individual objects and faces within images, and finds and reads printed words contained within images. AutoML Vision lets you build and train custom ML models with minimal ML expertise to meet domain-specific business needs.",
     "concept": "GCP Data Engineering"
   },
   {
@@ -980,7 +968,7 @@
       "Use Cloud Natural Language API to identify PII and filter the information"
     ],
     "ans": 2,
-    "explain": "Correct answer is C as Data Loss Prevention APIs can be used to quickly redact the sensitive information.\n\nRefer GCP documentation - Cloud DLP: - https://cloud.google.com/dlp/;\n\nCloud DLP helps you better understand and manage sensitive data. It provides fast, scalable classification and redaction for sensitive data elements like credit card numbers, names, social security numbers, US and selected international identifier numbers, phone numbers and GCP credentials. Cloud DLP classifies this data using more than 90 predefined detectors to identify patterns, formats, and checksums, and even understands contextual clues. You can optionally redact data as well using techniques like masking, secure hashing, bucketing, and format-preserving encryption.\n\nOption A is wrong as building and training a model is not a quick and easy solution.\n\nOption B is wrong as the data would still be stored in the base tables and accessible.\n\nOption D is wrong as Cloud Natural APIs is for text analysis and does not handle sensitive information redaction.",
+    "explain": "The correct answer is \"Use Data Loss Prevention APIs to identify the PII information and filter the information\" because Data Loss Prevention APIs can be used to quickly redact the sensitive information.\n\nRefer GCP documentation - Cloud DLP: - https://cloud.google.com/dlp/;\n\nCloud DLP helps you better understand and manage sensitive data. It provides fast, scalable classification and redaction for sensitive data elements like credit card numbers, names, social security numbers, US and selected international identifier numbers, phone numbers and GCP credentials. Cloud DLP classifies this data using more than 90 predefined detectors to identify patterns, formats, and checksums, and even understands contextual clues. You can optionally redact data as well using techniques like masking, secure hashing, bucketing, and format-preserving encryption.\n\nThe option \"Train Model using Tensorflow to identify PII and filter the information\" is incorrect because building and training a model is not a quick and easy solution.\n\nThe option \"Store the data in BigQuery and create a Authorized view for the users\" is incorrect because the data would still be stored in the base tables and accessible.\n\nThe option \"Use Cloud Natural Language API to identify PII and filter the information\" is incorrect because Cloud Natural APIs is for text analysis and does not handle sensitive information redaction.",
     "concept": "Cloud DLP"
   },
   {
@@ -992,7 +980,7 @@
       "Use Cloud Vision API and Develop an REST based wrapper over it"
     ],
     "ans": 2,
-    "explain": "Correct answer is C as the solution needs to develop quickly, the Cloud Natural Language API can be used to perform text analysis.\n\nRefer GCP documentation - AI Products: - https://cloud.google.com/products/ai/;\n\nCloud Natural Language API reveals the structure and meaning of text by offering powerful machine learning models in an easy-to-use REST API. And with Vertex AI AutoML Text Beta you can build and train ML models easily, without extensive ML expertise. You can use Natural Language to extract information about people, places, events, and much more mentioned in text documents, news articles, or blog posts. You can also use it to understand sentiment about your product on social media or parse intent from customer conversations happening in a call center or a messaging app.\n\nOptions A & B are wrong as they do not provide quick results.\n\nOption D is wrong as Cloud Vision is for image analysis and not text analysis.",
+    "explain": "The correct answer is \"Use Cloud Natural Language API and Develop an REST based wrapper over it\" because the solution needs to develop quickly, the Cloud Natural Language API can be used to perform text analysis.\n\nRefer GCP documentation - AI Products: - https://cloud.google.com/products/ai/;\n\nCloud Natural Language API reveals the structure and meaning of text by offering powerful machine learning models in an easy-to-use REST API. And with Vertex AI AutoML Text Beta you can build and train ML models easily, without extensive ML expertise. You can use Natural Language to extract information about people, places, events, and much more mentioned in text documents, news articles, or blog posts. You can also use it to understand sentiment about your product on social media or parse intent from customer conversations happening in a call center or a messaging app.\n\nThe options \"Create and Train a model using Tensorflow and Develop an REST based wrapper over it\" and \"Create and Train a model using BigQuery ML and Develop an REST based wrapper over it\" are incorrect because they do not provide quick results.\n\nThe option \"Use Cloud Vision API and Develop an REST based wrapper over it\" is incorrect because Cloud Vision is for image analysis and not text analysis.",
     "concept": "GCP Data Engineering"
   },
   {
@@ -1004,7 +992,7 @@
       "Monitor the BigQuery Slots Available metric"
     ],
     "ans": 3,
-    "explain": "Correct answer is D as BigQuery provides 2 metrics for Slots. Slots Allocated to the project and Slots Available for the project.\n\nRefer GCP documentation - BigQuery Metrics: - https://cloud.google.com/bigquery/docs/monitoring#metrics;",
+    "explain": "The correct answer is \"Monitor the BigQuery Slots Available metric\" because BigQuery provides 2 metrics for Slots. Slots Allocated to the project and Slots Available for the project.\n\nRefer GCP documentation - BigQuery Metrics: - https://cloud.google.com/bigquery/docs/monitoring#metrics;",
     "concept": "BigQuery"
   },
   {
@@ -1016,7 +1004,7 @@
       "`bigquery-public-data.noaa_gsod.gsod*`"
     ],
     "ans": 3,
-    "explain": "Correct answer is D as the table name should include a * for the wildcard and it must be enclosed in backtick characters.\n\nRefer GCP documentation - BigQuery Wildcard table reference: - https://cloud.google.com/bigquery/docs/reference/standard-sql/wildcard-table-reference;\n\nWildcard tables enable you to query multiple tables using concise SQL statements. Wildcard tables are available only in standard SQL.\n\nThe wildcard character, \"\"*\"\", represents one more characters of a table name. The wildcard character can appear only as the final character of a wildcard table name.\n\nThe wildcard table name contains the special character (*), which means that you must enclose the wildcard table name in backtick (`) characters.",
+    "explain": "The correct answer is \"`bigquery-public-data.noaa_gsod.gsod*`\" because the table name should include a * for the wildcard and it must be enclosed in backtick characters.\n\nRefer GCP documentation - BigQuery Wildcard table reference: - https://cloud.google.com/bigquery/docs/reference/standard-sql/wildcard-table-reference;\n\nWildcard tables enable you to query multiple tables using concise SQL statements. Wildcard tables are available only in standard SQL.\n\nThe wildcard character, \"\"*\"\", represents one more characters of a table name. The wildcard character can appear only as the final character of a wildcard table name.\n\nThe wildcard table name contains the special character (*), which means that you must enclose the wildcard table name in backtick (`) characters.",
     "concept": "BigQuery"
   },
   {
@@ -1028,7 +1016,7 @@
       "Export 2 copies of your trained model to a SavedModel format. Store artifacts in Vertex AI Prediction. Run 1 version on CPUs and another version on GPUs."
     ],
     "ans": 0,
-    "explain": "Correct answer is A as it aligns with the Google recommended practices; that is, \"\"just deploy it.\"\";\n\nRefer GCP documentation - Deploying Models & Vertex AI TensorFlow Prediction Overview: - https://cloud.google.com/ml-engine/docs/tensorflow/prediction-overview;\n\nOption B is wrong as Kubernetes Engine is not ideal to run models.\n\nOptions C & D are wrong as you should not export 2 copies of your trained model, etc, for this scenario.",
+    "explain": "The correct answer is \"Export your trained model to a SavedModel format. Deploy and run your model on Vertex AI Prediction.\" because it aligns with the Google recommended practices; that is, \"\"just deploy it.\"\";\n\nRefer GCP documentation - Deploying Models & Vertex AI TensorFlow Prediction Overview: - https://cloud.google.com/ml-engine/docs/tensorflow/prediction-overview;\n\nThe option \"Export your trained model to a SavedModel format. Deploy and run your model from a Kubernetes Engine cluster.\" is incorrect because Kubernetes Engine is not ideal to run models.\n\nThe options \"Export 2 copies of your trained model to a SavedModel format. Store artifacts in Cloud Storage. Run 1 version on CPUs and another version on GPUs.\" and \"Export 2 copies of your trained model to a SavedModel format. Store artifacts in Vertex AI Prediction. Run 1 version on CPUs and another version on GPUs.\" are incorrect because you should not export 2 copies of your trained model, etc, for this scenario.",
     "concept": "GCP Data Engineering"
   },
   {
@@ -1040,7 +1028,7 @@
       "Clustering"
     ],
     "ans": 0,
-    "explain": "Correct answer is A as Classification helps classify the data into N labels.\n\nRefer GCP documentation - Machine Learning: - https://developers.google.com/machine-learning/problem-framing/cases;",
+    "explain": "The correct answer is \"Classification\" because Classification helps classify the data into N labels.\n\nRefer GCP documentation - Machine Learning: - https://developers.google.com/machine-learning/problem-framing/cases;",
     "concept": "GCP Data Engineering"
   },
   {
@@ -1052,7 +1040,7 @@
       "Feedforward neural network"
     ],
     "ans": 0,
-    "explain": "Correct answer is A as Supervised learning using Regression can help build a model to predict house prices.\n\nRefer documentation - Machine learning;\n\nOption B is wrong as Classification would not help to solve the problem.\n\nOptions C & D are wrong as they would need more resources.\"",
+    "explain": "The correct answer is \"Linear regression\" because Supervised learning using Regression can help build a model to predict house prices.\n\nRefer documentation - Machine learning;\n\nThe option \"Logistic classification\" is incorrect because Classification would not help to solve the problem.\n\nThe options \"Recurrent neural network\" and \"Feedforward neural network\" are incorrect because they would need more resources.\"",
     "concept": "GCP Data Engineering"
   },
   {
@@ -1064,7 +1052,7 @@
       "Dimensionality Reduction Technique"
     ],
     "ans": 2,
-    "explain": "Correct answer is C as Reinforcement Learning can help design a model for car based on the reward technique.\n\nRefer GCP documentation - Machine Learning cases: - https://developers.google.com/machine-learning/problem-framing/cases;\n\nAn additional branch of machine learning is reinforcement learning (RL). Reinforcement learning differs from other types of machine learning. In RL you don't collect examples with labels. Imagine you want to teach a machine to play a very basic video game and never lose. You set up the model (often called an agent in RL) with the game, and you tell the model not to get a \"\"game over\"\" screen. During training, the agent receives a reward when it performs this task, which is called a reward function. With reinforcement learning, the agent can learn very quickly how to outperform humans.",
+    "explain": "The correct answer is \"Reinforcement learning\" because Reinforcement Learning can help design a model for car based on the reward technique.\n\nRefer GCP documentation - Machine Learning cases: - https://developers.google.com/machine-learning/problem-framing/cases;\n\nAn additional branch of machine learning is reinforcement learning (RL). Reinforcement learning differs from other types of machine learning. In RL you don't collect examples with labels. Imagine you want to teach a machine to play a very basic video game and never lose. You set up the model (often called an agent in RL) with the game, and you tell the model not to get a \"\"game over\"\" screen. During training, the agent receives a reward when it performs this task, which is called a reward function. With reinforcement learning, the agent can learn very quickly how to outperform humans.",
     "concept": "GCP Data Engineering"
   },
   {
@@ -1076,7 +1064,7 @@
       "Clustering"
     ],
     "ans": 2,
-    "explain": "Correct answer is C as Association rules help identify the association from past events to define relations with the new ones.\n\nAssociation rule learning is a rule-based machine learning method for discovering interesting relations between variables in large databases. It is intended to identify strong rules discovered in databases using some measures of interestingness.[1]This rule-based approach also generates new rules as it analyzes more data. The ultimate goal, assuming a large enough dataset, is to help a machine mimic the human brain’s feature extraction and abstract association capabilities from new uncategorized data.",
+    "explain": "The correct answer is \"Association\" because Association rules help identify the association from past events to define relations with the new ones.\n\nAssociation rule learning is a rule-based machine learning method for discovering interesting relations between variables in large databases. It is intended to identify strong rules discovered in databases using some measures of interestingness.[1]This rule-based approach also generates new rules as it analyzes more data. The ultimate goal, assuming a large enough dataset, is to help a machine mimic the human brain’s feature extraction and abstract association capabilities from new uncategorized data.",
     "concept": "GCP Data Engineering"
   },
   {

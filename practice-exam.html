@@ -1849,7 +1849,6 @@
     function shuffleOptions(question) {
       // Create a shallow copy so we don't mutate the original question bank
       const q = Object.assign({}, question);
-      const correctText = q.opts[q.ans];
       // Build index array [0,1,2,3] and shuffle it
       const indices = q.opts.map((_, i) => i);
       for (let i = indices.length - 1; i > 0; i--) {
@@ -1858,8 +1857,10 @@
       }
       // Reorder options according to shuffled indices
       q.opts = indices.map(i => question.opts[i]);
-      // Update ans to point to the new position of the correct answer
-      q.ans = q.opts.indexOf(correctText);
+      // Update ans using index mapping so duplicate option text does not break answer alignment.
+      q.ans = indices.indexOf(question.ans);
+      // Store old->new option index mapping for explanation text remapping.
+      q._oldToNew = question.opts.map((_, oldIdx) => indices.indexOf(oldIdx));
       return q;
     }
 
@@ -2020,6 +2021,33 @@
     function asSafeNumber(value, fallback = 0) {
       const num = Number(value);
       return Number.isFinite(num) ? num : fallback;
+    }
+
+    function remapOptionLettersInText(text, q) {
+      if (!q || !Array.isArray(q._oldToNew) || q._oldToNew.length < 4) return text;
+      const letters = ['A', 'B', 'C', 'D'];
+      const mapLetter = function (oldLetter) {
+        const oldIdx = letters.indexOf(oldLetter.toUpperCase());
+        if (oldIdx < 0) return oldLetter;
+        const newIdx = q._oldToNew[oldIdx];
+        return Number.isInteger(newIdx) && newIdx >= 0 && newIdx < letters.length ? letters[newIdx] : oldLetter;
+      };
+
+      let out = String(text || '');
+
+      out = out.replace(/\b(Correct\s+answer\s+is\s+)([A-D])\b/gi, function (_, prefix, letter) {
+        return prefix + mapLetter(letter);
+      });
+
+      out = out.replace(/\b(Option\s+)([A-D])\b/g, function (_, prefix, letter) {
+        return prefix + mapLetter(letter);
+      });
+
+      out = out.replace(/\b(Options\s+)([A-D](?:\s*,\s*[A-D])*(?:\s*&\s*[A-D])?)\b/g, function (_, prefix, list) {
+        return prefix + list.replace(/[A-D]/g, function (ch) { return mapLetter(ch); });
+      });
+
+      return out;
     }
 
     function updateFullscreenButton() {
@@ -2681,7 +2709,7 @@
         const correctRow = isCorrect ? '' :
           `<div class="answer-row"><span class="ar-label ar-correct">Correct answer:</span><span class="ar-correct">${letters[q.ans]}. ${escapeHTML(q.opts[q.ans])}</span></div>`;
 
-        const explanation = escapeHTML(q.explain);
+        const explanation = escapeHTML(remapOptionLettersInText(q.explain, q));
         const concept = escapeHTML(q.concept);
 
         const detailHtml = state.exportMode
